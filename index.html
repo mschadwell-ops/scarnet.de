@@ -13,25 +13,38 @@
         box-sizing:border-box;
     }
 
-    body{
+    html, body{
         width:100%;
-        height:100vh;
+        height:100%;
         overflow:hidden;
         background:black;
+        font-family:Arial, sans-serif;
     }
 
     .hero{
         width:100%;
         height:100vh;
+
         background-image:url('Welcome.png');
         background-size:cover;
-        background-position:center;
+        background-position:center center;
         background-repeat:no-repeat;
+    }
+
+    /* Mobile Optimierung */
+    @media (max-width: 768px){
+
+        .hero{
+            background-position:60% center;
+        }
+
     }
 </style>
 </head>
 
 <body>
-    <div class="hero"></div>
+
+<div class="hero"></div>
+
 </body>
 </html>
