@@ -1,3 +1,4 @@
+dann bitte nochmal den kompletten neuen code
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -19,35 +20,27 @@ html, body{
     height:100%;
     overflow:hidden;
     background:black;
-    font-family:Arial, sans-serif;
 }
 
+/* Desktop */
 .hero{
     width:100%;
     height:100vh;
 
     background-image:url('Welcome.png');
     background-size:cover;
-    background-position:center center;
+    background-position:center;
     background-repeat:no-repeat;
 }
 
-/* Tablet */
-@media (max-width: 1024px){
+/* Mobile */
+@media (max-width:768px){
 
     .hero{
-        background-position:center center;
-    }
-
-}
-
-/* Handy */
-@media (max-width: 768px){
-
-    .hero{
-        background-size:contain;
-        background-position:center center;
-        background-color:black;
+        background-image:url('Welcome-mobile.png');
+        background-size:cover;
+        background-position:center;
+        background-repeat:no-repeat;
     }
 
 }
