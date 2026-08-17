@@ -135,6 +135,17 @@ html, body{
     outline-offset:2px;
 }
 
+/* Handy: Antippflächen auf mindestens 44 Pixel Höhe bringen, sonst trifft man
+   mit dem Daumen daneben. Passt weiterhin in die 52 Pixel hohe Leiste.
+   Die Zeilenhöhe steht hier ausdrücklich, weil diese Seite anders als der
+   Rauchfrei-Bereich keine auf dem body setzt — sonst fehlt ein Pixel. */
+@media (max-width:768px){
+    .tabs a{
+        padding:14px 12px;
+        line-height:1.6;
+    }
+}
+
 /* Der Schriftzug steckt als Pixel im Bild. Diese Überschrift bleibt unsichtbar,
    existiert aber für Screenreader und Suchmaschinen. */
 .sr-only{

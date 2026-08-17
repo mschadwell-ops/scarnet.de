@@ -253,6 +253,18 @@
   .fuss{
     margin-top:34px; font-size:12px; color:var(--faint); text-align:center; line-height:1.7;
   }
+
+  /* ---------- Handy ----------
+     Zwei Dinge, die am Schreibtisch nicht auffallen: Antippflächen brauchen
+     mindestens 44 Pixel Höhe, sonst trifft man mit dem Daumen daneben, und die
+     kleinsten Beschriftungen sind auf einem Handydisplay eine Spur zu klein. */
+  @media (max-width:768px){
+    .tabs a{ padding:14px 12px; }
+    details.mehr summary{ padding:14px 0; }
+    .kachel .k, .spruch .art{ font-size:11.5px; }
+    label.feld span, .abschnitt-titel{ font-size:11.5px; }
+    .zeile-check input{ width:20px; height:20px; }
+  }
 </style>
 </head>
 
