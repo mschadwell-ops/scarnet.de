@@ -9,7 +9,6 @@ vom Branch `main`. Kein Build, kein Generator — was hier liegt, ist die Seite.
 |---|---|
 | `index.html` | Startseite: Hero-Bild und Menü |
 | `rauchfrei.html` | Reiter „Rauchfrei“ — Anmeldung und Zähler, alles in einer Datei |
-| `impressum.html` | Impressum und Datenschutzerklärung |
 | `setup.html` | Werkzeug, um Zugänge zu erzeugen. Nicht im Menü verlinkt |
 | `Welcome.jpg` | Hero-Bild quer (1672 × 941), ab Viewport ≥ 769 px |
 | `Welcome-mobile.jpg` | Hero-Bild hoch (941 × 1672), bis Viewport ≤ 768 px |
@@ -82,14 +81,17 @@ der Vortag, 3.608 verschiedene Texte.
 
 ## Impressum
 
-`impressum.html` enthält Impressum und Datenschutzerklärung. Die persönlichen
-Angaben sind noch **Platzhalter** und im Text farbig hervorgehoben — Name,
-Anschrift und E-Mail müssen eingetragen werden, bevor die Seite ihren Zweck
-erfüllt.
+Bewusst noch nicht enthalten. Eine fertige Seite mit Impressum nach § 5 DDG
+und Datenschutzerklärung liegt im Verlauf dieses Branches und lässt sich
+jederzeit zurückholen:
 
-Die Datenschutzerklärung nennt bewusst auch GitHub Pages als Hoster: Beim
-Abruf der Seite erreicht die IP-Adresse des Besuchers einen Server in den USA.
-Das ist die einzige Datenübermittlung, die hier überhaupt stattfindet.
+```bash
+git show 71628cd:impressum.html > impressum.html
+```
+
+Danach in `index.html` und `rauchfrei.html` je eine Zeile im `<nav>` ergänzen.
+Die persönlichen Angaben darin sind Platzhalter und müssen vor dem
+Veröffentlichen gefüllt werden.
 
 ## Ändern
 
