@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+
+<title>Rauchfrei — scaRnet</title>
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230A1411'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='%2362D6AE' stroke-width='2.5'/%3E%3C/svg%3E">
+
+<style>
+  /* ====================================================================
+     Rauchfrei — eigenes Gestaltungsbild.
+     Die Startseite lebt vom Serverraum-Blau; hier geht es um Atem und
+     klare Luft, deshalb ein grünstichiges Dunkel mit Minze als Akzent.
+     Messing bleibt dem Geld vorbehalten, damit die Ersparnis eine eigene
+     Stimme hat und nicht mit dem Atem-Akzent um Aufmerksamkeit kämpft.
+     ==================================================================== */
+  :root{
+    --ground:    #0A1411;
+    --surface:   #0F1E1A;
+    --surface-2: #162923;
+    --line:      #1F3730;
+    --line-soft: #16261F;
+    --text:      #E9F2EE;
+    --muted:     #8CA8A0;
+    --faint:     #5D7771;
+    --air:       #62D6AE;
+    --air-glow:  rgba(98,214,174,.13);
+    --brass:     #D9A94F;
+    --warn:      #D9775C;
+    --sans: ui-sans-serif, system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  *{ box-sizing:border-box; }
+
+  body{
+    margin:0;
+    background:var(--ground);
+    color:var(--text);
+    font-family:var(--sans);
+    font-size:15px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ---------- Menü (gleich wie auf der Startseite) ---------- */
+  .nav{
+    position:sticky;
+    top:0;
+    z-index:10;
+    height:52px;
+    display:flex;
+    align-items:center;
+    gap:clamp(16px,4vw,40px);
+    padding:0 clamp(14px,4vw,30px);
+    background:rgba(0,0,0,.46);
+    backdrop-filter:blur(12px) saturate(140%);
+    -webkit-backdrop-filter:blur(12px) saturate(140%);
+    border-bottom:1px solid rgba(255,255,255,.09);
+  }
+  .mark{
+    flex:none; font-size:15px; font-weight:300; letter-spacing:.02em;
+    color:rgba(255,255,255,.92); text-decoration:none; white-space:nowrap;
+  }
+  .mark b{ font-weight:600; color:#fff; }
+  .tabs{ display:flex; gap:4px; margin-left:auto; overflow-x:auto; scrollbar-width:none; }
+  .tabs::-webkit-scrollbar{ display:none; }
+  .tabs a{
+    flex:none; padding:7px 12px; border-radius:6px;
+    font-size:11px; font-weight:600; letter-spacing:.15em; text-transform:uppercase;
+    color:rgba(255,255,255,.62); text-decoration:none; white-space:nowrap;
+    transition:color .15s, background .15s;
+  }
+  .tabs a:hover{ color:#fff; background:rgba(255,255,255,.09); }
+  .tabs a[aria-current="page"]{ color:#fff; background:rgba(255,255,255,.14); }
+
+  .wrap{ max-width:840px; margin:0 auto; padding:40px 20px 80px; }
+
+  /* ---------- gemeinsame Bausteine ---------- */
+  h2{
+    font-size:11.5px; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--muted); font-weight:600; margin:0 0 14px;
+    padding-bottom:9px; border-bottom:1px solid var(--line);
+  }
+  .karte{ background:var(--surface); border:1px solid var(--line); border-radius:12px; }
+
+  button{
+    font:inherit; cursor:pointer; border-radius:8px;
+    border:1px solid var(--line); background:var(--surface-2); color:var(--text);
+    padding:10px 16px; transition:.15s;
+  }
+  button:hover{ border-color:var(--faint); }
+  button:active{ transform:translateY(1px); }
+  button:focus-visible, input:focus-visible, a:focus-visible{
+    outline:2px solid var(--air); outline-offset:2px;
+  }
+  .haupt{
+    background:var(--air); border-color:var(--air); color:#062018; font-weight:650;
+  }
+  .haupt:hover{ filter:brightness(1.08); border-color:var(--air); }
+  .leise{ background:none; border-color:transparent; color:var(--muted); }
+  .leise:hover{ color:var(--text); border-color:var(--line); }
+  .gefahr{ color:var(--warn); }
+
+  input[type=text], input[type=password], input[type=date], input[type=number]{
+    width:100%; font:inherit; padding:11px 13px; border-radius:8px;
+    border:1px solid var(--line); background:var(--ground); color:var(--text);
+  }
+  input:focus{ outline:none; border-color:var(--air); }
+  label.feld{ display:block; margin-bottom:16px; }
+  label.feld span{
+    display:block; margin-bottom:6px;
+    font-size:11px; letter-spacing:.13em; text-transform:uppercase; color:var(--muted);
+  }
+  .zeile-check{ display:flex; align-items:center; gap:9px; margin-bottom:20px; font-size:14px; color:var(--muted); }
+  .zeile-check input{ width:16px; height:16px; accent-color:var(--air); }
+
+  .hinweis{
+    margin-top:18px; padding:12px 14px; border-radius:8px;
+    background:var(--surface-2); border-left:2px solid var(--brass);
+    font-size:13px; color:var(--muted);
+  }
+  .fehler{ margin-top:14px; color:var(--warn); font-size:14px; min-height:22px; }
+
+  /* ---------- Anmeldung ---------- */
+  .anmelde-box{ max-width:380px; margin:min(9vh,80px) auto 0; }
+  .anmelde-box .kopf{ margin-bottom:26px; }
+  .anmelde-box h1{
+    font-size:26px; font-weight:600; letter-spacing:-.02em; margin:0 0 8px;
+  }
+  .anmelde-box .kopf p{ margin:0; color:var(--muted); font-size:14px; }
+  .anmelde-box form{ padding:24px; }
+
+  /* ---------- Zähler ---------- */
+  .zaehler{ position:relative; text-align:center; padding:34px 16px 26px; overflow:hidden; }
+  .atem{
+    position:absolute; left:50%; top:44%; width:340px; height:340px;
+    transform:translate(-50%,-50%);
+    background:radial-gradient(circle, var(--air-glow) 0%, transparent 68%);
+    pointer-events:none;
+    animation:atmen 10s ease-in-out infinite;
+  }
+  @keyframes atmen{
+    0%,100%{ transform:translate(-50%,-50%) scale(.86); opacity:.55; }
+    40%    { transform:translate(-50%,-50%) scale(1.12); opacity:1; }
+  }
+  @media (prefers-reduced-motion:reduce){
+    .atem{ animation:none; }
+  }
+  .zaehler > *:not(.atem){ position:relative; }
+  .tage{
+    font-size:clamp(66px,19vw,124px); font-weight:200; line-height:1;
+    letter-spacing:-.045em; font-variant-numeric:tabular-nums; color:var(--text);
+  }
+  .tage-wort{
+    margin-top:6px; font-size:12px; letter-spacing:.2em; text-transform:uppercase;
+    color:var(--air); font-weight:600;
+  }
+  .uhr{
+    margin-top:14px; font-size:15px; color:var(--muted); font-variant-numeric:tabular-nums;
+  }
+  .seit{ margin-top:6px; font-size:12.5px; color:var(--faint); }
+
+  /* ---------- Spruch ---------- */
+  .spruch{ margin:0 0 24px; padding:20px 22px; }
+  .spruch .art{
+    font-size:10.5px; letter-spacing:.18em; text-transform:uppercase;
+    color:var(--air); font-weight:600; margin-bottom:9px;
+  }
+  .spruch blockquote{
+    margin:0; font-size:17px; line-height:1.55; text-wrap:balance; max-width:56ch;
+  }
+
+  /* ---------- Kennzahlen ---------- */
+  .kacheln{
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+    gap:1px; background:var(--line-soft);
+    border:1px solid var(--line); border-radius:12px; overflow:hidden;
+    margin-bottom:24px;
+  }
+  .kachel{ background:var(--surface); padding:18px 20px; }
+  .kachel .k{
+    font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--faint);
+  }
+  .kachel .v{
+    margin-top:8px; font-size:27px; font-weight:600; letter-spacing:-.025em;
+    font-variant-numeric:tabular-nums;
+  }
+  .kachel .n{ margin-top:3px; font-size:12.5px; color:var(--muted); }
+  .kachel.geld .v{ color:var(--brass); }
+  .kachel.zeit .v{ color:var(--air); }
+
+  /* ---------- Meilensteine ---------- */
+  .meilen{ list-style:none; margin:0; padding:0; }
+  .meilen li{
+    display:grid; grid-template-columns:20px 1fr auto; gap:12px;
+    align-items:baseline; padding:11px 2px;
+    border-bottom:1px dashed var(--line);
+  }
+  .meilen li:last-child{ border-bottom:none; }
+  .meilen .punkt{
+    width:11px; height:11px; border-radius:50%; align-self:center;
+    border:1.5px solid var(--line); background:none;
+  }
+  .meilen li.da .punkt{ background:var(--air); border-color:var(--air); }
+  .meilen .was{ font-size:14px; color:var(--muted); }
+  .meilen li.da .was{ color:var(--text); }
+  .meilen .wann{
+    font-size:11.5px; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--faint); font-variant-numeric:tabular-nums; white-space:nowrap;
+  }
+  .meilen li.da .wann{ color:var(--air); }
+
+  /* Heute hervorgehoben, morgen als blasser Ausblick darüber. */
+  .meilen li.heute{
+    background:var(--surface-2);
+    border-radius:8px;
+    padding-left:12px;
+    padding-right:12px;
+    margin:4px -12px;
+    border-bottom-color:transparent;
+  }
+  .meilen li.heute .punkt{ background:var(--air); border-color:var(--air); box-shadow:0 0 0 4px var(--air-glow); }
+  .meilen li.heute .was{ color:var(--text); font-weight:500; }
+  .meilen li.heute .wann{ color:var(--air); }
+  .meilen li.kommt{ opacity:.45; }
+  .meilen li.kommt .was{ color:var(--muted); }
+  .davor{
+    margin:12px 2px 0; font-size:12px; color:var(--faint);
+    letter-spacing:.06em;
+  }
+
+  /* ---------- Einstellungen ---------- */
+  details.mehr{ margin-top:28px; }
+  details.mehr summary{
+    font-size:11.5px; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--muted); cursor:pointer; font-weight:600; padding:8px 0;
+  }
+  details.mehr summary:hover{ color:var(--text); }
+  .mehr-inhalt{ padding:18px 20px; margin-top:10px; }
+  .knopf-zeile{ display:flex; flex-wrap:wrap; gap:9px; margin-top:6px; }
+  .trenner{ height:1px; background:var(--line); margin:22px 0; }
+  .abschnitt-titel{
+    font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--faint); margin-bottom:12px;
+  }
+  .bestzeit{ font-size:13px; color:var(--muted); margin-top:12px; }
+  .bestzeit b{ color:var(--air); }
+
+  .fuss{
+    margin-top:34px; font-size:12px; color:var(--faint); text-align:center; line-height:1.7;
+  }
+</style>
+</head>
+
+<body>
+
+<nav class="nav">
+  <a class="mark" href="/">sca<b>R</b>net</a>
+  <div class="tabs">
+    <a href="/rauchfrei.html" aria-current="page">Rauchfrei</a>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <!-- ============ 1. Anmeldung ============ -->
+  <section id="ansichtAnmeldung" class="anmelde-box">
+    <div class="kopf">
+      <h1>Rauchfrei</h1>
+      <p>Bitte Name und Passwort eingeben.</p>
+    </div>
+    <form class="karte" id="anmeldeForm" autocomplete="on">
+      <label class="feld">
+        <span>Name</span>
+        <input type="text" id="fName" autocomplete="username" autocapitalize="off"
+               spellcheck="false" required>
+      </label>
+      <label class="feld">
+        <span>Passwort</span>
+        <input type="password" id="fPass" autocomplete="current-password" required>
+      </label>
+      <div class="zeile-check">
+        <input type="checkbox" id="fMerken" checked>
+        <label for="fMerken">Angemeldet bleiben</label>
+      </div>
+      <button type="submit" class="haupt" style="width:100%">Anmelden</button>
+      <div class="fehler" id="anmeldeFehler" role="alert"></div>
+    </form>
+  </section>
+
+  <!-- ============ 2. Ersteinrichtung ============ -->
+  <section id="ansichtEinrichten" class="anmelde-box" hidden>
+    <div class="kopf">
+      <h1>Einmal kurz einrichten</h1>
+      <p>Zwei Angaben, dann läuft der Zähler.</p>
+    </div>
+    <form class="karte" id="einrichtenForm">
+      <label class="feld">
+        <span>Rauchfrei seit</span>
+        <input type="date" id="fStart" required>
+      </label>
+      <label class="feld">
+        <span>Zigaretten pro Tag davor</span>
+        <input type="number" id="fMenge" min="1" max="120" step="1" value="20" required>
+      </label>
+      <button type="submit" class="haupt" style="width:100%">Zähler starten</button>
+      <div class="fehler" id="einrichtenFehler" role="alert"></div>
+      <div class="hinweis">
+        Die Angaben bleiben in diesem Browser. Sie werden nicht übertragen und
+        landen auf keinem Server — auch nicht auf meinem.
+      </div>
+    </form>
+  </section>
+
+  <!-- ============ 3. Der Bereich selbst ============ -->
+  <section id="ansichtApp" hidden>
+
+    <div class="karte zaehler">
+      <div class="atem" aria-hidden="true"></div>
+      <div class="tage" id="zTage">0</div>
+      <div class="tage-wort" id="zTageWort">Tage rauchfrei</div>
+      <div class="uhr" id="zUhr"></div>
+      <div class="seit" id="zSeit"></div>
+    </div>
+
+    <figure class="karte spruch" style="margin-top:24px">
+      <div class="art" id="sArt"></div>
+      <blockquote id="sText"></blockquote>
+    </figure>
+
+    <div class="kacheln">
+      <div class="kachel geld">
+        <div class="k">Gespart</div>
+        <div class="v" id="kGeld">0 €</div>
+        <div class="n" id="kGeldNote"></div>
+      </div>
+      <div class="kachel">
+        <div class="k">Nicht geraucht</div>
+        <div class="v" id="kZig">0</div>
+        <div class="n" id="kZigNote"></div>
+      </div>
+      <div class="kachel zeit">
+        <div class="k">Gewonnene Lebenszeit</div>
+        <div class="v" id="kLeben">0</div>
+        <div class="n">geschätzt, 11 Min. je Zigarette</div>
+      </div>
+    </div>
+
+    <h2>Jeden Tag ein Schritt</h2>
+    <ul class="meilen" id="tage"></ul>
+    <p class="davor" id="tageDavor"></p>
+
+    <details class="mehr">
+      <summary>Einstellungen und Daten</summary>
+      <div class="karte mehr-inhalt">
+
+        <div class="abschnitt-titel">Angaben</div>
+        <label class="feld">
+          <span>Rauchfrei seit</span>
+          <input type="date" id="eStart">
+        </label>
+        <label class="feld">
+          <span>Zigaretten pro Tag davor</span>
+          <input type="number" id="eMenge" min="1" max="120" step="1">
+        </label>
+        <label class="feld">
+          <span>Preis je Schachtel in Euro</span>
+          <input type="number" id="ePreis" min="1" max="99" step="0.10">
+        </label>
+        <label class="feld">
+          <span>Zigaretten je Schachtel</span>
+          <input type="number" id="eProSchachtel" min="1" max="60" step="1">
+        </label>
+        <div class="knopf-zeile">
+          <button type="button" class="haupt" id="bSpeichern">Speichern</button>
+          <span class="fehler" id="eFehler" style="margin:0;align-self:center"></span>
+        </div>
+
+        <div class="trenner"></div>
+
+        <div class="abschnitt-titel">Rückfall</div>
+        <p style="margin:0 0 12px;font-size:14px;color:var(--muted)">
+          Passiert. Der Zähler beginnt neu, aber deine längste rauchfreie Zeit
+          bleibt stehen — das Erreichte wird nicht gelöscht.
+        </p>
+        <div class="knopf-zeile">
+          <button type="button" id="bRueckfall" class="gefahr">Rückfall eintragen, ab heute neu</button>
+        </div>
+        <div class="bestzeit" id="bestzeit"></div>
+
+        <div class="trenner"></div>
+
+        <div class="abschnitt-titel">Daten sichern</div>
+        <p style="margin:0 0 12px;font-size:14px;color:var(--muted)">
+          Alles liegt nur in diesem Browser. Für ein zweites Gerät hier
+          exportieren und dort einlesen.
+        </p>
+        <div class="knopf-zeile">
+          <button type="button" id="bExport">Exportieren</button>
+          <button type="button" id="bImport">Einlesen</button>
+          <input type="file" id="fImport" accept="application/json,.json" hidden>
+        </div>
+
+        <div class="trenner"></div>
+
+        <div class="knopf-zeile">
+          <button type="button" class="leise" id="bAbmelden">Abmelden</button>
+        </div>
+      </div>
+    </details>
+
+    <p class="fuss" id="speicherWarnung" hidden></p>
+  </section>
+
+</div>
+
+<script>
+"use strict";
+
+/* ====================================================================
+   1. Zugänge
+   --------------------------------------------------------------------
+   Hier stehen nur Prüfsummen. Aus einem Hash lassen sich weder Name noch
+   Passwort zurückrechnen — beides steht also nirgends im Quelltext, auch
+   nicht in der Fassung, die auf GitHub liegt.
+
+   Neuen Zugang anlegen: setup.html öffnen, Name und Passwort eintragen,
+   die erzeugte Zeile hier in die Liste einfügen.
+
+   Ehrlich gesagt: Das ist Verschleierung, keine Festung. Wer den Hash
+   hat, kann schwache Passwörter durchprobieren. Nimm etwas, das nicht
+   in einer Wörterliste steht.
+   ==================================================================== */
+const SALZ = "scaRnet-rauchfrei-v1";
+
+const KONTEN = [
+  { hash:"e9baa8463e3398cbeaf48a7520b3e197b11eddc60af6ffcd7838092f620fa4d0" },
+  { hash:"cc254845e459367949e126c5f6674c04252a5657a1da57c570647e375ceb2889" }
+];
+
+/* ====================================================================
+   2. SHA-256 in reinem JavaScript
+   --------------------------------------------------------------------
+   Nicht crypto.subtle, weil das einen sicheren Kontext braucht und damit
+   beim lokalen Öffnen der Datei ausfällt. Gegen die offiziellen
+   Testvektoren und gegen die .NET-Implementierung geprüft.
+   ==================================================================== */
+const K256 = [
+  0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
+  0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
+  0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,
+  0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,
+  0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,
+  0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,
+  0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,
+  0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2
+];
+const rotr = (x,n) => (x >>> n) | (x << (32 - n));
+
+function sha256(str){
+  let H = [0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+  const bytes = new TextEncoder().encode(str), len = bytes.length;
+  const total = (((len + 8) >> 6) << 6) + 64;
+  const buf = new Uint8Array(total);
+  buf.set(bytes);
+  buf[len] = 0x80;
+  const dv = new DataView(buf.buffer);
+  const bits = len * 8;
+  dv.setUint32(total - 8, Math.floor(bits / 4294967296));
+  dv.setUint32(total - 4, bits >>> 0);
+  const w = new Uint32Array(64);
+  for (let i = 0; i < total; i += 64){
+    for (let t = 0; t < 16; t++) w[t] = dv.getUint32(i + t * 4);
+    for (let t = 16; t < 64; t++){
+      const x = w[t-15], y = w[t-2];
+      const s0 = rotr(x,7) ^ rotr(x,18) ^ (x >>> 3);
+      const s1 = rotr(y,17) ^ rotr(y,19) ^ (y >>> 10);
+      w[t] = (w[t-16] + s0 + w[t-7] + s1) >>> 0;
+    }
+    let [a,b,c,d,e,f,g,h] = H;
+    for (let t = 0; t < 64; t++){
+      const S1 = rotr(e,6) ^ rotr(e,11) ^ rotr(e,25);
+      const ch = (e & f) ^ (~e & g);
+      const t1 = (h + S1 + ch + K256[t] + w[t]) >>> 0;
+      const S0 = rotr(a,2) ^ rotr(a,13) ^ rotr(a,22);
+      const maj = (a & b) ^ (a & c) ^ (b & c);
+      const t2 = (S0 + maj) >>> 0;
+      h = g; g = f; f = e; e = (d + t1) >>> 0;
+      d = c; c = b; b = a; a = (t1 + t2) >>> 0;
+    }
+    H = H.map((v,i) => (v + [a,b,c,d,e,f,g,h][i]) >>> 0);
+  }
+  return H.map(v => v.toString(16).padStart(8,"0")).join("");
+}
+
+/** Aus Name und Passwort wird die Kennung, unter der auch die Daten liegen. */
+const kennung = (name, pass) => sha256(SALZ + "|" + name.trim().toLowerCase() + "|" + pass);
+
+/* ====================================================================
+   3. Sprüche und Fakten — einer für jeden Tag des Jahres
+   --------------------------------------------------------------------
+   k: fakt = belegte Angabe, mut = Zuspruch, tipp = etwas zum Tun,
+      blick = Perspektive oder Vergleich.
+   Neue Einträge einfach anhängen; die Reihenfolge richtet sich nach dem
+   Tag und ist je Person leicht versetzt.
+   ==================================================================== */
+const SPRUECHE = [
+  {k:"fakt", t:"Zwanzig Minuten nach der letzten Zigarette sinken Puls und Blutdruck auf normale Werte. Dein Kreislauf hat schon angefangen."},
+  {k:"mut",  t:"Du musst nicht für immer nicht rauchen. Nur heute nicht. Das ist alles, was heute zählt."},
+  {k:"fakt", t:"Tabakrauch enthält rund 7.000 chemische Verbindungen, etwa 70 davon gelten als krebserzeugend. Nichts davon atmest du heute ein."},
+  {k:"tipp", t:"Wenn das Verlangen kommt: trink ein großes Glas Wasser, langsam. Es dauert selten länger als fünf Minuten, und du bist dann schon damit beschäftigt."},
+  {k:"blick",t:"Rauchen war eine Gewohnheit, kein Charakterzug. Gewohnheiten kann man ändern, Charakterzüge nur schwer. Du hast das leichtere Los gezogen."},
+  {k:"fakt", t:"Nach acht Stunden hat sich das Kohlenmonoxid in deinem Blut halbiert. Dein Blut transportiert wieder mehr Sauerstoff."},
+  {k:"mut",  t:"Der schwerste Teil liegt hinter dir, nicht vor dir. Anfangen ist die Hürde, weitermachen wird von Tag zu Tag beiläufiger."},
+  {k:"fakt", t:"Nikotin ist nach etwa zwei Stunden zur Hälfte abgebaut, nach drei Tagen ist es vollständig aus dem Körper verschwunden."},
+  {k:"tipp", t:"Räum die Aschenbecher weg, wasch die Jacke, lüfte das Auto. Der Geruch ist ein Auslöser, und du musst ihn nicht dulden."},
+  {k:"blick",t:"Eine Zigarette dauert ungefähr fünf Minuten. Bei zwanzig am Tag sind das über hundert Minuten — fast zwei Stunden, die du zurückbekommst."},
+  {k:"fakt", t:"Nach 48 Stunden beginnen sich die Nervenenden zu erholen. Geschmack und Geruch werden schärfer, oft überraschend deutlich."},
+  {k:"mut",  t:"Jedes Verlangen, das du aushältst, macht das nächste schwächer. Du trainierst gerade etwas, auch wenn es sich nicht danach anfühlt."},
+  {k:"fakt", t:"Nach 72 Stunden entspannen sich die Bronchien. Viele merken es daran, dass Treppensteigen weniger anstrengt."},
+  {k:"tipp", t:"Sag dir nicht „ich darf nicht“, sondern „ich rauche nicht“. Der Unterschied klingt klein, wirkt aber, weil das eine Verbot heißt und das andere Entscheidung."},
+  {k:"blick",t:"Nichtraucher denken nicht ständig ans Rauchen. Genau dorthin bist du unterwegs, und du bist näher dran, als es sich heute anfühlt."},
+  {k:"fakt", t:"Ein einzelnes Verlangen dauert meist drei bis fünf Minuten und flacht dann von selbst ab. Es wird nicht endlos schlimmer."},
+  {k:"mut",  t:"Du hast heute etwas getan, das Millionen Menschen aufschieben. Nämlich es einfach nicht zu tun."},
+  {k:"fakt", t:"Rauchen verengt die Blutgefäße. Nach zwei Wochen bis drei Monaten verbessert sich die Durchblutung deutlich messbar."},
+  {k:"tipp", t:"Notier dir, was du mit dem gesparten Geld vorhast. Eine abstrakte Summe motiviert weniger als ein Gegenstand, den du dir vorstellen kannst."},
+  {k:"blick",t:"Du bezahlst nicht mehr dafür, kürzer zu leben. Rein wirtschaftlich betrachtet war das ein schlechtes Geschäft, und du hast es gekündigt."},
+  {k:"fakt", t:"Nach einem Monat wird die Haut besser durchblutet. Der graue Unterton, den viele Raucher haben, verschwindet allmählich."},
+  {k:"mut",  t:"Rückschläge sind keine Niederlagen, solange du weitermachst. Die meisten, die es geschafft haben, haben es nicht beim ersten Mal geschafft."},
+  {k:"fakt", t:"Zwischen einem und neun Monaten erholen sich die Flimmerhärchen in den Bronchien. Sie befördern Schmutz wieder aus der Lunge heraus."},
+  {k:"tipp", t:"Der klassische Rückfall passiert nicht beim Verlangen, sondern beim Anlass: Feiern, Streit, Alkohol. Überleg dir vorher, was du dann tust."},
+  {k:"blick",t:"Der Husten in den ersten Wochen ist kein Rückschritt. Es ist die Lunge, die aufräumt — sie konnte es vorher nicht."},
+  {k:"fakt", t:"Nach einem rauchfreien Jahr ist das Risiko für eine koronare Herzkrankheit etwa halbiert."},
+  {k:"mut",  t:"Niemand hat es je bedauert, aufgehört zu haben. Diesen Satz hört man nie umgekehrt."},
+  {k:"fakt", t:"Rauchen erhöht den Ruhepuls um etwa zehn bis zwanzig Schläge pro Minute. Dein Herz macht jetzt jeden Tag mehrere tausend Schläge weniger."},
+  {k:"tipp", t:"Bewegung hilft doppelt: Sie überbrückt das Verlangen und macht die verbesserte Lungenfunktion sofort spürbar."},
+  {k:"blick",t:"Du warst kein schwacher Mensch, als du geraucht hast. Nikotin gehört zu den am stärksten abhängig machenden Stoffen überhaupt. Umso mehr sagt es, dass du es lässt."},
+  {k:"fakt", t:"Nach fünf Jahren nähert sich das Schlaganfallrisiko dem eines Menschen, der nie geraucht hat."},
+  {k:"mut",  t:"Heute ist ein Tag, an dem du nicht geraucht hast. Den kann dir niemand mehr nehmen — er steht für immer in der Bilanz."},
+  {k:"fakt", t:"Nach zehn rauchfreien Jahren ist das Lungenkrebsrisiko etwa halbiert im Vergleich zu jemandem, der weitergeraucht hätte."},
+  {k:"tipp", t:"Kaffee und Zigarette waren oft ein Paar. Wechsel für ein paar Wochen die Tasse, den Platz oder die Tageszeit — dann fehlt der Auslöser."},
+  {k:"blick",t:"Die Zeit vergeht sowieso. Die Frage ist nur, ob du in einem Jahr rauchfrei bist oder wieder von vorn anfängst."},
+  {k:"fakt", t:"Rauchen ist der wichtigste vermeidbare Risikofaktor für Herz-Kreislauf-Erkrankungen. Vermeidbar heißt: Du hast ihn gerade vermieden."},
+  {k:"mut",  t:"Es gibt keinen Tag, an dem eine Zigarette dich weiterbringt. Nicht heute, nicht bei Stress, nicht zur Feier. Deshalb ist die Antwort immer dieselbe."},
+  {k:"tipp", t:"Putz dir die Zähne, wenn das Verlangen kommt. Der Geschmack passt zu keiner Zigarette, und die zwei Minuten reichen meistens schon."},
+  {k:"blick",t:"Zehn Euro am Tag sind 3.650 Euro im Jahr. Dafür bekommt man einen ordentlichen Urlaub, und niemand hustet danach."},
+  {k:"fakt", t:"Nach zwei bis drei Wochen ohne Zigarette normalisiert sich die Zahl der Nikotinrezeptoren im Gehirn wieder. Das körperliche Verlangen verliert seine Grundlage."},
+  {k:"mut",  t:"Du hast dich nicht von etwas Schönem getrennt, sondern von etwas, das sich schön anfühlte, weil es den Mangel behob, den es selbst erzeugt hat."},
+  {k:"fakt", t:"Wundheilung verläuft bei Nichtrauchern deutlich schneller. Vor Operationen empfehlen Ärzte deshalb, mindestens vier Wochen vorher aufzuhören."},
+  {k:"tipp", t:"Zähl beim Verlangen langsam bis sechzig und atme dabei tief. Nicht weil Zählen magisch ist, sondern weil die Welle in der Zeit von selbst bricht."},
+  {k:"blick",t:"Kein Mensch beginnt zu rauchen, weil es ihm schmeckt. Die ersten Zigaretten schmecken scheußlich. Man muss sich das antrainieren — und man kann es wieder verlernen."},
+  {k:"fakt", t:"Raucher haben ein etwa doppelt so hohes Risiko für einen Herzinfarkt wie Nichtraucher. Diese Zahl sinkt vom ersten rauchfreien Tag an."},
+  {k:"mut",  t:"Wenn du heute nicht rauchst, hast du heute gewonnen. Morgen ist ein neues Spiel, aber der heutige Sieg bleibt in den Büchern."},
+  {k:"fakt", t:"Im Tabakrauch stecken Blausäure, Arsen, Formaldehyd, Blei und Cadmium. Nichts davon würde jemand freiwillig in ein Getränk mischen."},
+  {k:"tipp", t:"Trag etwas in der Hand, wenn dir die Hände fehlen: einen Stift, einen Schlüssel, einen Stein. Ein Teil der Gewohnheit sitzt in den Fingern, nicht in der Lunge."},
+  {k:"blick",t:"Du warst früher jemand, der raucht. Jetzt bist du jemand, der geraucht hat. Das ist grammatikalisch ein kleiner Unterschied und im Leben ein großer."},
+  {k:"fakt", t:"Rauchen verdoppelt bis vervierfacht das Schlaganfallrisiko. Nach etwa fünf rauchfreien Jahren ist dieser Zuschlag im Wesentlichen abgebaut."},
+  {k:"mut",  t:"Es wird leichter. Nicht gleichmäßig, nicht jeden Tag, aber in der Summe unaufhaltsam."},
+  {k:"fakt", t:"Etwa jeder zweite langjährige Raucher stirbt an einer Folge des Rauchens. Jeder, der aufhört, verlässt diese Statistik."},
+  {k:"tipp", t:"Erzähl es Leuten. Nicht als Ankündigung, sondern als Tatsache: Ich rauche nicht mehr. Ausgesprochene Sätze halten besser."},
+  {k:"blick",t:"Der Griff zur Schachtel war nie eine Entscheidung, sondern ein Reflex. Reflexe verlernt man durch Wiederholung — und du wiederholst gerade das Gegenteil."},
+  {k:"fakt", t:"Rauchen beschleunigt den Abbau von Kollagen in der Haut. Aufhören stoppt nicht die Zeit, aber es nimmt der Haut einen Beschleuniger weg."},
+  {k:"mut",  t:"Niemand muss den Rest seines Lebens durchhalten. Man muss nur die nächsten fünf Minuten durchhalten, und die kommen einzeln."},
+  {k:"fakt", t:"Nikotin erreicht das Gehirn nach etwa sieben Sekunden. Diese Geschwindigkeit macht die Abhängigkeit so stark — und erklärt, warum es keine Charakterfrage ist."},
+  {k:"tipp", t:"Die schlimmsten Momente kommen unerwartet. Leg dir einen Satz zurecht, den du dir dann sagst. Egal welchen, Hauptsache er ist schon fertig."},
+  {k:"blick",t:"Rechne nicht, was Rauchen gekostet hat. Rechne, was Nichtrauchen ab heute einbringt. Das eine ist vorbei, das andere fängt an."},
+  {k:"fakt", t:"Passivrauch enthält dieselben Giftstoffe wie der inhalierte Rauch. Wer aufhört, schützt nicht nur sich."},
+  {k:"mut",  t:"Du hast schon Dinge geschafft, die schwerer waren als das hier. Nur waren sie damals nicht so gut sichtbar."},
+  {k:"fakt", t:"Bei Rauchern heilt der Zahnhalteapparat schlechter, und Parodontitis verläuft schwerer. Zahnärzte erkennen Raucher oft schon am Zahnfleisch."},
+  {k:"tipp", t:"Iss etwas Knackiges statt zu rauchen: Karotte, Apfel, Paprika. Es beschäftigt Mund und Hände zugleich, und das ist mehr als die Hälfte der Sache."},
+  {k:"blick",t:"Eine Schachtel Zigaretten ist ein Kaffee mit Kuchen. Ein Monat Rauchen ist ein Wochenende in einer anderen Stadt. Ein Jahr ist mehr, als viele im Urlaub ausgeben."},
+  {k:"fakt", t:"Die Lungenfunktion nimmt bei Rauchern etwa doppelt so schnell ab wie bei Nichtrauchern. Nach dem Aufhören fällt sie wieder auf die normale Alterskurve zurück."},
+  {k:"mut",  t:"Das Verlangen ist nicht dein Wille. Es ist ein Restsignal aus einer alten Verdrahtung. Du musst es nicht erfüllen, nur abwarten."},
+  {k:"fakt", t:"Rauchen erhöht das Risiko für Typ-2-Diabetes um etwa dreißig bis vierzig Prozent. Nach dem Aufhören sinkt es allmählich wieder."},
+  {k:"tipp", t:"Meide in den ersten Wochen Alkohol oder trink deutlich weniger. Die meisten Rückfälle passieren nicht bei Stress, sondern bei gelöster Stimmung."},
+  {k:"blick",t:"Die Tabakindustrie hat jahrzehntelang gewusst, was Nikotin tut, und es Kundenbindung genannt. Du hast diese Bindung gerade gelöst."},
+  {k:"fakt", t:"Bereits nach wenigen rauchfreien Wochen berichten viele von besserem Schlaf. Nikotin ist ein Aufputschmittel und stört die Schlafarchitektur."},
+  {k:"mut",  t:"Wenn du zurückschaust und dich fragst, warum du je geraucht hast, dann ist es geschafft. Dieser Moment kommt, und er kommt leiser als erwartet."},
+  {k:"fakt", t:"Rauchen verengt die feinen Gefäße in der Netzhaut und erhöht das Risiko für Makuladegeneration erheblich. Auch die Augen profitieren."},
+  {k:"tipp", t:"Belohne dich sichtbar. Leg das gesparte Geld wirklich beiseite, in ein Glas oder auf ein eigenes Konto. Eine Zahl auf dem Bildschirm wirkt weniger als ein wachsender Stapel."},
+  {k:"blick",t:"Es gibt keinen Raucher, der nicht irgendwann aufhören will. Die Frage war nie ob, sondern wann. Du hast wann beantwortet."},
+  {k:"fakt", t:"Etwa ein Drittel aller Krebstodesfälle steht in Zusammenhang mit dem Rauchen. Es ist der größte einzelne vermeidbare Faktor."},
+  {k:"mut",  t:"Du bist nicht in einem Kampf. Du hörst nur auf, etwas zu tun. Das ist weniger heldenhaft und deutlich einfacher, als es sich anfühlt."},
+  {k:"fakt", t:"Die Knochendichte nimmt bei Rauchern schneller ab, Brüche heilen langsamer. Der Zusammenhang ist gut belegt und wird selten erwähnt."},
+  {k:"tipp", t:"Wenn du rauchende Freunde hast: Bitte sie, dir keine anzubieten. Die meisten helfen gern, wenn man sie konkret fragt."},
+  {k:"blick",t:"Rauchen hat dir nichts gegeben, was du nicht auch ohne hättest. Es hat nur einen Mangel behoben, den es vorher selbst geschaffen hat. Ein perfekter Kreis, und du bist ausgestiegen."},
+  {k:"fakt", t:"Nach etwa drei Monaten sind Lungenfunktion und Kreislauf so weit verbessert, dass viele es beim Sport deutlich merken. Weniger Seitenstechen, längere Strecken."},
+  {k:"mut",  t:"Kein Verlangen hat je ewig gedauert. Nicht ein einziges, in der ganzen Geschichte. Das ist eine ziemlich verlässliche Bilanz."},
+  {k:"fakt", t:"Raucherinnen kommen im Schnitt ein bis zwei Jahre früher in die Menopause. Der Zusammenhang gilt als gut belegt."},
+  {k:"tipp", t:"Ändere die Pausenroutine bei der Arbeit. Wenn du früher zum Rauchen rausgegangen bist, geh trotzdem raus — nur ohne Zigarette. Frische Luft war immer der bessere Teil."},
+  {k:"blick",t:"Der Rauch war nie draußen. Er war in deinen Vorhängen, in der Jacke, im Auto, in den Fingern. Das legt sich jetzt, Woche für Woche."},
+  {k:"fakt", t:"Nikotin verengt die Blutgefäße und senkt die Hauttemperatur an Händen und Füßen messbar. Viele Aufhörer berichten von wärmeren Füßen."},
+  {k:"mut",  t:"Du wirst nie wieder in der Situation sein, den ersten Tag hinter dich bringen zu müssen. Der ist erledigt, ein für alle Mal."},
+  {k:"fakt", t:"Die Zahl der Geschmacksknospen bleibt gleich, aber ihre Empfindlichkeit erholt sich. Deshalb schmecken Erdbeeren nach ein paar Wochen wieder wie Erdbeeren."},
+  {k:"tipp", t:"Schreib auf, warum du aufgehört hast. Nicht im Kopf, auf Papier. An schwachen Tagen ist der eigene Zettel überzeugender als jeder gute Ratschlag."},
+  {k:"blick",t:"Rauchen war Zeitvertreib in dem Sinne, dass es Zeit vertrieben hat. Die kommt jetzt zurück, und sie ist vielleicht das unterschätzteste Geschenk daran."},
+  {k:"fakt", t:"Rauchen erhöht das Risiko für Erkrankungen des Zahnfleischs, der Bandscheiben und der Sehnen. Nikotin verschlechtert die Versorgung aller schlecht durchbluteten Gewebe."},
+  {k:"mut",  t:"Rückfälle sind Daten, keine Urteile. Sie zeigen dir, in welcher Situation du eine bessere Antwort brauchst."},
+  {k:"fakt", t:"In Deutschland sterben jährlich etwa 127.000 Menschen an den Folgen des Rauchens. Das entspricht der Einwohnerzahl einer mittleren Großstadt."},
+  {k:"tipp", t:"Nimm dir in den ersten Wochen nicht auch noch eine Diät vor. Eine große Umstellung reicht. Das Gewicht kannst du später anschauen."},
+  {k:"blick",t:"Wenn Zigaretten heute erfunden würden, bekämen sie keine Zulassung. Du benutzt einfach ein Produkt nicht mehr, das aus einer anderen Zeit übrig ist."},
+  {k:"fakt", t:"Nach etwa einem Jahr hat sich das Risiko einer koronaren Herzkrankheit halbiert. Nach fünfzehn Jahren entspricht es dem von Menschen, die nie geraucht haben."},
+  {k:"mut",  t:"Du machst das nicht für die Statistik. Du machst es für einen ganz normalen Dienstagmorgen in fünfzehn Jahren, an dem du einfach Luft hast."},
+  {k:"fakt", t:"Der Körper beginnt sofort mit der Reparatur, nicht irgendwann. Zwanzig Minuten nach der letzten Zigarette ist der erste Schritt schon getan."},
+  {k:"tipp", t:"Wenn das Verlangen kommt, ändere den Ort. Steh auf, geh in einen anderen Raum, ans Fenster. Gewohnheiten hängen an Orten, und Orte kann man wechseln."},
+  {k:"blick",t:"Die meisten Raucher unterschätzen, wie viel sie ausgeben, weil sie in Schachteln denken statt in Jahren. In Jahren gerechnet ist es eine erschreckende Zahl."},
+  {k:"fakt", t:"Rauchen schwächt das Immunsystem. Nichtraucher haben statistisch weniger und kürzere Atemwegsinfekte."},
+  {k:"mut",  t:"Es gibt kein Zurück zu einer harmlosen Gelegenheitszigarette. Das ist keine Drohung, sondern eine Erleichterung: Du musst nicht mehr verhandeln."},
+  {k:"fakt", t:"Etwa siebzig Prozent der Raucher geben an, aufhören zu wollen. Du gehörst zu dem Teil, der es nicht nur angibt."},
+  {k:"tipp", t:"Räum das Rauchzubehör nicht auf, sondern weg. Nicht in die Schublade, sondern in den Müll. Aufbewahren heißt eine Tür offen lassen."},
+  {k:"blick",t:"Du hast einen Vertrag gekündigt, in dem stand: Du zahlst täglich, und wir nehmen dir dafür Zeit. Kein Gericht hätte den durchgelassen."},
+  {k:"fakt", t:"Nach zwei Tagen ohne Zigarette ist der Geruchssinn schon deutlich besser. Manche finden das anfangs unangenehm — die Welt riecht plötzlich sehr nach Welt."},
+  {k:"mut",  t:"Der Wunsch nach einer Zigarette ist nicht dasselbe wie die Notwendigkeit, eine zu rauchen. Zwischen beidem liegt genau der Raum, in dem du gerade stehst."},
+  {k:"fakt", t:"Rauchen verschlechtert die Fruchtbarkeit bei Frauen und Männern. Bei beiden verbessern sich die Werte nach dem Aufhören wieder."},
+  {k:"tipp", t:"Wenn du nachts wach wirst und an Zigaretten denkst: Trink Wasser und geh wieder ins Bett. Nachts ist jeder Vorsatz dünner, und morgens ist alles wieder normal."},
+  {k:"blick",t:"Rauchen wirkt entspannend, weil es einen Entzug beendet, den es selbst verursacht hat. Sobald der Entzug vorbei ist, brauchst du die Entspannung nicht mehr."},
+  {k:"fakt", t:"Die Weltgesundheitsorganisation zählt Tabak zu den größten vermeidbaren Gesundheitsrisiken überhaupt, mit über acht Millionen Todesfällen im Jahr."},
+  {k:"mut",  t:"Heute ist der Tag, an dem du gestern noch nicht geglaubt hättest, dass du ihn schaffst. Und du bist mitten drin."},
+  {k:"fakt", t:"Chronisch obstruktive Lungenerkrankung entsteht in den meisten Fällen durch Rauchen. Sie ist nicht heilbar, aber ihr Fortschreiten lässt sich durch Aufhören deutlich bremsen."},
+  {k:"tipp", t:"Belohn dich nach der ersten Woche mit etwas Konkretem. Nicht metaphorisch — kauf dir etwas. Das Gehirn lernt aus Belohnungen, und jetzt lernt es das Richtige."},
+  {k:"blick",t:"Die Zigarette danach, die Zigarette zum Kaffee, die Zigarette bei Stress: Es waren immer dieselbe Zigarette mit verschiedenen Ausreden."},
+  {k:"fakt", t:"Rauchen erhöht den Bedarf an Vitamin C erheblich. Nach dem Aufhören arbeitet der Körper wieder mit dem, was auf dem Teller landet."},
+  {k:"mut",  t:"Es ist kein Verzicht, wenn du etwas loslässt, das dir schadet. Verzicht wäre, auf etwas Gutes zu verzichten."},
+  {k:"fakt", t:"Bei Rauchern ist das Risiko für Blasenkrebs etwa verdreifacht. Die Giftstoffe verlassen den Körper über die Niere und stehen dort still."},
+  {k:"tipp", t:"Setz dir keine Frist wie ein halbes Jahr. Setz dir heute. Der Tag ist eine Einheit, die man schafft, ein halbes Jahr ist eine Einheit, an der man scheitert."},
+  {k:"blick",t:"Du hast früher Geld dafür bezahlt, dass dir jemand Feuer gibt. Rückblickend eine der eigenartigsten Vereinbarungen des Alltags."},
+  {k:"fakt", t:"Nach etwa acht Stunden ist der Sauerstoffgehalt im Blut wieder normal. Kohlenmonoxid bindet zweihundertmal stärker an Hämoglobin als Sauerstoff — und war deshalb ein Platzräuber."},
+  {k:"mut",  t:"Niemand sieht dir an, wie oft du heute Nein gesagt hast. Deshalb sag es dir selbst, wenigstens einmal am Abend."},
+  {k:"fakt", t:"Rauchen erhöht das Risiko für Rückenschmerzen und Bandscheibenprobleme, weil die Bandscheiben schlechter versorgt werden. Sie haben keine eigenen Blutgefäße."},
+  {k:"tipp", t:"Der schwierigste Moment ist oft der erste Kaffee. Trink ihn die ersten Wochen im Stehen, oder an einem anderen Platz. Die Verknüpfung löst sich schneller als man denkt."},
+  {k:"blick",t:"Rauchen macht nicht schlank, sondern nur appetitlos. Das ist ein Unterschied, den die Zigarettenwerbung jahrzehntelang bewusst verwischt hat."},
+  {k:"fakt", t:"Bei Männern ist Rauchen ein eigenständiger Risikofaktor für Erektionsstörungen, weil es die feinen Gefäße schädigt. Auch das bessert sich."},
+  {k:"mut",  t:"Es gibt keinen Grund, heute anzufangen zu zweifeln. Was gestern funktioniert hat, funktioniert heute auch."},
+  {k:"fakt", t:"Nach etwa neun Monaten haben sich die Flimmerhärchen in den Atemwegen weitgehend erholt. Sie schaffen Schleim und Schmutz wieder eigenständig nach draußen."},
+  {k:"tipp", t:"Halte etwas Süßes bereit, aber Kleines. Ein Stück Zartbitterschokolade schlägt eine Tafel, und beides schlägt eine Zigarette."},
+  {k:"blick",t:"Wenn dich früher jemand gefragt hätte, ob du 3.650 Euro im Jahr für Atemnot zahlen würdest, hättest du gelacht. Genau das war der Deal."},
+  {k:"fakt", t:"Rauchen verdoppelt bis verzehnfacht das Risiko für Lungenkrebs, je nach Menge und Dauer. Nach zehn rauchfreien Jahren ist der Zuschlag etwa halbiert."},
+  {k:"mut",  t:"Du hast heute nicht geraucht. Wenn das leicht war, gut. Wenn es schwer war, umso besser — dann zählt es doppelt."},
+  {k:"fakt", t:"Der Körper stellt schon in den ersten Tagen um. Was sich wie Krankheit anfühlt, ist Reparatur unter laufendem Betrieb."},
+  {k:"tipp", t:"Wenn du im Auto geraucht hast: Sauge es aus, wisch das Armaturenbrett, lass es lüften. Ein neutrales Auto verlangt nichts von dir."},
+  {k:"blick",t:"Es hat nie jemand auf dem Sterbebett gesagt, er hätte gern mehr geraucht. Es gibt dagegen eine ganze Literatur des Bedauerns."},
+  {k:"fakt", t:"Bei Rauchern verläuft eine Grippe im Schnitt schwerer und länger. Die Schleimhäute der Atemwege sind ihre erste Abwehrlinie, und Rauch schwächt sie."},
+  {k:"mut",  t:"Was du gerade machst, ist unspektakulär und schwer. Genau darin liegt der Wert."},
+  {k:"fakt", t:"Nikotinkaugummi und Pflaster verdoppeln die Erfolgsquote gegenüber dem Aufhören ohne Hilfsmittel. Es ist keine Schwäche, sie zu benutzen."},
+  {k:"tipp", t:"Nimm dir vor, in einer schwierigen Situation zehn Minuten zu warten. Nicht für immer verzichten — nur zehn Minuten. Danach ist die Entscheidung meist von selbst gefallen."},
+  {k:"blick",t:"Der Rauch war immer der Preis, nicht das Produkt. Verkauft wurde eine Pause, ein Moment, eine Zugehörigkeit. Die kannst du alle behalten."},
+  {k:"fakt", t:"Rauchen erhöht das Risiko für Katarakt, also die Linsentrübung im Auge, deutlich. Der Zusammenhang gilt als gesichert."},
+  {k:"mut",  t:"Es geht nicht darum, stark zu sein. Es geht darum, in einem einzigen Moment nichts zu tun. Nichtstun kann jeder."},
+  {k:"fakt", t:"Etwa die Hälfte der Menschen, die dauerhaft aufhören, hat es vorher mehrfach versucht. Vorherige Versuche sind Übung, nicht Versagen."},
+  {k:"tipp", t:"Führ eine Woche lang Buch, wann das Verlangen kam. Du wirst Muster sehen, und Muster kann man umgehen. Ohne Notizen bleibt es Zufall."},
+  {k:"blick",t:"Deine Lunge hat nie etwas dafür verlangt, dass sie das mitgemacht hat. Sie fängt einfach an, es besser zu machen."},
+  {k:"fakt", t:"Rauchen senkt das gute HDL-Cholesterin. Nach dem Aufhören steigt es innerhalb weniger Wochen wieder an."},
+  {k:"tipp", t:"Plan im Voraus, nicht im Moment. Wenn X passiert, mache ich Y. Solche Wenn-dann-Sätze funktionieren nachweislich besser als guter Vorsatz."},
+  {k:"mut",  t:"Du bist heute weiter als jeder, der es noch vor sich hat. Auch weiter als du selbst letzte Woche."},
+  {k:"blick",t:"Leichte Zigaretten waren nie leichter. Die Löcher im Filter haben nur die Messmaschine getäuscht, nicht die Lunge. Der Begriff ist inzwischen verboten."},
+  {k:"fakt", t:"Rauchen erhöht das Thromboserisiko, besonders in Kombination mit der Pille. Nach dem Aufhören normalisiert sich die Blutgerinnung wieder."},
+  {k:"tipp", t:"Wenn dich das Verlangen packt, prüf erst vier Dinge: hungrig, wütend, einsam, müde. Meistens ist es eines davon, und keines davon braucht eine Zigarette."},
+  {k:"mut",  t:"Es ist völlig egal, wie viele Jahre du geraucht hast. Der Körper fragt nicht nach der Vergangenheit, er fängt einfach an zu reparieren."},
+  {k:"blick",t:"Du hast dir früher jedes Mal, wenn du gewartet hast, eine angesteckt. Jetzt wartest du einfach — und stellst fest, dass Warten geht."},
+  {k:"fakt", t:"Rauchen erhöht das Risiko für Bauchaortenaneurysmen deutlich. Es ist bei dieser Erkrankung der wichtigste einzelne Risikofaktor."},
+  {k:"tipp", t:"Halte in den ersten Wochen die Hände beschäftigt, wenn du telefonierst. Viele haben genau dabei geraucht, ohne es zu merken."},
+  {k:"mut",  t:"Der Körper vergibt schneller, als man erwartet. Er trägt es dir nicht nach."},
+  {k:"blick",t:"Das Ritual war nie die Zigarette, sondern die Unterbrechung. Die Unterbrechung darfst du behalten, sie kostet nur nichts mehr."},
+  {k:"fakt", t:"Rauchen verzögert die Heilung von Magengeschwüren und erhöht das Risiko ihres Wiederauftretens erheblich."},
+  {k:"tipp", t:"Sag im Restaurant oder auf Feiern gleich am Anfang, dass du nicht rauchst. Danach fragt niemand mehr, und du musst nicht ständig neu entscheiden."},
+  {k:"mut",  t:"Jeder rauchfreie Tag ist ein Tag, an dem dein Körper etwas repariert hat, was du gar nicht siehst. Er arbeitet auch, wenn du nicht hinschaust."},
+  {k:"blick",t:"Zigaretten wurden mit Freiheit beworben. Das Absurde daran merkt man erst, wenn man morgens im Regen vor der Tür steht, weil man muss."},
+  {k:"fakt", t:"Bei Rauchern tritt Hörverlust im Alter häufiger auf. Das Innenohr ist auf feinste Blutgefäße angewiesen, und die reagieren empfindlich auf Nikotin."},
+  {k:"tipp", t:"Wenn du merkst, dass du an Zigaretten denkst: Sag laut, was du gerade wirklich brauchst. Meist ist es Pause, Luft oder Ruhe. Alles davon geht ohne Rauch."},
+  {k:"mut",  t:"Du hast nicht aufgegeben. Du hast etwas aufgegeben. Das erste ist Niederlage, das zweite ist Entscheidung."},
+  {k:"blick",t:"Rechne mal die Wege zusammen: zum Automaten, zum Kiosk, raus vor die Tür, zurück. Über Jahre gerechnet bist du Kilometer für Zigaretten gelaufen."},
+  {k:"fakt", t:"Nach etwa zwei Wochen bis drei Monaten steigt die Lungenkapazität messbar an, oft um bis zu zehn Prozent."},
+  {k:"tipp", t:"Wenn der Drang kommt, atme viermal langsam ein und sechsmal langsam aus. Das verlängerte Ausatmen beruhigt das Nervensystem — dieselbe Wirkung, die du früher der Zigarette zugeschrieben hast."},
+  {k:"mut",  t:"Es gibt Tage, an denen du nicht daran denkst. Die werden mehr. Irgendwann sind sie die Regel."},
+  {k:"blick",t:"Du bist nicht der Typ, der es nicht schafft. Du bist der Typ, der es gerade tut. Das ist nicht dasselbe wie hoffen."},
+  {k:"fakt", t:"Rauchen ist ein Risikofaktor für Rheumatoide Arthritis und verschlechtert deren Verlauf. Nichtrauchen ist Teil jeder Behandlungsempfehlung."},
+  {k:"tipp", t:"Wechsel die Marke deines Kaugummis oder deines Tees, wenn dir alles zu vertraut vorkommt. Neue Reize helfen, alte Verknüpfungen zu überschreiben."},
+  {k:"mut",  t:"Was du gerade tust, wird niemand feiern. Es ist trotzdem eine der wirksamsten Entscheidungen, die ein Mensch für seine Gesundheit treffen kann."},
+  {k:"blick",t:"Ein Raucher trifft am Tag zwanzig kleine Entscheidungen. Du triffst eine, und die gilt für den ganzen Tag. Unterm Strich ist Nichtrauchen weniger Arbeit."},
+  {k:"fakt", t:"Zahnverfärbungen durch Teer und Nikotin entstehen weiter, solange geraucht wird. Nach dem Aufhören lassen sie sich dauerhaft entfernen."},
+  {k:"tipp", t:"Wenn du eine schwere Woche vor dir hast, verschieb nicht das Aufhören, sondern plane die Woche anders. Schwere Wochen kommen immer wieder."},
+  {k:"mut",  t:"Das Verlangen kommt in Wellen, nicht als Flut. Wellen laufen aus. Du musst nur stehen bleiben."},
+  {k:"blick",t:"Rauchen war das Einzige, wofür du zuverlässig jeden Tag Zeit gefunden hast. Stell dir vor, was mit dieser Zuverlässigkeit sonst noch möglich ist."},
+  {k:"fakt", t:"Rauchen erhöht das Risiko für Schuppenflechte und verschlechtert bestehende Hauterkrankungen. Die Zusammenhänge sind gut dokumentiert."},
+  {k:"tipp", t:"Nimm dir jeden Sonntag eine Minute, um auf den Zähler zu schauen. Nicht ständig, aber regelmäßig. Fortschritt, den man nicht anschaut, motiviert nicht."},
+  {k:"mut",  t:"Du hast heute Geld gespart, Zeit gespart und deinem Körper eine Pause gegeben. Drei Dinge, an einem einzigen unspektakulären Tag."},
+  {k:"blick",t:"Wer sagt, er könne jederzeit aufhören, hat es meist noch nicht versucht. Du weißt jetzt, was es wirklich bedeutet — und machst es trotzdem."},
+  {k:"fakt", t:"Bei Operationen unter Vollnarkose haben Raucher ein höheres Risiko für Komplikationen der Atemwege. Vier bis acht rauchfreie Wochen vorher senken es deutlich."},
+  {k:"tipp", t:"Wenn dir langweilig ist und du deshalb ans Rauchen denkst: Langeweile ist ein Signal, nicht ein Notfall. Mach etwas mit den Händen, egal was."},
+  {k:"mut",  t:"Die Zigarette hat dir nie geholfen. Sie hat nur aufgehört, dich zu quälen. Der Unterschied wird jeden Tag deutlicher."},
+  {k:"blick",t:"Nach einem Jahr hast du etwa 7.300 Zigaretten nicht geraucht, wenn du bei zwanzig am Tag warst. Als Stapel wäre das ein halber Meter."},
+  {k:"fakt", t:"Nikotin steigert kurzfristig die Aufmerksamkeit, senkt sie aber langfristig durch die Entzugsphasen zwischen den Zigaretten. Nichtraucher sind im Tagesverlauf gleichmäßiger konzentriert."},
+  {k:"tipp", t:"Behalte den ersten Kaffee, aber nimm das Frühstück dazu. Ein voller Magen dämpft das Verlangen messbar."},
+  {k:"mut",  t:"Du kannst nicht kontrollieren, ob das Verlangen kommt. Nur, was du dann machst. Genau da liegt deine ganze Macht, und sie reicht."},
+  {k:"blick",t:"Man wird nicht Nichtraucher, indem man das Rauchen bekämpft. Man wird es, indem man irgendwann vergisst, dass es eine Option war."},
+  {k:"fakt", t:"E-Zigaretten sind kein harmloser Ausweg. Sie helfen manchen beim Umstieg, sind aber nicht risikofrei und erhalten die Nikotinabhängigkeit."},
+  {k:"tipp", t:"Wenn du im Urlaub bist, sei besonders wachsam. Ferien lösen Regeln auf, und viele Rückfälle passieren am Strand, nicht im Büro."},
+  {k:"mut",  t:"Der Tag, an dem du merkst, dass du gar nicht mehr daran gedacht hast, kommt. Bei den meisten irgendwann im zweiten oder dritten Monat."},
+  {k:"blick",t:"Rauchen hat dich nie beruhigt. Nikotin erhöht Puls und Blutdruck. Was sich wie Ruhe anfühlte, war das Ende eines Alarms."},
+  {k:"fakt", t:"Rauchen verschlechtert die Prognose bei fast jeder Krebserkrankung, auch wenn sie nichts mit der Lunge zu tun hat. Aufhören lohnt sich in jedem Stadium."},
+  {k:"tipp", t:"Mach eine Liste mit fünf Dingen, die genau drei Minuten dauern. Wasser holen, Fenster öffnen, Hände waschen, ums Haus gehen, Zähne putzen. Länger dauert eine Welle nicht."},
+  {k:"mut",  t:"Es ist normal, dass es an manchen Tagen wieder schwerer wird. Das heißt nicht, dass es rückwärts geht."},
+  {k:"blick",t:"Ein Nichtraucher denkt beim Warten am Bahnsteig nichts. Er wartet einfach. Dieses Nichts ist der eigentliche Gewinn."},
+  {k:"fakt", t:"Rauchen erhöht das Risiko für Zahnverlust deutlich. Implantate heilen bei Rauchern schlechter ein, weshalb viele Zahnärzte darauf hinweisen."},
+  {k:"tipp", t:"Wenn du Gewicht befürchtest: Der Durchschnitt liegt bei wenigen Kilo, und die verteilen sich über Monate. Gegen die Gesundheitsbilanz ist das ein sehr guter Handel."},
+  {k:"mut",  t:"Du bist nicht kurz davor, zu scheitern. Du bist mitten in etwas, das funktioniert."},
+  {k:"blick",t:"Rauchen war eine Antwort auf jede Frage: Freude, Ärger, Langeweile, Erfolg. Eine Antwort, die auf alles passt, ist meistens keine gute Antwort."},
+  {k:"fakt", t:"Der Blutdruck sinkt nach dem Aufhören im Schnitt messbar. Bei manchen reicht das, um Medikamente reduzieren zu können — was natürlich der Arzt entscheidet."},
+  {k:"tipp", t:"Räum die Feuerzeuge aus allen Jacken. Nicht wegen der Feuerzeuge, sondern weil das Suchen ein Teil des Rituals war und das Finden eine Einladung ist."},
+  {k:"mut",  t:"Es zählt nicht, ob es dir leicht fällt. Es zählt nur, dass du es machst."},
+  {k:"blick",t:"Die schlimmsten Tage waren die ersten drei. Alles danach ist Verwaltung eines bestehenden Zustands, nicht mehr Umbau."},
+  {k:"fakt", t:"Nach dem Aufhören verbessert sich die Sauerstoffversorgung der Muskulatur. Beim Ausdauersport ist das nach wenigen Wochen deutlich spürbar."},
+  {k:"tipp", t:"Nimm für Notfälle ein Bonbon oder einen Kaugummi mit — aber nur eines. Ein Vorrat wird zum Ersatzritual, eine Notreserve bleibt eine Notreserve."},
+  {k:"mut",  t:"Jeder, der es geschafft hat, hat irgendwann genau da gestanden, wo du heute stehst. Ohne Ausnahme."},
+  {k:"blick",t:"Du hast dir früher Zeitdruck gemacht, um noch eine zu rauchen. Diesen Druck gibt es nicht mehr, und er kommt nicht zurück."},
+  {k:"fakt", t:"Rauchen ist bei jungen Menschen der wichtigste Risikofaktor für einen Herzinfarkt vor dem fünfzigsten Lebensjahr."},
+  {k:"tipp", t:"Wenn du dich schwach fühlst, lies noch mal deine Gründe. Nicht die von anderen, deine eigenen. Dein Zettel schlägt jedes Argument."},
+  {k:"mut",  t:"Es geht nicht um Willensstärke. Es geht darum, den Moment zu überstehen. Der Moment ist kurz, und du bist länger da."},
+  {k:"blick",t:"In zehn Jahren wirst du dich nicht daran erinnern, wie schwer der 43. Tag war. Aber du wirst rauchfrei sein."},
+  {k:"fakt", t:"Rauchen verstärkt das Risiko für Osteoporose und verzögert die Heilung von Knochenbrüchen. Chirurgen weisen deshalb ausdrücklich darauf hin."},
+  {k:"tipp", t:"Ersetz nicht Zigaretten durch Zählen von Kalorien oder Alkohol. Ein Loch füllt man nicht mit einem anderen Loch."},
+  {k:"mut",  t:"Du hast dich entschieden. Alles danach ist nur noch das Ausführen dieser einen Entscheidung."},
+  {k:"blick",t:"Wenn Rauchen wirklich Genuss wäre, würden es Raucher genießen. Die meisten merken die meisten Zigaretten gar nicht."},
+  {k:"fakt", t:"Nach etwa sechs Monaten haben Husten und Verschleimung bei den meisten deutlich abgenommen. Bei starken Rauchern dauert es länger, aber es kommt."},
+  {k:"tipp", t:"Wenn du dich beim Rauchen entspannt hast, brauchst du einen neuen Weg dorthin. Zehn Minuten draußen ohne Handy erfüllen die Aufgabe fast genauso gut."},
+  {k:"mut",  t:"Dass du heute wieder hierher schaust, heißt, dass es dir wichtig ist. Wichtiges gelingt öfter."},
+  {k:"blick",t:"Für den Preis von zwanzig Jahren Rauchen bekommt man ein Auto. Ein gutes."},
+  {k:"fakt", t:"Rauchen erhöht das Risiko für Entzündungen im Zahnfleisch, weil es die Immunantwort im Mund dämpft. Deshalb bluten Raucherzahnfleisch oft weniger, obwohl es kränker ist."},
+  {k:"tipp", t:"Kündige es nicht als Versuch an. Sag nicht, du versuchst aufzuhören. Sag, du rauchst nicht mehr. Sprache formt Erwartung, auch die eigene."},
+  {k:"mut",  t:"Es gibt keine halbe Sache mehr. Diese Klarheit ist unbequem und gleichzeitig eine große Entlastung."},
+  {k:"blick",t:"Das Schwierigste war nie, nicht zu rauchen. Es war, sich vorzustellen, wie es ohne geht. Genau das erledigt sich mit jedem Tag von selbst."},
+  {k:"fakt", t:"Nach etwa zwei Tagen ist Nikotin fast vollständig abgebaut. Was danach kommt, ist nicht mehr chemisch, sondern Gewohnheit — und die reagiert auf Wiederholung."},
+  {k:"tipp", t:"Wenn du nach dem Essen geraucht hast, steh direkt auf und geh ein paar Schritte. Die Verknüpfung sitzt am Sitzenbleiben."},
+  {k:"mut",  t:"Du bist heute kein Raucher, der nicht raucht. Du bist ein Nichtraucher. Der Unterschied wächst mit jedem Tag."},
+  {k:"blick",t:"Zigaretten waren dein zuverlässigster Begleiter — und der einzige, der dir dabei Geld abgenommen hat."},
+  {k:"fakt", t:"Rauchen verschlechtert die Wirksamkeit einiger Medikamente, weil es Abbauwege in der Leber beschleunigt. Nach dem Aufhören ändert sich die Wirkung mancher Mittel, was Ärzte berücksichtigen."},
+  {k:"tipp", t:"Schlaf in den ersten Wochen bewusst mehr. Müdigkeit ist der zuverlässigste Wegbereiter für Rückfälle, und Schlaf ist die einfachste Gegenmaßnahme."},
+  {k:"mut",  t:"Jeder Tag ohne Zigarette ist ein Tag, den du in zwanzig Jahren noch haben wirst."},
+  {k:"blick",t:"Man raucht nicht, weil man will. Man raucht, weil man aufgehört hat, sich zu fragen. Du hast wieder angefangen zu fragen."},
+  {k:"fakt", t:"Der Kohlenmonoxidwert in der Atemluft von Rauchern ist deutlich erhöht und normalisiert sich innerhalb eines Tages. Es ist der schnellste messbare Erfolg überhaupt."},
+  {k:"tipp", t:"Wenn du Stress hast, mach das Gegenteil von früher: geh nicht raus zum Rauchen, sondern trink etwas Warmes im Sitzen. Neue Wege müssen erst angelegt werden."},
+  {k:"mut",  t:"Es ist nicht wichtig, ob du heute stolz bist. Es ist wichtig, dass du es durchgezogen hast. Stolz kommt später und von allein."},
+  {k:"blick",t:"Du zahlst jetzt nichts mehr dafür, kurzatmig zu werden. Rein betriebswirtschaftlich war das die einfachste Einsparung deines Lebens."},
+  {k:"fakt", t:"Die Zahl der Raucher in Deutschland sinkt seit Jahren. Du bist Teil eines Trends, nicht eine Ausnahme."},
+  {k:"tipp", t:"Wenn du rückfällig wirst: nicht die ganze Schachtel. Eine Zigarette ist ein Ausrutscher, eine Schachtel ist eine Entscheidung. Der Unterschied liegt bei dir."},
+  {k:"mut",  t:"Das Verlangen wird schwächer, auch wenn du das an einem schlechten Tag nicht glaubst. Die Kurve zeigt nach unten, auch wenn sie zackt."},
+  {k:"blick",t:"Rauchen war der Beweis, dass man etwas jeden Tag tun kann, ohne es zu wollen. Nichtrauchen ist der Beweis, dass es auch anders geht."},
+  {k:"fakt", t:"Rauchen erhöht das Risiko für Erkrankungen der Mundhöhle, des Rachens, der Speiseröhre, des Magens, der Bauchspeicheldrüse, der Nieren und der Blase. Der Rauch bleibt nicht in der Lunge."},
+  {k:"tipp", t:"Trink mehr Wasser als sonst, besonders in den ersten Tagen. Es hilft beim Ausscheiden und gibt den Händen etwas zu tun."},
+  {k:"mut",  t:"Du hast eine Sache aufgegeben und dafür viele zurückbekommen. Der Handel war unfair — zu deinen Gunsten."},
+  {k:"blick",t:"Zigarettenpausen waren nie Pausen von der Arbeit. Sie waren Arbeit für die Sucht. Deine Pausen gehören jetzt wieder dir."},
+  {k:"fakt", t:"Rauchen erhöht das Risiko für Frühgeburten und Untergewicht bei Neugeborenen erheblich. Auch Passivrauch wirkt hier messbar."},
+  {k:"tipp", t:"Feiere Zwischenstände: eine Woche, ein Monat, hundert Tage. Nicht weil die Zahlen magisch sind, sondern weil Gehirne Etappen brauchen."},
+  {k:"mut",  t:"Was heute schwer ist, wird in vier Wochen eine Anekdote sein."},
+  {k:"blick",t:"Kein Nichtraucher wacht morgens auf und wünscht sich, Raucher zu sein. Dorthin bist du unterwegs, und du kommst näher, ohne es zu merken."},
+  {k:"fakt", t:"Nach dem Aufhören steigt die Belastbarkeit bei körperlicher Anstrengung messbar an, weil mehr Sauerstoff ankommt und das Herz weniger arbeiten muss."},
+  {k:"tipp", t:"Wenn dich jemand fragt, warum du aufgehört hast, brauchst du keine Begründung. Weil ich nicht mehr rauche ist eine vollständige Antwort."},
+  {k:"mut",  t:"Du musst das nicht perfekt machen. Du musst es nur weitermachen."},
+  {k:"fakt", t:"Entgegen der verbreiteten Annahme verbessern sich Angst und gedrückte Stimmung nach dem Aufhören im Durchschnitt, statt sich zu verschlechtern. Studien zeigen das überraschend deutlich."},
+  {k:"tipp", t:"Beobachte das Verlangen wie das Wetter: Es zieht auf, es steht, es zieht ab. Du musst nichts dagegen tun, nur zusehen. Das nennt man Wellenreiten, und es funktioniert."},
+  {k:"mut",  t:"Deine Lunge arbeitet gerade in der Nachtschicht für dich. Ohne Applaus, ohne Pause, jeden Tag."},
+  {k:"blick",t:"Wenn du bei zwanzig am Tag warst, hast du in zehn Jahren etwa 73.000 Zigaretten geraucht. Man kann sich diese Zahl kaum vorstellen — und genau darin lag ihre Macht."},
+  {k:"fakt", t:"Rauchen erhöht das Risiko für Demenzerkrankungen. Die Gefäßschäden im Gehirn gelten als wesentlicher Grund dafür."},
+  {k:"tipp", t:"Wenn du in einer Raucherrunde stehst und es schwer wird, geh nicht weg — nimm dir ein Getränk in die Hand. Etwas zu halten löst mehr, als man vermutet."},
+  {k:"mut",  t:"Es ist nicht der Anfang, der zählt. Es ist der Tag, an dem du fast aufgegeben hättest und nicht aufgegeben hast."},
+  {k:"blick",t:"Rauchen war kein Hobby, sondern ein Abonnement. Hobbys kann man pausieren, Abonnements muss man kündigen. Du hast gekündigt."},
+  {k:"fakt", t:"Schnarchen und Schlafapnoe sind bei Rauchern häufiger, weil der Rauch die Schleimhäute im Rachen reizt und anschwellen lässt. Nach dem Aufhören bessert sich das oft."},
+  {k:"tipp", t:"Wenn du Kinder oder Enkel hast, erzähl es ihnen. Nicht als Vorbild-Nummer, sondern weil man Dinge, die man Kindern erzählt hat, seltener zurücknimmt."},
+  {k:"mut",  t:"Der Unterschied zwischen dir und jemandem, der es nicht geschafft hat, ist nicht Talent. Es ist, dass du heute nicht geraucht hast."},
+  {k:"blick",t:"Der Aschenbecher war das ehrlichste Möbelstück der Wohnung. Er hat gezeigt, was übrig bleibt."},
+  {k:"fakt", t:"Asthma verschlechtert sich durch Rauchen und durch Passivrauch erheblich. Bei Kindern in Raucherhaushalten treten Atemwegserkrankungen deutlich häufiger auf."},
+  {k:"tipp", t:"Mach die erste Stunde des Tages zur rauchfreien Zone im Kopf. Wer die erste Stunde übersteht, hat die schwierigste Schwelle des Tages hinter sich."},
+  {k:"mut",  t:"Du hast nichts verloren. Du hast etwas abgestellt, das dich bestohlen hat."},
+  {k:"blick",t:"Rauchen war eine Verabredung mit sich selbst, zwanzig Mal am Tag, die man nie absagen durfte. Du hast alle abgesagt."},
+  {k:"fakt", t:"Der Teergehalt einer Zigarette lagert sich in den Atemwegen ab. Bei zwanzig Zigaretten täglich kommen im Jahr mehrere hundert Gramm zusammen."},
+  {k:"tipp", t:"Wenn du vor dem Fernseher geraucht hast, setz dich für eine Weile auf einen anderen Platz. Der Sessel selbst war ein Auslöser."},
+  {k:"mut",  t:"Heute ist wieder ein Tag, an dem du dich nicht rechtfertigen musst. Nicht vor anderen und nicht vor dir."},
+  {k:"blick",t:"Zwanzig Zigaretten am Tag sind hundert Minuten. In einem Jahr sind das mehr als 600 Stunden — fünfzehn Arbeitswochen, die du zurückbekommst."},
+  {k:"fakt", t:"Rauchen verschlechtert die Wundheilung bei Diabetes zusätzlich. Bei diabetischem Fußsyndrom ist Nichtrauchen einer der wichtigsten Faktoren überhaupt."},
+  {k:"tipp", t:"Wenn ein Verlangen sehr stark wird, sag dir laut: Das ist eine Welle, sie dauert vier Minuten. Aussprechen wirkt anders als denken."},
+  {k:"mut",  t:"Was du gerade machst, hat noch keine sichtbare Belohnung. Deshalb ist es echt."},
+  {k:"blick",t:"Die Werbung hat aus Rauch Persönlichkeit gemacht. Du merkst gerade, dass deine Persönlichkeit auch ohne funktioniert."},
+  {k:"fakt", t:"Die Stimme verändert sich bei Rauchern durch chronische Reizung der Stimmbänder. Sängerinnen und Sänger merken die Erholung nach dem Aufhören besonders früh."},
+  {k:"tipp", t:"Hab keine Angst vor einem starken Verlangen nach Wochen. Es kommt manchmal aus dem Nichts und bedeutet nichts. Es ist ein Nachhall, keine Rückkehr."},
+  {k:"mut",  t:"Der Körper braucht Jahre, um alles zu reparieren, und fängt in den ersten Minuten an. Beides ist wahr, und beides spricht für heute."},
+  {k:"blick",t:"Rauchen macht nicht erwachsen. Es hat nur mal so gewirkt, als man vierzehn war und wissen wollte, wie das geht."},
+  {k:"fakt", t:"Beim Rauchen entstehen über tausend Grad Celsius an der Glut. Was dabei entsteht, hat mit der Tabakpflanze wenig zu tun."},
+  {k:"tipp", t:"Wenn du dich beim Rauchen konzentriert hast, brauchst du eine neue Startgeste für Arbeit. Ein Glas Wasser hinstellen reicht schon, wenn es immer dasselbe ist."},
+  {k:"mut",  t:"Du bist nicht dabei, etwas zu schaffen. Du schaffst es gerade, in diesem Moment, während du das liest."},
+  {k:"blick",t:"Es gab keinen guten Zeitpunkt zum Aufhören. Es gab nur irgendwann einen Tag, an dem du es trotzdem gemacht hast."},
+  {k:"fakt", t:"Rauchen erhöht das Risiko für Gürtelrose und für schwerere Verläufe von Infektionen, weil es die zelluläre Abwehr dämpft."},
+  {k:"tipp", t:"Lass dir von der Apotheke erklären, was Pflaster, Kaugummi und Lutschtabletten unterscheidet, falls du Hilfe willst. Es ist keine Niederlage, sondern verdoppelt statistisch die Chance."},
+  {k:"mut",  t:"Es zählt jeder Tag einzeln. Deshalb kannst du es nicht verlieren, sondern höchstens neu anfangen."},
+  {k:"blick",t:"Der Preis stand immer auf der Packung. Der eigentliche Preis stand nie drauf."},
+  {k:"fakt", t:"Nach dem Aufhören verbessert sich die Durchblutung der Haut so weit, dass viele nach einigen Monaten auf ihr besseres Aussehen angesprochen werden."},
+  {k:"tipp", t:"Wenn du morgens als Erstes geraucht hast, stell dir etwas anderes ans Bett. Ein Glas Wasser, ein Buch, die Laufschuhe. Der erste Griff entscheidet über den Tag."},
+  {k:"mut",  t:"Die Sucht redet in der ersten Person. Wenn du denkst, ich brauche jetzt eine, ist das nicht dein Satz, sondern ihr Satz."},
+  {k:"blick",t:"Rauchen war eine Antwort auf eine Frage, die du nie gestellt hast."},
+  {k:"fakt", t:"Der Nikotinentzug hat seinen Höhepunkt in den ersten drei Tagen und ist nach zwei bis vier Wochen im Wesentlichen überstanden. Alles danach ist Gewohnheit, nicht Chemie."},
+  {k:"tipp", t:"Kauf keine Zigaretten für Gäste. Nicht eine Schachtel für den Notfall, nicht eine für Besuch. Im Haus sein heißt irgendwann geraucht werden."},
+  {k:"mut",  t:"Es gibt keinen Punkt, an dem du unverwundbar bist. Aber es gibt einen Punkt, an dem es dir gleichgültig wird. Der kommt."},
+  {k:"blick",t:"Wenn du das gesparte Geld jeden Monat anlegen würdest, hättest du nach zwanzig Jahren eine Summe, für die man in vielen Gegenden eine Wohnung anzahlt."},
+  {k:"fakt", t:"Rauchen ist einer der wichtigsten Risikofaktoren für periphere arterielle Verschlusskrankheit, im Volksmund Schaufensterkrankheit. Aufhören ist hier die wirksamste einzelne Maßnahme."},
+  {k:"tipp", t:"Trag den Zähler nicht ständig mit dir herum. Einmal am Tag reicht. Ständiges Nachsehen macht das Thema größer, als es sein muss."},
+  {k:"mut",  t:"Du bist heute jemand, der ein Versprechen an sich selbst gehalten hat. Das gibt es nicht oft."},
+  {k:"blick",t:"Der Rauch war das Einzige, was von dem Geld übrig blieb. Und der ging in die Luft."},
+  {k:"fakt", t:"Rauchen und Bluthochdruck verstärken sich in ihrer Wirkung auf die Gefäße gegenseitig. Wer eines von beidem abstellt, entschärft auch das andere."},
+  {k:"tipp", t:"Wenn du an einem Tag wackelst, verschieb die Entscheidung auf morgen. Nicht das Aufhören — die Zigarette. Verschieben ist erlaubt und wirkt oft endgültig."},
+  {k:"mut",  t:"Manche Tage schaffst du mit Leichtigkeit, manche mit Zähnen. Beide zählen gleich viel."},
+  {k:"blick",t:"Nichtrauchen ist kein Projekt mit Ende. Es ist ein Zustand, in den man hineinwächst, bis er normal ist."},
+  {k:"fakt", t:"Bereits Passivrauch erhöht das Risiko für Herzinfarkt und Lungenkrebs messbar. Wer aufhört, verbessert die Luft für alle im Haushalt."},
+  {k:"tipp", t:"Nutze die verbesserte Kondition, sobald du sie merkst. Nichts festigt das Aufhören so gut wie ein Erfolg, den man körperlich spürt."},
+  {k:"mut",  t:"Es gibt kein Zurück, das besser wäre. Alles, was hinter dir liegt, hast du schon einmal gehabt."},
+  {k:"blick",t:"Du hast früher überlegt, ob die Schachtel bis morgen reicht. So etwas überlegt man nur bei Dingen, von denen man abhängig ist."},
+  {k:"fakt", t:"Der Geruchssinn erholt sich meist innerhalb von zwei bis drei Monaten weitgehend. Viele bemerken erstmals seit Jahren, wie ihre Wohnung riecht."},
+  {k:"tipp", t:"Wenn dich der Gedanke quält, du dürftest nie wieder: Denk nur an heute. Für morgen ist morgen zuständig."},
+  {k:"mut",  t:"Du hast schon einmal etwas Schweres durchgehalten. Erinnere dich daran, wenn du es heute brauchst."},
+  {k:"blick",t:"Zigaretten waren nie billig. Sie waren nur in kleinen Beträgen teuer, und das hat es erträglich gemacht."},
+  {k:"fakt", t:"Rauchen erhöht das Risiko für Zahnfleischrückgang und damit für empfindliche Zahnhälse. Auch das bessert sich nach dem Aufhören."},
+  {k:"tipp", t:"Nimm die Treppe, wann du kannst. Es ist der billigste Test dafür, dass deine Lunge zurückkommt."},
+  {k:"mut",  t:"Es reicht, wenn du dich heute nicht dagegen entscheidest. Mehr ist nicht nötig."},
+  {k:"blick",t:"Man hört nicht auf zu rauchen, um länger zu leben. Man hört auf, um besser zu leben. Das Längere kommt dazu."},
+  {k:"fakt", t:"Der Körper baut Kohlenmonoxid innerhalb von Stunden ab, Nikotin innerhalb von Tagen, Teerablagerungen über Monate. Drei verschiedene Uhren, alle laufen für dich."},
+  {k:"tipp", t:"Wenn du einen Rückfall hattest, schreib auf, was vorher passiert ist. Nicht als Strafe, als Notiz. Dasselbe kommt wieder, und dann bist du vorbereitet."},
+  {k:"mut",  t:"Du bist gerade in der Phase, in der es niemandem auffällt. Genau die entscheidet."},
+  {k:"blick",t:"Rauchen hat dich nie gefragt, ob du Zeit hast. Es hat sie einfach genommen."},
+  {k:"fakt", t:"Bei Rauchern ist die Wahrscheinlichkeit für einen zweiten Herzinfarkt nach einem ersten deutlich erhöht. Aufhören ist nach einem Infarkt eine der wirksamsten Maßnahmen überhaupt."},
+  {k:"tipp", t:"Wenn du das Verlangen nicht loswirst, geh zwei Minuten in die Kälte oder wasch dir das Gesicht mit kaltem Wasser. Ein starker Reiz überschreibt einen schwachen."},
+  {k:"mut",  t:"Die Tage, an denen du nicht daran gedacht hast, sind kein Zufall. Sie sind das Ergebnis der Tage, an denen du daran gedacht hast und trotzdem nicht geraucht hast."},
+  {k:"blick",t:"Es ist ein seltsames Produkt, das seine Kunden warnt und trotzdem verkauft wird. Du hast einfach aufgehört, es zu kaufen."},
+  {k:"fakt", t:"Rauchen verschlechtert die Aufnahme mehrerer Nährstoffe, darunter Vitamin C und Folsäure. Nach dem Aufhören arbeitet der Stoffwechsel wieder unbehindert."},
+  {k:"tipp", t:"Setz das gesparte Geld für etwas ein, das du sonst nie kaufen würdest. Vernünftig sparen motiviert weniger als etwas Unvernünftiges, das man sich verdient hat."},
+  {k:"mut",  t:"Du hast heute nichts Besonderes gemacht. Du hast nur nicht geraucht. Genau darin liegt es."},
+  {k:"blick",t:"Der Moment, in dem du gemerkt hast, dass du aufhören willst, war schwer. Der Moment, in dem du es getan hast, war schwerer. Beide sind vorbei."},
+  {k:"fakt", t:"Nach etwa einem Jahr entspricht das Risiko für viele Atemwegserkrankungen wieder annähernd dem von Nichtrauchern."},
+  {k:"tipp", t:"Halte durch Rituale, nicht durch Willenskraft. Willenskraft ist begrenzt und geht abends aus. Rituale halten auch dann."},
+  {k:"mut",  t:"Es wird nicht besser, weil die Zeit vergeht. Es wird besser, weil du sie rauchfrei vergehen lässt."},
+  {k:"blick",t:"Du hast früher an Silvester überlegt aufzuhören. Jetzt ist ein ganz normaler Tag, und es läuft trotzdem."},
+  {k:"fakt", t:"Der Anteil der Raucher, die einen Rückfall im ersten Jahr haben, ist hoch. Der Anteil derjenigen, die es beim wiederholten Versuch schaffen, ist es auch."},
+  {k:"tipp", t:"Wenn du morgens denkst, heute wird schwer, plane einen kleinen Höhepunkt in den Tag ein. Vorfreude verdrängt Verlangen zuverlässiger als Verbote."},
+  {k:"mut",  t:"Was du gerade tust, wird dir in zwanzig Jahren wichtiger sein als fast alles, was du diese Woche sonst erledigt hast."},
+  {k:"blick",t:"Rauchen war Zeit, die man gegen Geld getauscht hat, um kürzer zu leben. Formuliert man es so, klingt es nach einem Fehler in der Buchführung."},
+  {k:"fakt", t:"Nikotin wird in der Leber abgebaut, mit einer Halbwertszeit von etwa zwei Stunden. Deshalb kam das Verlangen früher so regelmäßig — es war eine Uhr."},
+  {k:"tipp", t:"Wenn du dich fragst, ob eine einzige schaden würde: Ja. Nicht wegen der Zigarette, sondern wegen der Uhr, die sie wieder startet."},
+  {k:"mut",  t:"Du bist heute weiter als gestern. Das ist die einzige Richtung, die zählt."},
+  {k:"blick",t:"Es ist bemerkenswert, wie schnell Nichtrauchen normal wird. Fast so schnell, wie Rauchen es damals wurde."},
+  {k:"fakt", t:"Rauchen erhöht das Risiko für Grauen Star, für Makuladegeneration und für trockene Augen. Der Rauch reizt die Augen nicht nur, er schädigt sie."},
+  {k:"tipp", t:"Wenn du Kaffee und Zigarette vermisst, versuch für ein paar Wochen Tee. Ein anderer Geschmack ruft eine andere Erinnerung."},
+  {k:"mut",  t:"Es hat nie jemand gesagt, dass es leicht ist. Aber viele haben gesagt, dass es geht."},
+  {k:"blick",t:"Der Rauch hat immer alles mitgenommen: die Wohnung, das Auto, die Jacke, den Atem. Jetzt gibt er alles zurück, Stück für Stück."},
+  {k:"fakt", t:"Rauchen verstärkt Entzündungsprozesse im ganzen Körper. Entzündungsmarker im Blut sinken nach dem Aufhören messbar."},
+  {k:"tipp", t:"Sag beim nächsten Angebot nicht nein danke, sondern ich rauche nicht. Der erste Satz lässt Verhandlungsspielraum, der zweite nicht."},
+  {k:"mut",  t:"Du bist kein besserer Mensch als vorher. Nur ein besser versorgter."},
+  {k:"blick",t:"Es geht nicht darum, ob du eine Zigarette möchtest. Es geht darum, ob du wieder Raucher sein möchtest. Das sind zwei völlig verschiedene Fragen."},
+  {k:"fakt", t:"Der größte Teil der gesundheitlichen Erholung passiert in den ersten fünf Jahren. Wer heute anfängt, hat den Großteil in überschaubarer Zeit vor sich."},
+  {k:"tipp", t:"Schreib dir das Datum auf, an dem du aufgehört hast. Nicht im Kopf behalten — aufschreiben. Es wird ein Datum, an das du dich erinnern wirst."},
+  {k:"mut",  t:"Die schwersten Momente sind kurz. Die guten Tage sind lang. Am Ende gewinnt die Statistik."},
+  {k:"blick",t:"Du hast dir nichts verboten. Du hast entschieden. Verbote reizen, Entscheidungen tragen."},
+  {k:"fakt", t:"Kinder von Eltern, die aufhören, fangen selbst deutlich seltener an zu rauchen. Die Wirkung reicht über eine Generation hinaus."},
+  {k:"tipp", t:"Wenn du an einem Punkt bist, an dem alles egal ist, mach das Kleinste: einmal tief ausatmen. Danach entscheidest du neu."},
+  {k:"mut",  t:"Es gibt nichts mehr zu beweisen. Du machst es einfach."},
+  {k:"blick",t:"Am Anfang zählt man Tage. Später zählt man Monate. Irgendwann hört man auf zu zählen, und das ist der beste Teil."},
+  {k:"fakt", t:"Etwa vier von fünf Rauchern haben vor dem zwanzigsten Lebensjahr angefangen. Kaum jemand entscheidet sich als Erwachsener dafür — aufzuhören ist also oft die erste echte Entscheidung in dieser Sache."},
+  {k:"tipp", t:"Räum heute etwas auf, das nach Rauch riecht. Ein Vorhang, ein Kissen, das Auto. Sichtbare Veränderung stützt unsichtbare."},
+  {k:"mut",  t:"Du hast das nicht angefangen, um es abzubrechen. Du hast es angefangen, weil du etwas anderes wolltest. Das gilt weiterhin."},
+  {k:"blick",t:"In der Zeit, die du früher mit Rauchen verbracht hast, könntest du eine Sprache gelernt haben. Diese Zeit ist wieder verfügbar."},
+  {k:"fakt", t:"Wer vor dem vierzigsten Lebensjahr aufhört, vermeidet den Großteil des zusätzlichen Sterberisikos durch Rauchen. Aber auch später lohnt es sich in jedem Alter."},
+  {k:"mut",  t:"Ein Jahr rauchfrei besteht aus 365 Tagen, an denen jemand einfach nicht geraucht hat. Genau so, wie du es heute gemacht hast."},
+  {k:"fakt", t:"Der Herzschlag eines Rauchers macht im Ruhezustand täglich mehrere tausend Schläge mehr als nötig. Dein Herz arbeitet jetzt in seinem eigenen Takt."},
+  {k:"mut",  t:"Es gibt keinen Grund, heute eine Ausnahme zu machen. Ausnahmen sind der einzige Weg zurück, und den brauchst du nicht."},
+  {k:"tipp", t:"Wenn du unterwegs bist und das Verlangen kommt: Kau etwas mit starkem Geschmack, Ingwer oder Pfefferminz. Ein intensiver Reiz ist der schnellste Ausweg."},
+  {k:"blick",t:"Du hast über Jahre gelernt, dass eine Zigarette hilft. Du lernst gerade, dass es ohne auch geht. Das zweite Lernen ist schneller."},
+  {k:"fakt", t:"Rauchfreie Wohnungen und Autos verlieren den Geruch über Monate, aber sie verlieren ihn. Was sich in Textilien festgesetzt hat, verschwindet nicht sofort, aber vollständig."},
+  {k:"mut",  t:"Niemand außer dir weiß, wie oft du heute an einer Kreuzung gestanden und den richtigen Weg genommen hast. Es zählt trotzdem."},
+  {k:"tipp", t:"Nimm dir für den ersten Monat eine Sache vor, die du dir bei hundert Tagen erlaubst. Ein Ziel mit Datum trägt weiter als ein guter Vorsatz."},
+  {k:"blick",t:"Die Zigarette war nie deine Freundin. Sie war die Einzige, die immer da war — und das ist etwas anderes."}
+];
+
+/* ====================================================================
+   4. Tageserfolge
+   --------------------------------------------------------------------
+   Für die ersten 90 Tage steht hier je ein eigener Eintrag. Wo es belegte
+   körperliche Veränderungen gibt, stehen die; an den übrigen Tagen etwas,
+   das durch Ansammlung oder Gewohnheitsbildung genauso wahr ist. Erfunden
+   ist nichts — ab Tag 91 kommen errechnete Erfolge aus den eigenen Zahlen,
+   weil der Körper nicht jeden einzelnen Tag etwas neu Dokumentiertes tut.
+   ==================================================================== */
+const TAGE = [
+  "Puls und Blutdruck sind wieder auf normalen Werten. Das Kohlenmonoxid im Blut sinkt bereits.",
+  "Nikotin ist fast vollständig abgebaut. Geschmack und Geruch fangen an, sich zurückzumelden.",
+  "Nikotin ist restlos draußen. Die Bronchien entspannen sich, Atmen fällt leichter.",
+  "Der stärkste körperliche Entzug liegt hinter dir. Ab hier arbeitet die Zeit für dich.",
+  "Der Sauerstoffgehalt im Blut ist stabil normal. Deine Muskeln bekommen wieder alles, was sie brauchen.",
+  "Sechs Tage ohne Teernachschub. Die Selbstreinigung der Atemwege hat angefangen.",
+  "Eine ganze Woche. Die Phase mit den meisten Rückfällen ist überstanden.",
+  "Acht Tage. Der Griff zur Schachtel ist keine automatische Bewegung mehr.",
+  "Die Nikotinrezeptoren im Gehirn beginnen, sich zurückzubilden. Das Verlangen verliert seine Grundlage.",
+  "Zehn Tage. Zweistellig — und der Morgen fängt nicht mehr mit Husten an.",
+  "Elf Tage ohne den ersten Griff am Morgen. Genau der war die härteste Gewohnheit.",
+  "Zwölf Tage. Die Durchblutung von Händen und Füßen verbessert sich messbar.",
+  "Dreizehn Tage. Alles, was du seitdem gerochen hast, hast du unverfälscht gerochen.",
+  "Zwei Wochen. Kreislauf und Lungenfunktion legen ab jetzt spürbar zu.",
+  "Fünfzehn Tage. Deine Kleidung riecht seit über zwei Wochen nach nichts.",
+  "Sechzehn Tage. Treppen sind das ehrlichste Messgerät — probier es aus.",
+  "Siebzehn Tage. Das Verlangen kommt seltener und es kommt schwächer.",
+  "Achtzehn Tage. Dein Herz hat seitdem hunderttausende Schläge weniger machen müssen.",
+  "Neunzehn Tage. Wunden und kleine Verletzungen heilen wieder in normalem Tempo.",
+  "Zwanzig Tage. Du hast zwanzigmal hintereinander dieselbe richtige Entscheidung getroffen.",
+  "Einundzwanzig Tage. Die Faustregel für neue Gewohnheiten ist erreicht.",
+  "Zweiundzwanzig Tage. Der Geschmackssinn ist deutlich feiner als noch vor drei Wochen.",
+  "Dreiundzwanzig Tage. Von hier aus ist Zurück weiter weg als Weiter.",
+  "Vierundzwanzig Tage. Deine Nacht wird ruhiger — Nikotin war ein Aufputschmittel.",
+  "Fünfundzwanzig Tage. Die Bronchien arbeiten wieder mit eigener Kraft.",
+  "Sechsundzwanzig Tage. Fast ein Monat, ohne dass es jemand gefeiert hat. Du weißt es.",
+  "Siebenundzwanzig Tage. Die Haut wird besser durchblutet, der graue Ton verschwindet.",
+  "Achtundzwanzig Tage. Vier volle Wochen, keine einzige Ausnahme.",
+  "Neunundzwanzig Tage. Der Entzug ist Geschichte, ab hier ist es nur noch Gewohnheit.",
+  "Ein Monat. Der Körper hat die Reparatur längst begonnen, du merkst nur den Anfang davon.",
+  "Einunddreißig Tage. Dein Zuhause riecht seit einem Monat nicht mehr nach Rauch.",
+  "Zweiunddreißig Tage. Die Zahl der Rezeptoren ist auf dem Stand eines Nichtrauchers.",
+  "Dreiunddreißig Tage. Kein Automat, kein Kiosk, kein Umweg mehr — einen ganzen Monat lang.",
+  "Vierunddreißig Tage. Ausdauer beim Sport ist die nächste Sache, die du merken wirst.",
+  "Fünfunddreißig Tage. Fünf Wochen. Das Verlangen kommt jetzt eher als Erinnerung.",
+  "Sechsunddreißig Tage. Deine Finger riechen nach nichts mehr.",
+  "Siebenunddreißig Tage. Erkältungen treffen dich ab jetzt weniger hart.",
+  "Achtunddreißig Tage. Kein Morgen mehr, der mit dem Suchen des Feuerzeugs anfängt.",
+  "Neununddreißig Tage. Die Flimmerhärchen in den Atemwegen arbeiten wieder mit.",
+  "Vierzig Tage. Vierzig Entscheidungen, jede einzeln getroffen.",
+  "Einundvierzig Tage. Dein Zahnfleisch ist besser durchblutet als vor sechs Wochen.",
+  "Zweiundvierzig Tage. Sechs Wochen — die Marke, ab der Chirurgen deutlich ruhiger operieren.",
+  "Dreiundvierzig Tage. Jeder Tag ab hier war früher unvorstellbar.",
+  "Vierundvierzig Tage. Der Husten, falls er kam, wird jetzt weniger.",
+  "Fünfundvierzig Tage. Anderthalb Monate. Nichts daran war Zufall.",
+  "Sechsundvierzig Tage. Du hast in dieser Zeit Situationen überstanden, die früher immer eine Zigarette bedeuteten.",
+  "Siebenundvierzig Tage. Deine Lunge schafft mehr Volumen als am ersten Tag.",
+  "Achtundvierzig Tage. Der Blutdruck liegt niedriger als in deiner Raucherzeit.",
+  "Neunundvierzig Tage. Sieben volle Wochen.",
+  "Fünfzig Tage. Eine runde Zahl, die vor sieben Wochen weit weg aussah.",
+  "Einundfünfzig Tage. Passivrauch hat in dieser Zeit niemand von dir abbekommen.",
+  "Zweiundfünfzig Tage. Der Geruchssinn nähert sich seinem alten Zustand.",
+  "Dreiundfünfzig Tage. Kein Aschenbecher, den jemand leeren musste.",
+  "Vierundfünfzig Tage. Dein Ruhepuls liegt messbar niedriger als früher.",
+  "Fünfundfünfzig Tage. Das Verlangen taucht nur noch in bestimmten Situationen auf, nicht mehr von selbst.",
+  "Sechsundfünfzig Tage. Acht Wochen. Zwei Monate sind fast voll.",
+  "Siebenundfünfzig Tage. Deine Kondition ist besser als am Anfang, auch wenn du nichts trainiert hast.",
+  "Achtundfünfzig Tage. Kein Regen, in dem du draußen gestanden hast, weil du musstest.",
+  "Neunundfünfzig Tage. Der Körper hat den größten Teil der schnellen Reparatur erledigt.",
+  "Zwei Monate. Ab hier geht es um das Langsame: Gefäße, Lunge, Risikowerte.",
+  "Einundsechzig Tage. Zwei Monate und einen Tag — auch der zählt einzeln.",
+  "Zweiundsechzig Tage. Entzündungswerte im Blut sind niedriger als in deiner Raucherzeit.",
+  "Dreiundsechzig Tage. Neun Wochen ohne Ausnahme.",
+  "Vierundsechzig Tage. Deine Stimme klingt klarer, wenn du morgens redest.",
+  "Fünfundsechzig Tage. Die Sauerstoffversorgung der Muskeln ist auf Nichtraucherniveau.",
+  "Sechsundsechzig Tage. Die Forschung nennt oft 66 Tage, bis eine Gewohnheit sitzt. Sie sitzt.",
+  "Siebenundsechzig Tage. Der Automatismus ist weg, es ist jetzt eine bewusste Sache — und die ist leichter.",
+  "Achtundsechzig Tage. Nichts an deiner Wohnung erinnert noch daran.",
+  "Neunundsechzig Tage. Fast zehn Wochen.",
+  "Siebzig Tage. Zehn Wochen, ohne eine einzige.",
+  "Einundsiebzig Tage. Deine Zähne verfärben sich seit über zwei Monaten nicht weiter.",
+  "Zweiundsiebzig Tage. Die Wundheilung ist auf normalem Stand.",
+  "Dreiundsiebzig Tage. Ein Fünftel eines Jahres.",
+  "Vierundsiebzig Tage. Das Herz arbeitet seit zweieinhalb Monaten in seinem eigenen Takt.",
+  "Fünfundsiebzig Tage. Fünfundsiebzig Abende, an denen du nicht rausgegangen bist.",
+  "Sechsundsiebzig Tage. Die Lungenkapazität steigt weiter, langsam und stetig.",
+  "Siebenundsiebzig Tage. Elf Wochen.",
+  "Achtundsiebzig Tage. Kein Gedanke mehr daran, ob die Schachtel bis morgen reicht.",
+  "Neunundsiebzig Tage. Der Schlaf ist tiefer als in deiner Raucherzeit.",
+  "Achtzig Tage. Achtzig Tage, in denen dein Körper nur aufgeräumt und nichts nachgeliefert bekommen hat.",
+  "Einundachtzig Tage. Deine Geschmacksnerven arbeiten auf vollem Niveau.",
+  "Zweiundachtzig Tage. Das Risiko für Atemwegsinfekte ist niedriger als noch im ersten Monat.",
+  "Dreiundachtzig Tage. Zwölf Wochen sind fast voll.",
+  "Vierundachtzig Tage. Zwölf Wochen. Die Lungenfunktion hat deutlich zugelegt.",
+  "Fünfundachtzig Tage. Ab hier zählst du eher in Monaten als in Tagen.",
+  "Sechsundachtzig Tage. Kein Ritual mehr, das dich an die Zigarette bindet.",
+  "Siebenundachtzig Tage. Die Durchblutung ist auf einem Stand, den du seit Jahren nicht hattest.",
+  "Achtundachtzig Tage. Fast drei Monate, ohne dass es eine Rolle gespielt hat.",
+  "Neunundachtzig Tage. Morgen sind es drei Monate.",
+  "Drei Monate. Lungenfunktion und Kreislauf haben deutlich zugelegt — das war der große Abschnitt."
+];
+
+/* Dokumentierte Langzeitmarken, die auf ihrem jeweiligen Tag erscheinen. */
+const LANGZEIT = [
+  { tag:120,  text:"Vier Monate. Husten und Verschleimung nehmen jetzt deutlich ab." },
+  { tag:150,  text:"Fünf Monate. Die Selbstreinigung der Atemwege läuft wieder vollständig." },
+  { tag:180,  text:"Ein halbes Jahr. Husten und Kurzatmigkeit haben stark abgenommen." },
+  { tag:210,  text:"Sieben Monate. Die Flimmerhärchen in den Bronchien arbeiten wieder weitgehend normal." },
+  { tag:270,  text:"Neun Monate. Die Erholung der Atemwege ist im Wesentlichen abgeschlossen." },
+  { tag:365,  text:"Ein Jahr. Das Risiko einer koronaren Herzkrankheit ist etwa halbiert." },
+  { tag:730,  text:"Zwei Jahre. Das Herzinfarktrisiko liegt deutlich näher an dem von Nichtrauchern." },
+  { tag:1095, text:"Drei Jahre. Die Gefäße haben sich weit über das hinaus erholt, was im ersten Jahr möglich war." },
+  { tag:1825, text:"Fünf Jahre. Das Schlaganfallrisiko nähert sich dem von Menschen, die nie geraucht haben." },
+  { tag:3650, text:"Zehn Jahre. Das Lungenkrebsrisiko ist etwa halbiert." },
+  { tag:5475, text:"Fünfzehn Jahre. Das Risiko für Herzkrankheiten entspricht dem von Nichtrauchern." }
+];
+
+const MIN = 60000, STD = 60 * MIN, TAG = 24 * STD;
+
+/* ====================================================================
+   5. Speicher — läuft auch weiter, wenn er gesperrt ist
+   ==================================================================== */
+const SCHLUESSEL = "scarnet.rauchfrei.v1";
+const SITZUNG = "scarnet.rauchfrei.sitzung";
+let speicherGeht = true;
+let ramSpeicher = {};
+
+function lesen(){
+  try {
+    const roh = localStorage.getItem(SCHLUESSEL);
+    return roh ? JSON.parse(roh) : {};
+  } catch (e) {
+    speicherGeht = false;
+    return ramSpeicher;
+  }
+}
+function schreiben(daten){
+  ramSpeicher = daten;
+  if (!speicherGeht) return;
+  try {
+    localStorage.setItem(SCHLUESSEL, JSON.stringify(daten));
+  } catch (e) {
+    speicherGeht = false;
+  }
+}
+function merkenSetzen(id, dauerhaft){
+  try {
+    (dauerhaft ? localStorage : sessionStorage).setItem(SITZUNG, id);
+  } catch (e) { /* dann eben nur für diesen Seitenaufruf */ }
+}
+function merkenLesen(){
+  try {
+    return localStorage.getItem(SITZUNG) || sessionStorage.getItem(SITZUNG);
+  } catch (e) { return null; }
+}
+function merkenLoeschen(){
+  try { localStorage.removeItem(SITZUNG); sessionStorage.removeItem(SITZUNG); } catch (e) {}
+}
+
+/* ====================================================================
+   6. Rechnen und Formatieren
+   ==================================================================== */
+const $ = id => document.getElementById(id);
+
+const esc = s => String(s).replace(/[&<>"']/g,
+  c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+
+const zahl = (n, stellen = 0) =>
+  n.toLocaleString("de-DE", { minimumFractionDigits: stellen, maximumFractionDigits: stellen });
+
+function euro(betrag){
+  return betrag.toLocaleString("de-DE",
+    { style:"currency", currency:"EUR", minimumFractionDigits:2, maximumFractionDigits:2 });
+}
+
+/** Minuten in eine lesbare Angabe: „3 Tage 4 Std.“ oder „12 Std. 30 Min.“ */
+function dauerAusMinuten(minuten){
+  const t = Math.floor(minuten / 1440);
+  const s = Math.floor((minuten % 1440) / 60);
+  const m = Math.floor(minuten % 60);
+  if (t >= 365){
+    const j = Math.floor(t / 365);
+    return j + (j === 1 ? " Jahr " : " Jahre ") + (t % 365) + " Tage";
+  }
+  if (t > 0) return t + (t === 1 ? " Tag " : " Tage ") + s + " Std.";
+  if (s > 0) return s + " Std. " + m + " Min.";
+  return m + " Min.";
+}
+
+const datumLang = ts => new Date(ts).toLocaleDateString("de-DE",
+  { weekday:"long", day:"numeric", month:"long", year:"numeric" });
+
+/** Alle abgeleiteten Werte an einem Ort — so bleibt das Rendern dumm. */
+function rechnen(profil, jetzt = Date.now()){
+  const verstrichen = Math.max(0, jetzt - profil.start);
+  const tage = Math.floor(verstrichen / TAG);
+  const restMs = verstrichen % TAG;
+  const nichtGeraucht = (verstrichen / TAG) * profil.menge;
+  const preisJeZig = profil.preis / profil.proSchachtel;
+  return {
+    verstrichen, tage,
+    stunden: Math.floor(restMs / STD),
+    minuten: Math.floor((restMs % STD) / MIN),
+    sekunden: Math.floor((restMs % MIN) / 1000),
+    nichtGeraucht,
+    geld: nichtGeraucht * preisJeZig,
+    lebensMinuten: nichtGeraucht * 11,
+    schachteln: nichtGeraucht / profil.proSchachtel
+  };
+}
+
+/* ====================================================================
+   7. Zustand und Ansichten
+   ==================================================================== */
+let meineId = null;      // Kennung des angemeldeten Kontos
+let profil = null;       // dessen Daten
+let uhrLaeuft = null;
+let letzterTag = -1;         // damit Spruch und Tagesliste nicht sekündlich neu gebaut werden
+
+const ANSICHTEN = ["ansichtAnmeldung", "ansichtEinrichten", "ansichtApp"];
+function zeigen(welche){
+  ANSICHTEN.forEach(a => $(a).hidden = (a !== welche));
+}
+
+const standard = () => ({ start:Date.now(), menge:20, preis:10, proSchachtel:22, beste:0, rueckfaelle:0 });
+
+/** YYYY-MM-DD zu Zeitstempel auf Mitternacht Ortszeit. */
+function ausDatumsfeld(wert){
+  const [j,m,t] = wert.split("-").map(Number);
+  return new Date(j, m - 1, t, 0, 0, 0, 0).getTime();
+}
+function inDatumsfeld(ts){
+  const d = new Date(ts);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+
+/* ---------- Anmeldung ---------- */
+function anmelden(id){
+  meineId = id;
+  const alle = lesen();
+  profil = alle[id] || null;
+
+  if (!profil){
+    $("fStart").value = inDatumsfeld(Date.now());
+    $("fStart").max = inDatumsfeld(Date.now());
+    zeigen("ansichtEinrichten");
+    $("fStart").focus();
+    return;
+  }
+  starten();
+}
+
+function starten(){
+  // fehlende Felder aus älteren Datenständen auffüllen
+  profil = Object.assign(standard(), profil);
+  letzterTag = -1;
+  zeigen("ansichtApp");
+  einstellungenFuellen();
+  if ($("speicherWarnung")){
+    $("speicherWarnung").hidden = speicherGeht;
+    $("speicherWarnung").textContent =
+      "Dieser Browser lässt kein Speichern zu — die Angaben gelten nur, solange die Seite offen ist.";
+  }
+  zeichnen();
+  clearInterval(uhrLaeuft);
+  uhrLaeuft = setInterval(zeichnen, 1000);
+}
+
+$("anmeldeForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const name = $("fName").value, pass = $("fPass").value;
+  const fehler = $("anmeldeFehler");
+  if (!name.trim() || !pass){ fehler.textContent = "Bitte beides ausfüllen."; return; }
+
+  const id = kennung(name, pass);
+  const konto = KONTEN.find(k => k.hash === id);
+  if (!konto){
+    fehler.textContent = "Name oder Passwort stimmt nicht.";
+    $("fPass").select();
+    return;
+  }
+  fehler.textContent = "";
+  merkenSetzen(id, $("fMerken").checked);
+  $("fPass").value = "";
+  anmelden(id);
+});
+
+$("einrichtenForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const fehler = $("einrichtenFehler");
+  const wert = $("fStart").value;
+  if (!wert){ fehler.textContent = "Bitte ein Datum wählen."; return; }
+  const start = ausDatumsfeld(wert);
+  if (start > Date.now()){ fehler.textContent = "Das Datum liegt in der Zukunft."; return; }
+  const menge = parseInt($("fMenge").value, 10);
+  if (!menge || menge < 1){ fehler.textContent = "Bitte eine Zahl ab 1 eintragen."; return; }
+
+  fehler.textContent = "";
+  profil = Object.assign(standard(), { start, menge });
+  sichern();
+  starten();
+});
+
+function sichern(){
+  const alle = lesen();
+  alle[meineId] = profil;
+  schreiben(alle);
+}
+
+$("bAbmelden").onclick = () => {
+  merkenLoeschen();
+  clearInterval(uhrLaeuft);
+  meineId = null; profil = null;
+  $("fName").value = ""; $("fPass").value = "";
+  zeigen("ansichtAnmeldung");
+  $("fName").focus();
+};
+
+/* ---------- Zeichnen ---------- */
+function zeichnen(){
+  const w = rechnen(profil);
+
+  $("zTage").textContent = zahl(w.tage);
+  $("zTageWort").textContent = w.tage === 1 ? "Tag rauchfrei" : "Tage rauchfrei";
+  $("zUhr").textContent =
+    `${w.stunden} Std. ${String(w.minuten).padStart(2,"0")} Min. ${String(w.sekunden).padStart(2,"0")} Sek.`;
+  $("zSeit").textContent = "seit " + datumLang(profil.start);
+
+  $("kGeld").textContent = euro(w.geld);
+  const schachteln = Math.floor(w.schachteln);
+  $("kGeldNote").textContent = schachteln === 1
+    ? "eine Schachtel nicht gekauft"
+    : zahl(schachteln) + " Schachteln nicht gekauft";
+
+  const zig = Math.floor(w.nichtGeraucht);
+  $("kZig").textContent = zahl(zig);
+  const stangen = w.nichtGeraucht / (profil.proSchachtel * 10);
+  $("kZigNote").textContent = stangen >= 1
+    ? zahl(stangen, 1) + " Stangen"
+    : "Zigaretten, die niemand geraucht hat";
+
+  $("kLeben").textContent = dauerAusMinuten(w.lebensMinuten);
+
+  // Spruch und Tagesliste nur neu bauen, wenn der Tag umschlägt. Sonst würde
+  // die Sekundenanzeige jede Sekunde das halbe DOM ersetzen und dabei jede
+  // Textmarkierung des Nutzers zerstören.
+  if (w.tage !== letzterTag){
+    spruchZeichnen(w.tage);
+    tageZeichnen(w.tage + 1, profil);   // erster Tag ist Tag 1, nicht Tag 0
+    letzterTag = w.tage;
+  }
+
+  const beste = Math.max(profil.beste || 0, w.verstrichen);
+  $("bestzeit").innerHTML = (profil.rueckfaelle > 0)
+    ? `Längste rauchfreie Zeit bisher: <b>${Math.floor(beste / TAG)} Tage</b>.`
+    : "";
+}
+
+function spruchZeichnen(tage){
+  const versatz = parseInt(meineId.slice(0, 6), 16) % SPRUECHE.length;
+  const s = SPRUECHE[(tage + versatz) % SPRUECHE.length];
+  const namen = { fakt:"Fakt", mut:"Zuspruch", tipp:"Tipp", blick:"Perspektive" };
+  $("sArt").textContent = namen[s.k] || "Gedanke";
+  $("sText").textContent = s.t;
+}
+
+/** Der Erfolg eines bestimmten Tages. nr = 1 ist der erste Tag.
+    Bis Tag 90 ein eigener Eintrag, danach die dokumentierten Langzeitmarken
+    und sonst ein aus den eigenen Zahlen errechneter Erfolg. Der wechselt
+    täglich und ist immer wahr, ohne dass ich Medizin erfinden muss. */
+function tagesText(nr, p){
+  if (nr >= 1 && nr <= TAGE.length) return TAGE[nr - 1];
+
+  const lang = LANGZEIT.find(m => m.tag === nr);
+  if (lang) return lang.text;
+
+  const zig  = p.menge * nr;
+  const geld = zig * (p.preis / p.proSchachtel);
+
+  if (nr % 365 === 0) return (nr / 365) + " Jahre rauchfrei. " + zahl(zig) + " Zigaretten, die es nie gegeben hat.";
+  if (nr % 30 === 0)  return Math.round(nr / 30) + " Monate rauchfrei — bis hierher " + euro(geld) + " nicht ausgegeben.";
+  if (nr % 7 === 0)   return "Woche " + (nr / 7) + " abgeschlossen, ohne eine einzige.";
+
+  switch (nr % 5){
+    case 0: return zahl(zig) + " Zigaretten nicht geraucht.";
+    case 1: return euro(geld) + " nicht ausgegeben.";
+    case 2: return dauerAusMinuten(zig * 11) + " Lebenszeit zurückgerechnet.";
+    case 3: return zahl(Math.floor(zig / p.proSchachtel)) + " Schachteln, die niemand gekauft hat.";
+  }
+  // Jeder fünfte Tag trifft keinen der Rechenwege. Damit dort nicht immer
+  // dasselbe steht, wandert er durch diese Liste.
+  const rest = [
+    "Tag " + nr + " — und es ist längst normal geworden.",
+    "Deine Lunge arbeitet seit " + nr + " Tagen ohne Nachschub.",
+    nr + " Tage, an denen du nicht bei Regen vor der Tür gestanden hast.",
+    "Seit " + nr + " Tagen riecht nichts an dir nach Rauch.",
+    nr + " Tage, in denen dein Herz in seinem eigenen Takt geschlagen hat.",
+    "Seit " + nr + " Tagen hat niemand Passivrauch von dir abbekommen.",
+    nr + " Tage ohne einen einzigen Umweg zum Automaten.",
+    "Tag " + nr + " — die Sache ist entschieden, nicht mehr offen."
+  ];
+  return rest[Math.floor(nr / 5) % rest.length];
+}
+
+/** Heute hervorgehoben, die letzten Tage darunter, morgen als Ausblick. */
+function tageZeichnen(tagNr, p){
+  const zeilen = [{ nr:tagNr + 1, zustand:"kommt" }];
+  for (let n = tagNr; n >= Math.max(1, tagNr - 5); n--){
+    zeilen.push({ nr:n, zustand: n === tagNr ? "heute" : "da" });
+  }
+  $("tage").innerHTML = zeilen.map(z => `
+      <li class="${z.zustand}">
+        <span class="punkt"></span>
+        <span class="was">${esc(tagesText(z.nr, p))}</span>
+        <span class="wann">${z.zustand === "kommt" ? "morgen" : "Tag " + z.nr}</span>
+      </li>`).join("");
+
+  $("tageDavor").textContent = tagNr > 6
+    ? "und " + zahl(tagNr - 6) + " weitere davor"
+    : "";
+}
+
+/* ---------- Einstellungen ---------- */
+function einstellungenFuellen(){
+  $("eStart").value = inDatumsfeld(profil.start);
+  $("eStart").max = inDatumsfeld(Date.now());
+  $("eMenge").value = profil.menge;
+  $("ePreis").value = profil.preis;
+  $("eProSchachtel").value = profil.proSchachtel;
+}
+
+$("bSpeichern").onclick = () => {
+  const fehler = $("eFehler");
+  const grenze = (el, vorher) => {
+    const lo = parseFloat(el.min), hi = parseFloat(el.max);
+    const n = parseFloat(el.value);
+    return Number.isNaN(n) ? vorher : Math.min(hi, Math.max(lo, n));
+  };
+  const start = $("eStart").value ? ausDatumsfeld($("eStart").value) : profil.start;
+  if (start > Date.now()){ fehler.textContent = "Datum liegt in der Zukunft."; return; }
+
+  profil.start = start;
+  profil.menge = Math.round(grenze($("eMenge"), profil.menge));
+  profil.preis = grenze($("ePreis"), profil.preis);
+  profil.proSchachtel = Math.round(grenze($("eProSchachtel"), profil.proSchachtel));
+  einstellungenFuellen();
+  sichern();
+  zeichnen();
+  fehler.textContent = "Gespeichert.";
+  setTimeout(() => { fehler.textContent = ""; }, 2500);
+};
+
+$("bRueckfall").onclick = () => {
+  const w = rechnen(profil);
+  if (!confirm("Zähler ab heute neu starten? Deine längste rauchfreie Zeit von "
+      + Math.floor(w.verstrichen / TAG) + " Tagen bleibt gespeichert.")) return;
+  profil.beste = Math.max(profil.beste || 0, w.verstrichen);
+  profil.rueckfaelle = (profil.rueckfaelle || 0) + 1;
+  profil.start = ausDatumsfeld(inDatumsfeld(Date.now()));
+  einstellungenFuellen();
+  sichern();
+  zeichnen();
+};
+
+/* ---------- Daten mitnehmen ---------- */
+$("bExport").onclick = () => {
+  const inhalt = JSON.stringify({ art:"scarnet-rauchfrei", fassung:1, profil }, null, 2);
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([inhalt], { type:"application/json" }));
+  a.download = "rauchfrei-" + inDatumsfeld(Date.now()) + ".json";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+};
+
+$("bImport").onclick = () => $("fImport").click();
+$("fImport").onchange = e => {
+  const datei = e.target.files[0];
+  if (!datei) return;
+  const leser = new FileReader();
+  leser.onload = () => {
+    try {
+      const d = JSON.parse(leser.result);
+      if (d.art !== "scarnet-rauchfrei" || !d.profil || !d.profil.start)
+        throw new Error("fremd");
+      if (!confirm("Eingelesene Daten übernehmen? Die Angaben in diesem Browser werden ersetzt."))
+        return;
+      profil = Object.assign(standard(), d.profil);
+      einstellungenFuellen();
+      sichern();
+      zeichnen();
+      alert("Übernommen.");
+    } catch (err) {
+      alert("Das war keine Datei aus diesem Bereich.");
+    }
+  };
+  leser.readAsText(datei);
+  e.target.value = "";
+};
+
+/* ---------- Start ---------- */
+(function los(){
+  const gemerkt = merkenLesen();
+  if (gemerkt && KONTEN.some(k => k.hash === gemerkt)){
+    anmelden(gemerkt);
+  } else {
+    zeigen("ansichtAnmeldung");
+  }
+})();
+</script>
+</body>
+</html>
