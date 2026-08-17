@@ -9,6 +9,7 @@ vom Branch `main`. Kein Build, kein Generator — was hier liegt, ist die Seite.
 |---|---|
 | `index.html` | Startseite: Hero-Bild und Menü |
 | `rauchfrei.html` | Reiter „Rauchfrei“ — Anmeldung und Zähler, alles in einer Datei |
+| `impressum.html` | Impressum und Datenschutzerklärung |
 | `setup.html` | Werkzeug, um Zugänge zu erzeugen. Nicht im Menü verlinkt |
 | `Welcome.jpg` | Hero-Bild quer (1672 × 941), ab Viewport ≥ 769 px |
 | `Welcome-mobile.jpg` | Hero-Bild hoch (941 × 1672), bis Viewport ≤ 768 px |
@@ -60,6 +61,35 @@ Handy und Laptop wissen nichts voneinander. Für den Umzug gibt es unter
 
 Ist der Speicher gesperrt, etwa im privaten Modus, läuft die Seite weiter
 und weist darauf hin, dass nichts gesichert wird.
+
+## Tageserfolge
+
+`rauchfrei.html` zeigt für jeden Tag einen eigenen Erfolg. Die Quellen dafür,
+in dieser Reihenfolge:
+
+1. `TAGE` — 90 handgeschriebene Einträge für die ersten 90 Tage. Dort gibt es
+   belegte körperliche Veränderungen im Tagesabstand.
+2. `LANGZEIT` — dokumentierte Marken an ihren Tagen: 4 Monate, ein halbes Jahr,
+   9 Monate, 1, 2, 3, 5, 10 und 15 Jahre.
+3. Sonst ein aus den eigenen Zahlen **errechneter** Erfolg — nicht gerauchte
+   Zigaretten, gespartes Geld, zurückgerechnete Lebenszeit, abgeschlossene
+   Wochen und Monate.
+
+Der dritte Weg ist Absicht: Der Körper tut nicht an jedem einzelnen Tag etwas
+neu Dokumentiertes, und erfundene Medizin für Tag 243 wäre schlechter als eine
+wahre Zahl. Geprüft über 10 Jahre: kein Tag ohne Eintrag, kein Tag gleich wie
+der Vortag, 3.608 verschiedene Texte.
+
+## Impressum
+
+`impressum.html` enthält Impressum und Datenschutzerklärung. Die persönlichen
+Angaben sind noch **Platzhalter** und im Text farbig hervorgehoben — Name,
+Anschrift und E-Mail müssen eingetragen werden, bevor die Seite ihren Zweck
+erfüllt.
+
+Die Datenschutzerklärung nennt bewusst auch GitHub Pages als Hoster: Beim
+Abruf der Seite erreicht die IP-Adresse des Besuchers einen Server in den USA.
+Das ist die einzige Datenübermittlung, die hier überhaupt stattfindet.
 
 ## Ändern
 

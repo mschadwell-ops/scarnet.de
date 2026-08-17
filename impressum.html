@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Impressum und Datenschutz — scaRnet</title>
+<meta name="description" content="Impressum und Datenschutzerklärung für scarnet.de">
+<link rel="canonical" href="https://scarnet.de/impressum.html">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23000'/%3E%3Ctext x='16' y='24' font-family='Arial,Helvetica,sans-serif' font-size='22' font-weight='bold' fill='%23fff' text-anchor='middle'%3Es%3C/text%3E%3C/svg%3E">
+
+<style>
+  /* Bewusst nüchtern und in der Farbwelt der Startseite — ein Impressum
+     soll lesbar sein, nicht gestaltet. */
+  :root{
+    --ground:#0C0E11; --surface:#14181D; --line:#242B33;
+    --text:#E6EAEF; --muted:#8B96A3; --faint:#5B6672; --blue:#58A9EA;
+    --sans: ui-sans-serif, system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0; background:var(--ground); color:var(--text);
+    font-family:var(--sans); font-size:15.5px; line-height:1.7;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* Menü — gleich wie auf den anderen Seiten */
+  .nav{
+    position:sticky; top:0; z-index:10; height:52px;
+    display:flex; align-items:center; gap:clamp(16px,4vw,40px);
+    padding:0 clamp(14px,4vw,30px);
+    background:rgba(0,0,0,.46);
+    backdrop-filter:blur(12px) saturate(140%);
+    -webkit-backdrop-filter:blur(12px) saturate(140%);
+    border-bottom:1px solid rgba(255,255,255,.09);
+  }
+  .mark{ flex:none; font-size:15px; font-weight:300; letter-spacing:.02em;
+         color:rgba(255,255,255,.92); text-decoration:none; white-space:nowrap; }
+  .mark b{ font-weight:600; color:#fff; }
+  .tabs{ display:flex; gap:4px; margin-left:auto; overflow-x:auto; scrollbar-width:none; }
+  .tabs::-webkit-scrollbar{ display:none; }
+  .tabs a{
+    flex:none; padding:7px 12px; border-radius:6px; font-size:11px; font-weight:600;
+    letter-spacing:.15em; text-transform:uppercase; color:rgba(255,255,255,.62);
+    text-decoration:none; white-space:nowrap; transition:color .15s, background .15s;
+  }
+  .tabs a:hover{ color:#fff; background:rgba(255,255,255,.09); }
+  .tabs a[aria-current="page"]{ color:#fff; background:rgba(255,255,255,.14); }
+
+  .wrap{ max-width:660px; margin:0 auto; padding:44px 20px 80px; }
+  h1{ font-size:27px; font-weight:600; letter-spacing:-.02em; margin:0 0 8px; }
+  .lede{ margin:0 0 36px; color:var(--muted); font-size:14.5px; }
+  h2{
+    font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:var(--muted);
+    font-weight:600; margin:40px 0 14px; padding-bottom:9px;
+    border-bottom:1px solid var(--line);
+  }
+  h3{ font-size:15px; font-weight:600; margin:24px 0 6px; }
+  p{ margin:0 0 14px; }
+  address{ font-style:normal; margin:0 0 14px; }
+  ul{ margin:0 0 14px; padding-left:22px; }
+  li{ margin-bottom:6px; }
+  a{ color:var(--blue); text-underline-offset:3px; }
+  a:focus-visible{ outline:2px solid var(--blue); outline-offset:3px; border-radius:3px; }
+  .luecke{
+    background:rgba(217,169,79,.16); color:#E9C078;
+    padding:1px 6px; border-radius:4px; font-weight:600; white-space:nowrap;
+  }
+  .kasten{
+    background:var(--surface); border:1px solid var(--line);
+    border-left:2px solid var(--blue); border-radius:0 10px 10px 0;
+    padding:16px 18px; margin:0 0 14px;
+  }
+  .kasten p:last-child{ margin-bottom:0; }
+  .stand{ margin-top:44px; font-size:12.5px; color:var(--faint); }
+</style>
+</head>
+
+<body>
+
+<nav class="nav">
+  <a class="mark" href="/">sca<b>R</b>net</a>
+  <div class="tabs">
+    <a href="/rauchfrei.html">Rauchfrei</a>
+    <a href="/impressum.html" aria-current="page">Impressum</a>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <h1>Impressum</h1>
+  <p class="lede">Angaben gemäß § 5 Digitale-Dienste-Gesetz (DDG)</p>
+
+  <h2>Anbieter</h2>
+  <address>
+    <span class="luecke">VORNAME NACHNAME</span><br>
+    <span class="luecke">STRASSE HAUSNUMMER</span><br>
+    <span class="luecke">PLZ ORT</span><br>
+    Deutschland
+  </address>
+
+  <h2>Kontakt</h2>
+  <p>
+    E-Mail: <span class="luecke">ADRESSE@BEISPIEL.DE</span>
+  </p>
+
+  <h2>Verantwortlich für den Inhalt</h2>
+  <p><span class="luecke">VORNAME NACHNAME</span>, Adresse wie oben.</p>
+
+  <h2>Haftung für Inhalte und Links</h2>
+  <p>
+    Die Inhalte dieser Seiten wurden mit Sorgfalt erstellt. Für die Richtigkeit,
+    Vollständigkeit und Aktualität wird keine Gewähr übernommen. Die hier
+    zusammengetragenen gesundheitsbezogenen Angaben sind allgemeine
+    Informationen und ersetzen keine ärztliche Beratung.
+  </p>
+  <p>
+    Diese Seite verweist nicht auf fremde Inhalte. Sollten künftig Links
+    gesetzt werden, gilt: Für deren Inhalte ist der jeweilige Anbieter
+    verantwortlich.
+  </p>
+
+  <h1 style="margin-top:60px">Datenschutzerklärung</h1>
+
+  <h2>Kurz gefasst</h2>
+  <div class="kasten">
+    <p>
+      Diese Seite setzt keine Cookies, bindet keine Schriften, Karten, Videos
+      oder Analysedienste von fremden Servern ein und verfolgt niemanden.
+    </p>
+    <p>
+      Die Eintragungen im Bereich <em>Rauchfrei</em> — Datum, Zigarettenmenge,
+      Preise — verlassen das Gerät nicht. Sie liegen ausschließlich im
+      Speicher des jeweiligen Browsers. Es gibt keinen Server, der sie
+      empfangen könnte, und keine Datenbank, in der sie stehen.
+    </p>
+  </div>
+
+  <h2>Verantwortlicher</h2>
+  <p>
+    Verantwortlich im Sinne der Datenschutz-Grundverordnung ist der oben im
+    Impressum genannte Anbieter.
+  </p>
+
+  <h2>Hosting und Server-Protokolle</h2>
+  <p>
+    Diese Seite wird von <strong>GitHub Pages</strong> ausgeliefert, einem
+    Dienst der GitHub Inc. (88 Colin P. Kelly Jr. Street, San Francisco, CA
+    94107, USA), einem Unternehmen von Microsoft.
+  </p>
+  <p>
+    Beim Abruf der Seite überträgt der Browser technisch notwendige Daten an
+    diesen Dienst, insbesondere die IP-Adresse, Datum und Uhrzeit, die
+    abgerufene Datei sowie Angaben zu Browser und Betriebssystem. Diese
+    Verarbeitung erfolgt zur Bereitstellung der Seite auf Grundlage von
+    Art. 6 Abs. 1 lit. f DSGVO. Auf Umfang und Dauer dieser Protokollierung
+    hat der Anbieter keinen Einfluss; Einzelheiten stehen in der
+    Datenschutzerklärung von GitHub.
+  </p>
+  <p>
+    Da der Dienst seinen Sitz in den USA hat, findet eine Übermittlung in ein
+    Drittland statt. GitHub beruft sich hierfür auf die Standardvertrags­klauseln
+    der Europäischen Kommission sowie auf das EU-US Data Privacy Framework.
+  </p>
+
+  <h2>Örtliche Speicherung im Browser</h2>
+  <p>
+    Der Bereich <em>Rauchfrei</em> nutzt den lokalen Speicher des Browsers
+    (<code>localStorage</code>), um die eigenen Angaben und die Anmeldung
+    zwischen zwei Besuchen zu behalten. Dabei gilt:
+  </p>
+  <ul>
+    <li>Es werden keine Daten an den Anbieter oder an Dritte übertragen.</li>
+    <li>Gespeichert wird die Kennung des Kontos, nicht das Kennwort.</li>
+    <li>
+      Der Inhalt lässt sich jederzeit im Browser löschen, entweder über die
+      Einstellungen des Browsers oder indem der Browserspeicher für diese
+      Seite geleert wird.
+    </li>
+  </ul>
+  <p>
+    Diese Speicherung ist für die angeforderte Funktion unbedingt erforderlich
+    (§ 25 Abs. 2 Nr. 2 TDDDG) und erfolgt daher ohne gesonderte Einwilligung.
+  </p>
+
+  <h2>Keine Einbindung Dritter</h2>
+  <p>
+    Es werden keine Schriftarten, Skripte, Symbole, Karten oder Bilder von
+    fremden Servern nachgeladen. Alle Bestandteile liegen auf dieser Seite
+    selbst. Es findet insbesondere keine Einbindung von Google Fonts statt.
+    Es gibt keine Analysewerkzeuge, keine Werbenetzwerke und keine
+    Schaltflächen sozialer Netzwerke.
+  </p>
+
+  <h2>Kontaktaufnahme</h2>
+  <p>
+    Bei einer Nachricht per E-Mail werden die übermittelten Angaben zur
+    Bearbeitung des Anliegens verarbeitet (Art. 6 Abs. 1 lit. b bzw. lit. f
+    DSGVO) und gelöscht, sobald sie nicht mehr benötigt werden.
+  </p>
+
+  <h2>Rechte der betroffenen Personen</h2>
+  <p>
+    Es besteht das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung
+    der Verarbeitung, Datenübertragbarkeit sowie ein Widerspruchsrecht gegen
+    eine Verarbeitung auf Grundlage berechtigter Interessen. Ebenso besteht das
+    Recht, sich bei einer Datenschutz-Aufsichtsbehörde zu beschweren. Für
+    Anfragen genügt eine Nachricht an die oben genannte E-Mail-Adresse.
+  </p>
+
+  <p class="stand">
+    Stand: August 2026 · <a href="/">Zurück zur Startseite</a>
+  </p>
+
+</div>
+
+</body>
+</html>

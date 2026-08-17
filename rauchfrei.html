@@ -213,6 +213,25 @@
   }
   .meilen li.da .wann{ color:var(--air); }
 
+  /* Heute hervorgehoben, morgen als blasser Ausblick darüber. */
+  .meilen li.heute{
+    background:var(--surface-2);
+    border-radius:8px;
+    padding-left:12px;
+    padding-right:12px;
+    margin:4px -12px;
+    border-bottom-color:transparent;
+  }
+  .meilen li.heute .punkt{ background:var(--air); border-color:var(--air); box-shadow:0 0 0 4px var(--air-glow); }
+  .meilen li.heute .was{ color:var(--text); font-weight:500; }
+  .meilen li.heute .wann{ color:var(--air); }
+  .meilen li.kommt{ opacity:.45; }
+  .meilen li.kommt .was{ color:var(--muted); }
+  .davor{
+    margin:12px 2px 0; font-size:12px; color:var(--faint);
+    letter-spacing:.06em;
+  }
+
   /* ---------- Einstellungen ---------- */
   details.mehr{ margin-top:28px; }
   details.mehr summary{
@@ -242,6 +261,7 @@
   <a class="mark" href="/">sca<b>R</b>net</a>
   <div class="tabs">
     <a href="/rauchfrei.html" aria-current="page">Rauchfrei</a>
+    <a href="/impressum.html">Impressum</a>
   </div>
 </nav>
 
@@ -270,7 +290,6 @@
       <button type="submit" class="haupt" style="width:100%">Anmelden</button>
       <div class="fehler" id="anmeldeFehler" role="alert"></div>
     </form>
-    <p class="fuss" id="demoHinweis" hidden></p>
   </section>
 
   <!-- ============ 2. Ersteinrichtung ============ -->
@@ -331,8 +350,9 @@
       </div>
     </div>
 
-    <h2>Was dein Körper geschafft hat</h2>
-    <ul class="meilen" id="meilen"></ul>
+    <h2>Jeden Tag ein Schritt</h2>
+    <ul class="meilen" id="tage"></ul>
+    <p class="davor" id="tageDavor"></p>
 
     <details class="mehr">
       <summary>Einstellungen und Daten</summary>
@@ -861,26 +881,123 @@ const SPRUECHE = [
 ];
 
 /* ====================================================================
-   4. Meilensteine
+   4. Tageserfolge
+   --------------------------------------------------------------------
+   Für die ersten 90 Tage steht hier je ein eigener Eintrag. Wo es belegte
+   körperliche Veränderungen gibt, stehen die; an den übrigen Tagen etwas,
+   das durch Ansammlung oder Gewohnheitsbildung genauso wahr ist. Erfunden
+   ist nichts — ab Tag 91 kommen errechnete Erfolge aus den eigenen Zahlen,
+   weil der Körper nicht jeden einzelnen Tag etwas neu Dokumentiertes tut.
    ==================================================================== */
-const MIN = 60000, STD = 60 * MIN, TAG = 24 * STD;
-const MEILEN = [
-  { ms: 20 * MIN,      wann:"20 Minuten", was:"Puls und Blutdruck sind auf normale Werte gesunken." },
-  { ms: 8 * STD,       wann:"8 Stunden",  was:"Das Kohlenmonoxid im Blut hat sich halbiert." },
-  { ms: 24 * STD,      wann:"1 Tag",      was:"Das Herzinfarktrisiko fängt an zu sinken." },
-  { ms: 2 * TAG,       wann:"2 Tage",     was:"Geschmack und Geruch kommen zurück." },
-  { ms: 3 * TAG,       wann:"3 Tage",     was:"Nikotin ist restlos raus, die Bronchien entspannen sich." },
-  { ms: 7 * TAG,       wann:"1 Woche",    was:"Die körperlich härteste Phase liegt hinter dir." },
-  { ms: 14 * TAG,      wann:"2 Wochen",   was:"Kreislauf und Lungenfunktion verbessern sich messbar." },
-  { ms: 30 * TAG,      wann:"1 Monat",    was:"Die Haut wird besser durchblutet." },
-  { ms: 90 * TAG,      wann:"3 Monate",   was:"Die Lungenfunktion hat deutlich zugelegt." },
-  { ms: 180 * TAG,     wann:"6 Monate",   was:"Husten und Kurzatmigkeit haben stark abgenommen." },
-  { ms: 270 * TAG,     wann:"9 Monate",   was:"Die Flimmerhärchen in den Bronchien haben sich erholt." },
-  { ms: 365 * TAG,     wann:"1 Jahr",     was:"Das Risiko einer koronaren Herzkrankheit ist etwa halbiert." },
-  { ms: 5 * 365 * TAG, wann:"5 Jahre",    was:"Das Schlaganfallrisiko nähert sich dem von Nichtrauchern." },
-  { ms: 10 * 365 * TAG,wann:"10 Jahre",   was:"Das Lungenkrebsrisiko ist etwa halbiert." },
-  { ms: 15 * 365 * TAG,wann:"15 Jahre",   was:"Das Herzkrankheitsrisiko entspricht dem von Nichtrauchern." }
+const TAGE = [
+  "Puls und Blutdruck sind wieder auf normalen Werten. Das Kohlenmonoxid im Blut sinkt bereits.",
+  "Nikotin ist fast vollständig abgebaut. Geschmack und Geruch fangen an, sich zurückzumelden.",
+  "Nikotin ist restlos draußen. Die Bronchien entspannen sich, Atmen fällt leichter.",
+  "Der stärkste körperliche Entzug liegt hinter dir. Ab hier arbeitet die Zeit für dich.",
+  "Der Sauerstoffgehalt im Blut ist stabil normal. Deine Muskeln bekommen wieder alles, was sie brauchen.",
+  "Sechs Tage ohne Teernachschub. Die Selbstreinigung der Atemwege hat angefangen.",
+  "Eine ganze Woche. Die Phase mit den meisten Rückfällen ist überstanden.",
+  "Acht Tage. Der Griff zur Schachtel ist keine automatische Bewegung mehr.",
+  "Die Nikotinrezeptoren im Gehirn beginnen, sich zurückzubilden. Das Verlangen verliert seine Grundlage.",
+  "Zehn Tage. Zweistellig — und der Morgen fängt nicht mehr mit Husten an.",
+  "Elf Tage ohne den ersten Griff am Morgen. Genau der war die härteste Gewohnheit.",
+  "Zwölf Tage. Die Durchblutung von Händen und Füßen verbessert sich messbar.",
+  "Dreizehn Tage. Alles, was du seitdem gerochen hast, hast du unverfälscht gerochen.",
+  "Zwei Wochen. Kreislauf und Lungenfunktion legen ab jetzt spürbar zu.",
+  "Fünfzehn Tage. Deine Kleidung riecht seit über zwei Wochen nach nichts.",
+  "Sechzehn Tage. Treppen sind das ehrlichste Messgerät — probier es aus.",
+  "Siebzehn Tage. Das Verlangen kommt seltener und es kommt schwächer.",
+  "Achtzehn Tage. Dein Herz hat seitdem hunderttausende Schläge weniger machen müssen.",
+  "Neunzehn Tage. Wunden und kleine Verletzungen heilen wieder in normalem Tempo.",
+  "Zwanzig Tage. Du hast zwanzigmal hintereinander dieselbe richtige Entscheidung getroffen.",
+  "Einundzwanzig Tage. Die Faustregel für neue Gewohnheiten ist erreicht.",
+  "Zweiundzwanzig Tage. Der Geschmackssinn ist deutlich feiner als noch vor drei Wochen.",
+  "Dreiundzwanzig Tage. Von hier aus ist Zurück weiter weg als Weiter.",
+  "Vierundzwanzig Tage. Deine Nacht wird ruhiger — Nikotin war ein Aufputschmittel.",
+  "Fünfundzwanzig Tage. Die Bronchien arbeiten wieder mit eigener Kraft.",
+  "Sechsundzwanzig Tage. Fast ein Monat, ohne dass es jemand gefeiert hat. Du weißt es.",
+  "Siebenundzwanzig Tage. Die Haut wird besser durchblutet, der graue Ton verschwindet.",
+  "Achtundzwanzig Tage. Vier volle Wochen, keine einzige Ausnahme.",
+  "Neunundzwanzig Tage. Der Entzug ist Geschichte, ab hier ist es nur noch Gewohnheit.",
+  "Ein Monat. Der Körper hat die Reparatur längst begonnen, du merkst nur den Anfang davon.",
+  "Einunddreißig Tage. Dein Zuhause riecht seit einem Monat nicht mehr nach Rauch.",
+  "Zweiunddreißig Tage. Die Zahl der Rezeptoren ist auf dem Stand eines Nichtrauchers.",
+  "Dreiunddreißig Tage. Kein Automat, kein Kiosk, kein Umweg mehr — einen ganzen Monat lang.",
+  "Vierunddreißig Tage. Ausdauer beim Sport ist die nächste Sache, die du merken wirst.",
+  "Fünfunddreißig Tage. Fünf Wochen. Das Verlangen kommt jetzt eher als Erinnerung.",
+  "Sechsunddreißig Tage. Deine Finger riechen nach nichts mehr.",
+  "Siebenunddreißig Tage. Erkältungen treffen dich ab jetzt weniger hart.",
+  "Achtunddreißig Tage. Kein Morgen mehr, der mit dem Suchen des Feuerzeugs anfängt.",
+  "Neununddreißig Tage. Die Flimmerhärchen in den Atemwegen arbeiten wieder mit.",
+  "Vierzig Tage. Vierzig Entscheidungen, jede einzeln getroffen.",
+  "Einundvierzig Tage. Dein Zahnfleisch ist besser durchblutet als vor sechs Wochen.",
+  "Zweiundvierzig Tage. Sechs Wochen — die Marke, ab der Chirurgen deutlich ruhiger operieren.",
+  "Dreiundvierzig Tage. Jeder Tag ab hier war früher unvorstellbar.",
+  "Vierundvierzig Tage. Der Husten, falls er kam, wird jetzt weniger.",
+  "Fünfundvierzig Tage. Anderthalb Monate. Nichts daran war Zufall.",
+  "Sechsundvierzig Tage. Du hast in dieser Zeit Situationen überstanden, die früher immer eine Zigarette bedeuteten.",
+  "Siebenundvierzig Tage. Deine Lunge schafft mehr Volumen als am ersten Tag.",
+  "Achtundvierzig Tage. Der Blutdruck liegt niedriger als in deiner Raucherzeit.",
+  "Neunundvierzig Tage. Sieben volle Wochen.",
+  "Fünfzig Tage. Eine runde Zahl, die vor sieben Wochen weit weg aussah.",
+  "Einundfünfzig Tage. Passivrauch hat in dieser Zeit niemand von dir abbekommen.",
+  "Zweiundfünfzig Tage. Der Geruchssinn nähert sich seinem alten Zustand.",
+  "Dreiundfünfzig Tage. Kein Aschenbecher, den jemand leeren musste.",
+  "Vierundfünfzig Tage. Dein Ruhepuls liegt messbar niedriger als früher.",
+  "Fünfundfünfzig Tage. Das Verlangen taucht nur noch in bestimmten Situationen auf, nicht mehr von selbst.",
+  "Sechsundfünfzig Tage. Acht Wochen. Zwei Monate sind fast voll.",
+  "Siebenundfünfzig Tage. Deine Kondition ist besser als am Anfang, auch wenn du nichts trainiert hast.",
+  "Achtundfünfzig Tage. Kein Regen, in dem du draußen gestanden hast, weil du musstest.",
+  "Neunundfünfzig Tage. Der Körper hat den größten Teil der schnellen Reparatur erledigt.",
+  "Zwei Monate. Ab hier geht es um das Langsame: Gefäße, Lunge, Risikowerte.",
+  "Einundsechzig Tage. Zwei Monate und einen Tag — auch der zählt einzeln.",
+  "Zweiundsechzig Tage. Entzündungswerte im Blut sind niedriger als in deiner Raucherzeit.",
+  "Dreiundsechzig Tage. Neun Wochen ohne Ausnahme.",
+  "Vierundsechzig Tage. Deine Stimme klingt klarer, wenn du morgens redest.",
+  "Fünfundsechzig Tage. Die Sauerstoffversorgung der Muskeln ist auf Nichtraucherniveau.",
+  "Sechsundsechzig Tage. Die Forschung nennt oft 66 Tage, bis eine Gewohnheit sitzt. Sie sitzt.",
+  "Siebenundsechzig Tage. Der Automatismus ist weg, es ist jetzt eine bewusste Sache — und die ist leichter.",
+  "Achtundsechzig Tage. Nichts an deiner Wohnung erinnert noch daran.",
+  "Neunundsechzig Tage. Fast zehn Wochen.",
+  "Siebzig Tage. Zehn Wochen, ohne eine einzige.",
+  "Einundsiebzig Tage. Deine Zähne verfärben sich seit über zwei Monaten nicht weiter.",
+  "Zweiundsiebzig Tage. Die Wundheilung ist auf normalem Stand.",
+  "Dreiundsiebzig Tage. Ein Fünftel eines Jahres.",
+  "Vierundsiebzig Tage. Das Herz arbeitet seit zweieinhalb Monaten in seinem eigenen Takt.",
+  "Fünfundsiebzig Tage. Fünfundsiebzig Abende, an denen du nicht rausgegangen bist.",
+  "Sechsundsiebzig Tage. Die Lungenkapazität steigt weiter, langsam und stetig.",
+  "Siebenundsiebzig Tage. Elf Wochen.",
+  "Achtundsiebzig Tage. Kein Gedanke mehr daran, ob die Schachtel bis morgen reicht.",
+  "Neunundsiebzig Tage. Der Schlaf ist tiefer als in deiner Raucherzeit.",
+  "Achtzig Tage. Achtzig Tage, in denen dein Körper nur aufgeräumt und nichts nachgeliefert bekommen hat.",
+  "Einundachtzig Tage. Deine Geschmacksnerven arbeiten auf vollem Niveau.",
+  "Zweiundachtzig Tage. Das Risiko für Atemwegsinfekte ist niedriger als noch im ersten Monat.",
+  "Dreiundachtzig Tage. Zwölf Wochen sind fast voll.",
+  "Vierundachtzig Tage. Zwölf Wochen. Die Lungenfunktion hat deutlich zugelegt.",
+  "Fünfundachtzig Tage. Ab hier zählst du eher in Monaten als in Tagen.",
+  "Sechsundachtzig Tage. Kein Ritual mehr, das dich an die Zigarette bindet.",
+  "Siebenundachtzig Tage. Die Durchblutung ist auf einem Stand, den du seit Jahren nicht hattest.",
+  "Achtundachtzig Tage. Fast drei Monate, ohne dass es eine Rolle gespielt hat.",
+  "Neunundachtzig Tage. Morgen sind es drei Monate.",
+  "Drei Monate. Lungenfunktion und Kreislauf haben deutlich zugelegt — das war der große Abschnitt."
 ];
+
+/* Dokumentierte Langzeitmarken, die auf ihrem jeweiligen Tag erscheinen. */
+const LANGZEIT = [
+  { tag:120,  text:"Vier Monate. Husten und Verschleimung nehmen jetzt deutlich ab." },
+  { tag:150,  text:"Fünf Monate. Die Selbstreinigung der Atemwege läuft wieder vollständig." },
+  { tag:180,  text:"Ein halbes Jahr. Husten und Kurzatmigkeit haben stark abgenommen." },
+  { tag:210,  text:"Sieben Monate. Die Flimmerhärchen in den Bronchien arbeiten wieder weitgehend normal." },
+  { tag:270,  text:"Neun Monate. Die Erholung der Atemwege ist im Wesentlichen abgeschlossen." },
+  { tag:365,  text:"Ein Jahr. Das Risiko einer koronaren Herzkrankheit ist etwa halbiert." },
+  { tag:730,  text:"Zwei Jahre. Das Herzinfarktrisiko liegt deutlich näher an dem von Nichtrauchern." },
+  { tag:1095, text:"Drei Jahre. Die Gefäße haben sich weit über das hinaus erholt, was im ersten Jahr möglich war." },
+  { tag:1825, text:"Fünf Jahre. Das Schlaganfallrisiko nähert sich dem von Menschen, die nie geraucht haben." },
+  { tag:3650, text:"Zehn Jahre. Das Lungenkrebsrisiko ist etwa halbiert." },
+  { tag:5475, text:"Fünfzehn Jahre. Das Risiko für Herzkrankheiten entspricht dem von Nichtrauchern." }
+];
+
+const MIN = 60000, STD = 60 * MIN, TAG = 24 * STD;
 
 /* ====================================================================
    5. Speicher — läuft auch weiter, wenn er gesperrt ist
@@ -926,6 +1043,9 @@ function merkenLoeschen(){
    6. Rechnen und Formatieren
    ==================================================================== */
 const $ = id => document.getElementById(id);
+
+const esc = s => String(s).replace(/[&<>"']/g,
+  c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
 
 const zahl = (n, stellen = 0) =>
   n.toLocaleString("de-DE", { minimumFractionDigits: stellen, maximumFractionDigits: stellen });
@@ -977,8 +1097,7 @@ function rechnen(profil, jetzt = Date.now()){
 let meineId = null;      // Kennung des angemeldeten Kontos
 let profil = null;       // dessen Daten
 let uhrLaeuft = null;
-let letzterTag = -1;         // damit der Spruch nicht sekündlich neu gesetzt wird
-let letzteMeilenzahl = -1;   // dito für die Meilensteinliste
+let letzterTag = -1;         // damit Spruch und Tagesliste nicht sekündlich neu gebaut werden
 
 const ANSICHTEN = ["ansichtAnmeldung", "ansichtEinrichten", "ansichtApp"];
 function zeigen(welche){
@@ -1017,7 +1136,6 @@ function starten(){
   // fehlende Felder aus älteren Datenständen auffüllen
   profil = Object.assign(standard(), profil);
   letzterTag = -1;
-  letzteMeilenzahl = -1;
   zeigen("ansichtApp");
   einstellungenFuellen();
   if ($("speicherWarnung")){
@@ -1105,17 +1223,13 @@ function zeichnen(){
 
   $("kLeben").textContent = dauerAusMinuten(w.lebensMinuten);
 
-  // Spruch und Meilensteine nur neu bauen, wenn sich wirklich etwas ändert.
-  // Sonst würde die Sekundenanzeige jede Sekunde das halbe DOM ersetzen und
-  // dabei jede Textmarkierung des Nutzers zerstören.
+  // Spruch und Tagesliste nur neu bauen, wenn der Tag umschlägt. Sonst würde
+  // die Sekundenanzeige jede Sekunde das halbe DOM ersetzen und dabei jede
+  // Textmarkierung des Nutzers zerstören.
   if (w.tage !== letzterTag){
     spruchZeichnen(w.tage);
+    tageZeichnen(w.tage + 1, profil);   // erster Tag ist Tag 1, nicht Tag 0
     letzterTag = w.tage;
-  }
-  const erreicht = MEILEN.filter(m => w.verstrichen >= m.ms).length;
-  if (erreicht !== letzteMeilenzahl){
-    meilenZeichnen(w.verstrichen);
-    letzteMeilenzahl = erreicht;
   }
 
   const beste = Math.max(profil.beste || 0, w.verstrichen);
@@ -1132,19 +1246,60 @@ function spruchZeichnen(tage){
   $("sText").textContent = s.t;
 }
 
-function meilenZeichnen(verstrichen){
-  const liste = $("meilen");
-  const naechster = MEILEN.findIndex(m => m.ms > verstrichen);
-  // erreichte plus die nächsten zwei zeigen, sonst wird die Liste zur Wand
-  const bis = naechster === -1 ? MEILEN.length : Math.min(MEILEN.length, naechster + 2);
-  liste.innerHTML = MEILEN.slice(0, bis).map(m => {
-    const da = verstrichen >= m.ms;
-    return `<li class="${da ? "da" : ""}">
+/** Der Erfolg eines bestimmten Tages. nr = 1 ist der erste Tag.
+    Bis Tag 90 ein eigener Eintrag, danach die dokumentierten Langzeitmarken
+    und sonst ein aus den eigenen Zahlen errechneter Erfolg. Der wechselt
+    täglich und ist immer wahr, ohne dass ich Medizin erfinden muss. */
+function tagesText(nr, p){
+  if (nr >= 1 && nr <= TAGE.length) return TAGE[nr - 1];
+
+  const lang = LANGZEIT.find(m => m.tag === nr);
+  if (lang) return lang.text;
+
+  const zig  = p.menge * nr;
+  const geld = zig * (p.preis / p.proSchachtel);
+
+  if (nr % 365 === 0) return (nr / 365) + " Jahre rauchfrei. " + zahl(zig) + " Zigaretten, die es nie gegeben hat.";
+  if (nr % 30 === 0)  return Math.round(nr / 30) + " Monate rauchfrei — bis hierher " + euro(geld) + " nicht ausgegeben.";
+  if (nr % 7 === 0)   return "Woche " + (nr / 7) + " abgeschlossen, ohne eine einzige.";
+
+  switch (nr % 5){
+    case 0: return zahl(zig) + " Zigaretten nicht geraucht.";
+    case 1: return euro(geld) + " nicht ausgegeben.";
+    case 2: return dauerAusMinuten(zig * 11) + " Lebenszeit zurückgerechnet.";
+    case 3: return zahl(Math.floor(zig / p.proSchachtel)) + " Schachteln, die niemand gekauft hat.";
+  }
+  // Jeder fünfte Tag trifft keinen der Rechenwege. Damit dort nicht immer
+  // dasselbe steht, wandert er durch diese Liste.
+  const rest = [
+    "Tag " + nr + " — und es ist längst normal geworden.",
+    "Deine Lunge arbeitet seit " + nr + " Tagen ohne Nachschub.",
+    nr + " Tage, an denen du nicht bei Regen vor der Tür gestanden hast.",
+    "Seit " + nr + " Tagen riecht nichts an dir nach Rauch.",
+    nr + " Tage, in denen dein Herz in seinem eigenen Takt geschlagen hat.",
+    "Seit " + nr + " Tagen hat niemand Passivrauch von dir abbekommen.",
+    nr + " Tage ohne einen einzigen Umweg zum Automaten.",
+    "Tag " + nr + " — die Sache ist entschieden, nicht mehr offen."
+  ];
+  return rest[Math.floor(nr / 5) % rest.length];
+}
+
+/** Heute hervorgehoben, die letzten Tage darunter, morgen als Ausblick. */
+function tageZeichnen(tagNr, p){
+  const zeilen = [{ nr:tagNr + 1, zustand:"kommt" }];
+  for (let n = tagNr; n >= Math.max(1, tagNr - 5); n--){
+    zeilen.push({ nr:n, zustand: n === tagNr ? "heute" : "da" });
+  }
+  $("tage").innerHTML = zeilen.map(z => `
+      <li class="${z.zustand}">
         <span class="punkt"></span>
-        <span class="was">${m.was}</span>
-        <span class="wann">${m.wann}</span>
-      </li>`;
-  }).join("");
+        <span class="was">${esc(tagesText(z.nr, p))}</span>
+        <span class="wann">${z.zustand === "kommt" ? "morgen" : "Tag " + z.nr}</span>
+      </li>`).join("");
+
+  $("tageDavor").textContent = tagNr > 6
+    ? "und " + zahl(tagNr - 6) + " weitere davor"
+    : "";
 }
 
 /* ---------- Einstellungen ---------- */
@@ -1228,13 +1383,6 @@ $("fImport").onchange = e => {
 
 /* ---------- Start ---------- */
 (function los(){
-  const demo = KONTEN.find(k => k.demo);
-  if (demo){
-    const h = $("demoHinweis");
-    h.hidden = false;
-    h.innerHTML = "Vorläufiger Demo-Zugang: Name <b>Demo</b>, Passwort <b>rauchfrei</b>."
-      + "<br>Bitte durch die echten Zugänge ersetzen.";
-  }
   const gemerkt = merkenLesen();
   if (gemerkt && KONTEN.some(k => k.hash === gemerkt)){
     anmelden(gemerkt);
