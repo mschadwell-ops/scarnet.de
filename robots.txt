@@ -1,0 +1,8 @@
+# Die Startseite darf in den Index, der persönliche Bereich nicht.
+# Ergänzend steht in beiden Seiten ein noindex im Kopf — robots.txt hält
+# Suchmaschinen vom Abruf ab, noindex hält sie aus den Ergebnissen.
+
+User-agent: *
+Disallow: /rauchfrei.html
+Disallow: /setup.html
+Allow: /

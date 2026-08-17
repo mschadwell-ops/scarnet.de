@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+
+<title>Zugang erzeugen — scaRnet</title>
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230A1411'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='%2362D6AE' stroke-width='2.5'/%3E%3C/svg%3E">
+
+<style>
+  :root{
+    --ground:#0A1411; --surface:#0F1E1A; --surface-2:#162923; --line:#1F3730;
+    --text:#E9F2EE; --muted:#8CA8A0; --faint:#5D7771;
+    --air:#62D6AE; --brass:#D9A94F;
+    --sans: ui-sans-serif, system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+  }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0; background:var(--ground); color:var(--text);
+    font-family:var(--sans); font-size:15px; line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{ max-width:600px; margin:0 auto; padding:48px 20px 70px; }
+  h1{ font-size:25px; font-weight:600; letter-spacing:-.02em; margin:0 0 10px; }
+  .lede{ margin:0 0 28px; color:var(--muted); }
+  .karte{ background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:24px; }
+  label.feld{ display:block; margin-bottom:16px; }
+  label.feld span{
+    display:block; margin-bottom:6px; font-size:11px;
+    letter-spacing:.13em; text-transform:uppercase; color:var(--muted);
+  }
+  input{
+    width:100%; font:inherit; padding:11px 13px; border-radius:8px;
+    border:1px solid var(--line); background:var(--ground); color:var(--text);
+  }
+  input:focus{ outline:none; border-color:var(--air); }
+  button{
+    font:inherit; cursor:pointer; border-radius:8px; padding:11px 18px;
+    border:1px solid var(--air); background:var(--air); color:#062018; font-weight:650;
+  }
+  button:hover{ filter:brightness(1.08); }
+  button:focus-visible, input:focus-visible{ outline:2px solid var(--air); outline-offset:2px; }
+  .neben{ background:var(--surface-2); border-color:var(--line); color:var(--text); font-weight:400; }
+
+  .ergebnis{ margin-top:24px; }
+  .ergebnis[hidden]{ display:none; }
+  .abschnitt{
+    font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--faint); margin-bottom:9px;
+  }
+  pre{
+    margin:0 0 12px; padding:14px; overflow-x:auto;
+    background:var(--ground); border:1px solid var(--line); border-radius:8px;
+    font-family:var(--mono); font-size:12.5px; line-height:1.6; color:var(--air);
+    white-space:pre; -webkit-user-select:all; user-select:all;
+  }
+  .warnung{
+    margin-top:26px; padding:14px 16px; border-radius:8px;
+    background:var(--surface-2); border-left:2px solid var(--brass);
+    font-size:13.5px; color:var(--muted);
+  }
+  .warnung b{ color:var(--text); }
+  a{ color:var(--air); }
+</style>
+</head>
+
+<body>
+<div class="wrap">
+
+  <h1>Zugang erzeugen</h1>
+  <p class="lede">
+    Name und Passwort eingeben. Daraus entsteht eine Prüfsumme, die in
+    <code>rauchfrei.html</code> eingetragen wird. Aus der Prüfsumme lässt sich
+    weder der Name noch das Passwort zurückrechnen.
+  </p>
+
+  <form class="karte" id="form">
+    <label class="feld">
+      <span>Name</span>
+      <input type="text" id="name" autocomplete="off" autocapitalize="off" spellcheck="false" required>
+    </label>
+    <label class="feld">
+      <span>Passwort</span>
+      <input type="text" id="pass" autocomplete="off" spellcheck="false" required>
+    </label>
+    <button type="submit">Zeile erzeugen</button>
+  </form>
+
+  <div class="ergebnis" id="ergebnis" hidden>
+    <div class="abschnitt">Diese Zeile in rauchfrei.html einfügen</div>
+    <pre id="zeile"></pre>
+    <button type="button" class="neben" id="kopieren">Kopieren</button>
+    <span id="kopiert" style="margin-left:10px;color:var(--air);font-size:13px"></span>
+  </div>
+
+  <div class="warnung">
+    <b>Wichtig:</b> Das Passwort wird nur in diesem Browser verarbeitet und
+    nirgendwohin gesendet. Trag die erzeugten Zeilen in
+    <code>rauchfrei.html</code> im Abschnitt <code>KONTEN</code> ein und lösche
+    dort die Demo-Zeile.
+    <br><br>
+    Diese Seite ist nur Werkzeug und aus Suchmaschinen ausgenommen. Sie enthält
+    keine Daten und darf ruhig liegen bleiben — wer sie aufruft, kann damit
+    nichts anfangen, was er nicht auch selbst berechnen könnte.
+  </div>
+
+</div>
+
+<script>
+"use strict";
+
+/* Muss genau dasselbe Salz sein wie in rauchfrei.html. */
+const SALZ = "scaRnet-rauchfrei-v1";
+
+const K256 = [
+  0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
+  0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
+  0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,
+  0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,
+  0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,
+  0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,
+  0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,
+  0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2
+];
+const rotr = (x,n) => (x >>> n) | (x << (32 - n));
+
+function sha256(str){
+  let H = [0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+  const bytes = new TextEncoder().encode(str), len = bytes.length;
+  const total = (((len + 8) >> 6) << 6) + 64;
+  const buf = new Uint8Array(total);
+  buf.set(bytes);
+  buf[len] = 0x80;
+  const dv = new DataView(buf.buffer);
+  const bits = len * 8;
+  dv.setUint32(total - 8, Math.floor(bits / 4294967296));
+  dv.setUint32(total - 4, bits >>> 0);
+  const w = new Uint32Array(64);
+  for (let i = 0; i < total; i += 64){
+    for (let t = 0; t < 16; t++) w[t] = dv.getUint32(i + t * 4);
+    for (let t = 16; t < 64; t++){
+      const x = w[t-15], y = w[t-2];
+      const s0 = rotr(x,7) ^ rotr(x,18) ^ (x >>> 3);
+      const s1 = rotr(y,17) ^ rotr(y,19) ^ (y >>> 10);
+      w[t] = (w[t-16] + s0 + w[t-7] + s1) >>> 0;
+    }
+    let [a,b,c,d,e,f,g,h] = H;
+    for (let t = 0; t < 64; t++){
+      const S1 = rotr(e,6) ^ rotr(e,11) ^ rotr(e,25);
+      const ch = (e & f) ^ (~e & g);
+      const t1 = (h + S1 + ch + K256[t] + w[t]) >>> 0;
+      const S0 = rotr(a,2) ^ rotr(a,13) ^ rotr(a,22);
+      const maj = (a & b) ^ (a & c) ^ (b & c);
+      const t2 = (S0 + maj) >>> 0;
+      h = g; g = f; f = e; e = (d + t1) >>> 0;
+      d = c; c = b; b = a; a = (t1 + t2) >>> 0;
+    }
+    H = H.map((v,i) => (v + [a,b,c,d,e,f,g,h][i]) >>> 0);
+  }
+  return H.map(v => v.toString(16).padStart(8,"0")).join("");
+}
+
+const $ = id => document.getElementById(id);
+
+$("form").addEventListener("submit", e => {
+  e.preventDefault();
+  const name = $("name").value.trim();
+  const pass = $("pass").value;
+  if (!name || !pass) return;
+  const hash = sha256(SALZ + "|" + name.toLowerCase() + "|" + pass);
+  $("zeile").textContent =
+    '  { hash:"' + hash + '" },   // ' + name;
+  $("ergebnis").hidden = false;
+  $("kopiert").textContent = "";
+});
+
+$("kopieren").onclick = async () => {
+  try {
+    await navigator.clipboard.writeText($("zeile").textContent);
+    $("kopiert").textContent = "kopiert";
+  } catch (err) {
+    $("kopiert").textContent = "Kopieren blockiert — bitte markieren";
+  }
+};
+</script>
+</body>
+</html>
