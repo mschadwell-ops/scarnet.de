@@ -38,6 +38,12 @@ html, body{
     height:100%;
     overflow:hidden;
     background:black;
+
+    /* Muss hier stehen, seit das Menü Text enthält: ohne Angabe erbt die
+       Seite die Voreinstellung des Browsers, und die ist eine Serifenschrift.
+       Systemschriften statt Google Fonts — es soll nichts nachgeladen werden. */
+    font-family:ui-sans-serif, system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing:antialiased;
 }
 
 /* Desktop */
