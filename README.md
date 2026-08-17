@@ -40,7 +40,10 @@ Neuen Zugang anlegen:
 1. `setup.html` öffnen
 2. Name und Passwort eintragen, Zeile erzeugen
 3. Zeile in `rauchfrei.html` in die Liste `KONTEN` einfügen
-4. die Demo-Zeile dort löschen
+
+Zu welchem Namen ein Hash gehört, steht absichtlich nirgends — sonst stünden
+die Namen ja doch wieder im Quelltext. Wer sich anmelden will, muss den Namen
+kennen. Ein Kennwort ändern heißt: neue Zeile erzeugen, alte ersetzen.
 
 Das Passwort wird dabei nur im Browser verarbeitet. Es sollte nicht in einer
 Wörterliste stehen: Die Prüfsumme ist öffentlich, und schwache Passwörter
