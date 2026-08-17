@@ -60,11 +60,12 @@
     -webkit-backdrop-filter:blur(12px) saturate(140%);
     border-bottom:1px solid rgba(255,255,255,.09);
   }
+  /* Beschriftung der Leiste, absichtlich kein Link — die Ziele stehen rechts. */
   .mark{
-    flex:none; font-size:15px; font-weight:300; letter-spacing:.02em;
-    color:rgba(255,255,255,.92); text-decoration:none; white-space:nowrap;
+    flex:none; font-size:11px; font-weight:600; letter-spacing:.18em;
+    text-transform:uppercase; color:rgba(255,255,255,.38);
+    white-space:nowrap; -webkit-user-select:none; user-select:none;
   }
-  .mark b{ font-weight:600; color:#fff; }
   .tabs{ display:flex; gap:4px; margin-left:auto; overflow-x:auto; scrollbar-width:none; }
   .tabs::-webkit-scrollbar{ display:none; }
   .tabs a{
@@ -258,8 +259,9 @@
 <body>
 
 <nav class="nav">
-  <a class="mark" href="/">sca<b>R</b>net</a>
+  <span class="mark">Menü</span>
   <div class="tabs">
+    <a href="/">Start</a>
     <a href="/rauchfrei.html" aria-current="page">Rauchfrei</a>
   </div>
 </nav>
