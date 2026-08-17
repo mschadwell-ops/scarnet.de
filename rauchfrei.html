@@ -115,6 +115,11 @@
     display:block; margin-bottom:6px;
     font-size:11px; letter-spacing:.13em; text-transform:uppercase; color:var(--muted);
   }
+  .feldhilfe{
+    display:block; margin-top:7px;
+    font-size:12.5px; line-height:1.5; color:var(--faint);
+    text-transform:none; letter-spacing:0; font-weight:400;
+  }
   .zeile-check{ display:flex; align-items:center; gap:9px; margin-bottom:20px; font-size:14px; color:var(--muted); }
   .zeile-check input{ width:16px; height:16px; accent-color:var(--air); }
 
@@ -313,8 +318,10 @@
     </div>
     <form class="karte" id="einrichtenForm">
       <label class="feld">
-        <span>Rauchfrei seit</span>
-        <input type="date" id="fStart" required>
+        <span>Rauchfrei seit — Datum und Uhrzeit</span>
+        <input type="datetime-local" id="fStart" required>
+        <small class="feldhilfe">Voreingestellt ist genau jetzt. Wenn du heute
+          Mittag aufgehört hast, stell die Uhrzeit darauf ein.</small>
       </label>
       <label class="feld">
         <span>Zigaretten pro Tag davor</span>
@@ -373,8 +380,8 @@
 
         <div class="abschnitt-titel">Angaben</div>
         <label class="feld">
-          <span>Rauchfrei seit</span>
-          <input type="date" id="eStart">
+          <span>Rauchfrei seit — Datum und Uhrzeit</span>
+          <input type="datetime-local" id="eStart">
         </label>
         <label class="feld">
           <span>Zigaretten pro Tag davor</span>
@@ -452,7 +459,8 @@ const SALZ = "scaRnet-rauchfrei-v1";
 
 const KONTEN = [
   { hash:"e9baa8463e3398cbeaf48a7520b3e197b11eddc60af6ffcd7838092f620fa4d0" },
-  { hash:"cc254845e459367949e126c5f6674c04252a5657a1da57c570647e375ceb2889" }
+  { hash:"cc254845e459367949e126c5f6674c04252a5657a1da57c570647e375ceb2889" },
+  { hash:"0997d134dac77615f607b8269294354ab173e19b613096b72028fa5d5a30f7d5" }
 ];
 
 /* ====================================================================
@@ -1082,8 +1090,11 @@ function dauerAusMinuten(minuten){
   return m + " Min.";
 }
 
-const datumLang = ts => new Date(ts).toLocaleDateString("de-DE",
-  { weekday:"long", day:"numeric", month:"long", year:"numeric" });
+/* Mit Uhrzeit, weil die jetzt in die Rechnung eingeht — so lässt sich auch
+   nachsehen, was tatsächlich eingetragen wurde. */
+const datumLang = ts => new Date(ts).toLocaleString("de-DE",
+  { weekday:"long", day:"numeric", month:"long", year:"numeric",
+    hour:"2-digit", minute:"2-digit" }) + " Uhr";
 
 /** Alle abgeleiteten Werte an einem Ort — so bleibt das Rendern dumm. */
 function rechnen(profil, jetzt = Date.now()){
@@ -1119,14 +1130,30 @@ function zeigen(welche){
 
 const standard = () => ({ start:Date.now(), menge:20, preis:10, proSchachtel:22, beste:0, rueckfaelle:0 });
 
-/** YYYY-MM-DD zu Zeitstempel auf Mitternacht Ortszeit. */
-function ausDatumsfeld(wert){
-  const [j,m,t] = wert.split("-").map(Number);
-  return new Date(j, m - 1, t, 0, 0, 0, 0).getTime();
-}
-function inDatumsfeld(ts){
+/* Datum UND Uhrzeit, nicht nur das Datum. Wer mittags aufhört, soll nicht
+   rückdatiert auf Mitternacht starten und sofort zwölf Stunden geschenkt
+   bekommen — bei Marken wie 20 Minuten oder 8 Stunden zählt die Uhrzeit. */
+
+const zz = n => String(n).padStart(2, "0");
+
+/** Zeitstempel zu YYYY-MM-DDTHH:MM für ein datetime-local-Feld. */
+function inFeld(ts){
   const d = new Date(ts);
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+  return `${d.getFullYear()}-${zz(d.getMonth()+1)}-${zz(d.getDate())}`
+       + `T${zz(d.getHours())}:${zz(d.getMinutes())}`;
+}
+
+/** Feldwert zurück zum Zeitstempel. Ohne Zeitzonenangabe deutet der Browser
+    die Angabe als Ortszeit, was hier genau richtig ist. */
+function ausFeld(wert){
+  const ts = new Date(wert).getTime();
+  return Number.isNaN(ts) ? null : ts;
+}
+
+/** Nur das Datum, für Dateinamen. */
+function datumKurz(ts){
+  const d = new Date(ts);
+  return `${d.getFullYear()}-${zz(d.getMonth()+1)}-${zz(d.getDate())}`;
 }
 
 /* ---------- Anmeldung ---------- */
@@ -1136,8 +1163,9 @@ function anmelden(id){
   profil = alle[id] || null;
 
   if (!profil){
-    $("fStart").value = inDatumsfeld(Date.now());
-    $("fStart").max = inDatumsfeld(Date.now());
+    const jetzt = inFeld(Date.now());
+    $("fStart").value = jetzt;   // Voreinstellung: genau jetzt
+    $("fStart").max = jetzt;
     zeigen("ansichtEinrichten");
     $("fStart").focus();
     return;
@@ -1183,10 +1211,9 @@ $("anmeldeForm").addEventListener("submit", e => {
 $("einrichtenForm").addEventListener("submit", e => {
   e.preventDefault();
   const fehler = $("einrichtenFehler");
-  const wert = $("fStart").value;
-  if (!wert){ fehler.textContent = "Bitte ein Datum wählen."; return; }
-  const start = ausDatumsfeld(wert);
-  if (start > Date.now()){ fehler.textContent = "Das Datum liegt in der Zukunft."; return; }
+  const start = ausFeld($("fStart").value);
+  if (start === null){ fehler.textContent = "Bitte Datum und Uhrzeit angeben."; return; }
+  if (start > Date.now()){ fehler.textContent = "Das liegt in der Zukunft."; return; }
   const menge = parseInt($("fMenge").value, 10);
   if (!menge || menge < 1){ fehler.textContent = "Bitte eine Zahl ab 1 eintragen."; return; }
 
@@ -1317,8 +1344,8 @@ function tageZeichnen(tagNr, p){
 
 /* ---------- Einstellungen ---------- */
 function einstellungenFuellen(){
-  $("eStart").value = inDatumsfeld(profil.start);
-  $("eStart").max = inDatumsfeld(Date.now());
+  $("eStart").value = inFeld(profil.start);
+  $("eStart").max = inFeld(Date.now());
   $("eMenge").value = profil.menge;
   $("ePreis").value = profil.preis;
   $("eProSchachtel").value = profil.proSchachtel;
@@ -1331,8 +1358,8 @@ $("bSpeichern").onclick = () => {
     const n = parseFloat(el.value);
     return Number.isNaN(n) ? vorher : Math.min(hi, Math.max(lo, n));
   };
-  const start = $("eStart").value ? ausDatumsfeld($("eStart").value) : profil.start;
-  if (start > Date.now()){ fehler.textContent = "Datum liegt in der Zukunft."; return; }
+  const start = ausFeld($("eStart").value) ?? profil.start;
+  if (start > Date.now()){ fehler.textContent = "Das liegt in der Zukunft."; return; }
 
   profil.start = start;
   profil.menge = Math.round(grenze($("eMenge"), profil.menge));
@@ -1347,11 +1374,11 @@ $("bSpeichern").onclick = () => {
 
 $("bRueckfall").onclick = () => {
   const w = rechnen(profil);
-  if (!confirm("Zähler ab heute neu starten? Deine längste rauchfreie Zeit von "
+  if (!confirm("Zähler ab jetzt neu starten? Deine längste rauchfreie Zeit von "
       + Math.floor(w.verstrichen / TAG) + " Tagen bleibt gespeichert.")) return;
   profil.beste = Math.max(profil.beste || 0, w.verstrichen);
   profil.rueckfaelle = (profil.rueckfaelle || 0) + 1;
-  profil.start = ausDatumsfeld(inDatumsfeld(Date.now()));
+  profil.start = Date.now();   // ab diesem Augenblick, nicht ab Mitternacht
   einstellungenFuellen();
   sichern();
   zeichnen();
@@ -1362,7 +1389,7 @@ $("bExport").onclick = () => {
   const inhalt = JSON.stringify({ art:"scarnet-rauchfrei", fassung:1, profil }, null, 2);
   const a = document.createElement("a");
   a.href = URL.createObjectURL(new Blob([inhalt], { type:"application/json" }));
-  a.download = "rauchfrei-" + inDatumsfeld(Date.now()) + ".json";
+  a.download = "rauchfrei-" + datumKurz(Date.now()) + ".json";
   document.body.appendChild(a);
   a.click();
   a.remove();
