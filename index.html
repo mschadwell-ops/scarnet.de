@@ -87,18 +87,17 @@ html, body{
     border-bottom:1px solid rgba(255,255,255,.09);
 }
 
+/* Beschriftung der Leiste, absichtlich kein Link — die Ziele stehen rechts. */
 .mark{
     flex:none;
-    font-size:15px;
-    font-weight:300;
-    letter-spacing:.02em;
-    color:rgba(255,255,255,.92);
-    text-decoration:none;
-    white-space:nowrap;
-}
-.mark b{
+    font-size:11px;
     font-weight:600;
-    color:#fff;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:rgba(255,255,255,.38);
+    white-space:nowrap;
+    -webkit-user-select:none;
+    user-select:none;
 }
 
 .tabs{
@@ -131,8 +130,7 @@ html, body{
     color:#fff;
     background:rgba(255,255,255,.14);
 }
-.tabs a:focus-visible,
-.mark:focus-visible{
+.tabs a:focus-visible{
     outline:2px solid #fff;
     outline-offset:2px;
 }
@@ -159,8 +157,9 @@ html, body{
 <!-- MENÜ — hier kommen neue Reiter dazu. Auf der jeweils eigenen Seite
      bekommt der Reiter aria-current="page", damit er hervorgehoben wird. -->
 <nav class="nav">
-  <a class="mark" href="/">sca<b>R</b>net</a>
+  <span class="mark">Menü</span>
   <div class="tabs">
+    <a href="/" aria-current="page">Start</a>
     <a href="/rauchfrei.html">Rauchfrei</a>
   </div>
 </nav>
