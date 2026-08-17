@@ -1,4 +1,3 @@
-dann bitte nochmal den kompletten neuen code
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -6,6 +5,25 @@ dann bitte nochmal den kompletten neuen code
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>scaRnet.de</title>
+
+<!-- TODO: eigenen Text einsetzen — das hier steht in Google-Treffern und Link-Vorschauen -->
+<meta name="description" content="scaRnet.de — Startseite">
+
+<link rel="canonical" href="https://scarnet.de/">
+
+<!-- Favicon als SVG direkt eingebettet: spart einen Request und die 404 auf /favicon.ico -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23000'/%3E%3Ctext x='16' y='24' font-family='Arial,Helvetica,sans-serif' font-size='22' font-weight='bold' fill='%23fff' text-anchor='middle'%3Es%3C/text%3E%3C/svg%3E">
+
+<!-- Das Hero-Bild steckt im CSS und wird vom Browser erst nach dem Stylesheet entdeckt.
+     Der Preload holt es sofort; media sorgt dafür, dass weiterhin nur eines der beiden lädt. -->
+<link rel="preload" as="image" href="Welcome.jpg" media="(min-width:769px)">
+<link rel="preload" as="image" href="Welcome-mobile.jpg" media="(max-width:768px)">
+
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://scarnet.de/">
+<meta property="og:title" content="scaRnet">
+<meta property="og:description" content="scaRnet.de — Startseite">
+<meta property="og:image" content="https://scarnet.de/Welcome.jpg">
 
 <style>
 
@@ -26,29 +44,41 @@ html, body{
 .hero{
     width:100%;
     height:100vh;
+    height:100svh;   /* mobil: rechnet die Adressleiste raus, sonst wird unten abgeschnitten */
 
-    background-image:url('Welcome.png');
+    background-image:url('Welcome.jpg');
     background-size:cover;
     background-position:center;
     background-repeat:no-repeat;
 }
 
-/* Mobile */
+/* Mobile — nur die Bildquelle wechselt, der Rest von oben gilt weiter */
 @media (max-width:768px){
 
     .hero{
-        background-image:url('Welcome-mobile.png');
-        background-size:cover;
-        background-position:center;
-        background-repeat:no-repeat;
+        background-image:url('Welcome-mobile.jpg');
     }
 
+}
+
+/* Der Schriftzug steckt als Pixel im Bild. Diese Überschrift bleibt unsichtbar,
+   existiert aber für Screenreader und Suchmaschinen. */
+.sr-only{
+    position:absolute;
+    width:1px;
+    height:1px;
+    margin:-1px;
+    overflow:hidden;
+    clip-path:inset(50%);
+    white-space:nowrap;
 }
 
 </style>
 </head>
 
 <body>
+
+<h1 class="sr-only">scaRnet</h1>
 
 <div class="hero"></div>
 
