@@ -77,8 +77,8 @@
   .tabs a:hover{ color:#fff; background:rgba(255,255,255,.09); }
   .tabs a[aria-current="page"]{ color:#fff; background:rgba(255,255,255,.14); }
 
-  /* Unten Platz lassen, damit der feste Krisenknopf nichts verdeckt. */
-  .wrap{ max-width:840px; margin:0 auto; padding:40px 20px 104px; }
+  /* Unten etwas Platz, damit der Eckknopf nichts verdeckt. */
+  .wrap{ max-width:840px; margin:0 auto; padding:40px 20px 88px; }
 
   /* ---------- gemeinsame Bausteine ---------- */
   h2{
@@ -486,25 +486,32 @@
   }
 
   /* ---------- Krisenknopf ----------
-     Fest am unteren Rand, immer erreichbar. Rot, weil er ein Alarm ist —
-     der Inhalt dahinter ist bewusst das Gegenteil davon. */
+     Klein, rund, in der Ecke und im Ruhezustand halb durchsichtig. Ein
+     dauerhaft sichtbarer Knopf mit Rauch-Bezug ist selbst ein Hinweisreiz;
+     genau die will man beim Aufhören loswerden. Erreichbar bleibt er
+     trotzdem jederzeit — das Rot steckt im Fenster, nicht im Auslöser. */
   .krisenknopf{
-    position:fixed; left:50%; bottom:16px;
-    transform:translateX(-50%);
+    position:fixed;
+    right:calc(16px + env(safe-area-inset-right));
+    bottom:calc(16px + env(safe-area-inset-bottom));
     z-index:20;
-    width:min(560px, calc(100vw - 32px));
-    padding:15px 18px; min-height:52px;
-    border-radius:12px;
-    border:1px solid rgba(217,119,92,.55);
-    background:linear-gradient(180deg, rgba(217,119,92,.22), rgba(217,119,92,.13));
+    padding:12px 19px; min-height:46px;
+    border-radius:999px;
+    border:1px solid rgba(217,119,92,.4);
+    background:rgba(18,11,9,.8);
     backdrop-filter:blur(10px);
     -webkit-backdrop-filter:blur(10px);
-    color:#F0B7A6;
-    font-size:14px; font-weight:600; line-height:1.3;
-    box-shadow:0 6px 26px rgba(0,0,0,.45);
+    color:rgba(240,183,166,.85);
+    font-size:13px; font-weight:600; letter-spacing:.03em; line-height:1;
+    box-shadow:0 4px 18px rgba(0,0,0,.4);
+    opacity:.55;
+    transition:opacity .25s, background .2s, border-color .2s, color .2s;
   }
-  .krisenknopf:hover{
-    background:linear-gradient(180deg, rgba(217,119,92,.32), rgba(217,119,92,.2));
+  .krisenknopf:hover,
+  .krisenknopf:active,
+  .krisenknopf:focus-visible{
+    opacity:1;
+    background:rgba(217,119,92,.2);
     border-color:var(--warn);
     color:#FFD2C4;
   }
@@ -773,10 +780,12 @@
 
     <p class="fuss" id="speicherWarnung" hidden></p>
 
-    <!-- Liegt fest am unteren Rand, damit er im entscheidenden Moment nicht
-         gesucht werden muss. -->
-    <button type="button" class="krisenknopf" id="bKrise">
-      Ich bin grad schwach und würde mir gerne eine rauchen
+    <!-- Klein und gedämpft in der Ecke: erreichbar, ohne das Thema ständig
+         ins Blickfeld zu schieben. Ein dauerhaft sichtbarer Rauch-Hinweis
+         wäre selbst ein Auslöser. -->
+    <button type="button" class="krisenknopf" id="bKrise"
+            aria-label="Ich bin gerade schwach und würde gerne rauchen">
+      Schwach?
     </button>
   </section>
 
