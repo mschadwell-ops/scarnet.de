@@ -55,22 +55,47 @@ const KONTEN = [
   const noetig = ["anmeldeForm", "einrichtenForm", "ansichtApp", "zTage", "cdZeit",
                   "erfolge", "erfolgAntwort", "tagfenster", "tfZu", "muenze", "krise"];
   const fehlt = noetig.filter(id => !document.getElementById(id));
-  if (!fehlt.length) return;
+
+  if (!fehlt.length){
+    /* Alles da. Merker loeschen, damit sich die Seite in derselben Sitzung
+       auch ein zweites Mal heilen koennte, und die Sonderabfrage aus der
+       Adresszeile nehmen — sonst steht sie da und wandert womoeglich in ein
+       Lesezeichen. */
+    try { sessionStorage.removeItem("frischGeholt"); } catch (e) {}
+    if (location.search.indexOf("frisch=") >= 0 && history.replaceState)
+      history.replaceState(null, "", location.pathname);
+    return;
+  }
+
+  /* Einmal von selbst neu laden, unter Umgehung des Zwischenspeichers. Ein
+     Knopf war hier vorher, aber niemand soll erst etwas anklicken oder gar
+     eine Sonderadresse eintippen muessen, damit die Seite laeuft.
+
+     Der Merker in sessionStorage verhindert eine Endlosschleife: liegt nach
+     dem Neuladen immer noch etwas quer, wird nicht wieder geladen, sondern
+     die Meldung gezeigt. Faellt sessionStorage aus, greift zusaetzlich die
+     Abfrage im URL als zweite Bremse. */
+  let schonVersucht = false;
+  try { schonVersucht = sessionStorage.getItem("frischGeholt") === "1"; } catch (e) {}
+  if (!schonVersucht && location.search.indexOf("frisch=") < 0){
+    try { sessionStorage.setItem("frischGeholt", "1"); } catch (e) {}
+    location.replace(location.pathname + "?frisch=" + Date.now());
+    throw new Error("Markup veraltet, lade neu");
+  }
 
   document.body.innerHTML =
     '<div style="max-width:34rem;margin:20vh auto;padding:0 1.5rem;' +
     'font:400 1rem/1.6 ui-sans-serif,system-ui,sans-serif;color:#E9F2EE">' +
     '<p style="font-size:1.3rem;font-weight:600;margin:0 0 .6rem">' +
-    'Es liegt noch eine alte Fassung im Zwischenspeicher.</p>' +
-    '<p style="color:#8CA8A0;margin:0 0 1.4rem">Der Knopf lädt die Seite unter ' +
-    'Umgehung des Zwischenspeichers neu. Danach ist es weg.</p>' +
+    'Die Seite liess sich nicht vollstaendig laden.</p>' +
+    '<p style="color:#8CA8A0;margin:0 0 1.4rem">Automatisches Neuladen hat nicht ' +
+    'geholfen. Im Browser einmal die Daten dieser Seite loeschen raeumt das auf.</p>' +
     '<button id="frischLaden" style="font:inherit;cursor:pointer;padding:.7rem 1.2rem;' +
     'border-radius:.5rem;border:1px solid #62D6AE;background:#62D6AE;color:#062018;' +
-    'font-weight:650">Neu laden</button></div>';
+    'font-weight:650">Noch einmal versuchen</button></div>';
 
   document.getElementById("frischLaden").onclick = function(){
-    // Ein einfaches reload() holt womöglich wieder aus dem Zwischenspeicher.
-    // Eine Adresse, die es dort noch nicht gibt, kann das nicht.
+    try { sessionStorage.removeItem("frischGeholt"); } catch (e) {}
     location.replace(location.pathname + "?frisch=" + Date.now());
   };
 

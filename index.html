@@ -171,9 +171,24 @@ html, body{
   <span class="mark">Menü</span>
   <div class="tabs">
     <a href="/" aria-current="page">Start</a>
-    <a href="/rauchfrei.html">Rauchfrei</a>
+    <a href="/rauchfrei.html" id="zuRauchfrei">Rauchfrei</a>
   </div>
 </nav>
+
+<script>
+/* Die Unterseite wird immer frisch geholt, nie aus dem Zwischenspeicher.
+
+   GitHub Pages liefert jede Datei mit zehn Minuten Haltbarkeit aus. Beim
+   Klick auf den Reiter bekam ein Handy dadurch eine alte Fassung des HTML,
+   die auf andere Skriptadressen verweist als die heutige — und dann passt
+   das Markup nicht mehr zum Skript. Am 18.08.2026 genau so passiert.
+
+   Das HTML ist 13 KB gross, es jedes Mal neu zu holen kostet also nichts.
+   Die grossen Dateien, CSS und JS, behalten ihre lange Haltbarkeit ueber
+   die Fassungsnummer in ihrer Adresse. Ohne JavaScript bleibt der Verweis
+   im href stehen und funktioniert weiterhin. */
+document.getElementById("zuRauchfrei").href = "/rauchfrei.html?f=" + Date.now();
+</script>
 
 <div class="hero"></div>
 
