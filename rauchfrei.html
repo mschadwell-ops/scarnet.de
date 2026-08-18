@@ -302,6 +302,86 @@
   }
   .h2-zahl{ color:var(--air); letter-spacing:0; }
 
+  /* ---------- Trophäen ----------
+     Bewusst wenige und bewusst rund: Eine Reihe Medaillen, die man von links
+     nach rechts abarbeitet. Geholte leuchten, die nächste wartet mit offenem
+     Ring, der Rest liegt dunkel. */
+  .trophaeen{
+    list-style:none; margin:0; padding:4px 2px 2px;
+    display:flex; gap:14px;
+    overflow-x:auto; scrollbar-width:none;
+  }
+  .trophaeen::-webkit-scrollbar{ display:none; }
+  .trophaeen li{
+    flex:none; width:70px; text-align:center;
+  }
+  .tr-scheibe{
+    display:grid; place-items:center;
+    width:46px; height:46px; margin:0 auto 7px;
+    border-radius:50%; font-size:17px; line-height:1;
+    border:1.5px solid var(--line); background:var(--surface);
+    color:var(--faint);
+    transition:.3s;
+  }
+  .trophaeen li.geholt .tr-scheibe{
+    border-color:var(--brass);
+    background:linear-gradient(160deg, rgba(217,169,79,.28), rgba(217,169,79,.07));
+    color:var(--brass);
+    box-shadow:0 0 12px rgba(217,169,79,.28);
+  }
+  .trophaeen li.dran .tr-scheibe{
+    border:2px dashed var(--air);
+    color:var(--air);
+    box-shadow:0 0 10px var(--air-glow);
+  }
+  .tr-name{
+    display:block; font-size:11px; letter-spacing:.04em;
+    color:var(--faint); font-variant-numeric:tabular-nums;
+  }
+  .trophaeen li.geholt .tr-name{ color:var(--brass); }
+  .trophaeen li.dran .tr-name{ color:var(--air); }
+  .tr-text{
+    margin:14px 2px 0; font-size:13.5px; color:var(--muted);
+    max-width:60ch;
+  }
+
+  /* ---------- Geld-Knopf ---------- */
+  .geld-knopf{
+    margin-top:13px; width:100%;
+    padding:9px 10px; min-height:0;
+    border-radius:8px;
+    border:1px solid rgba(217,169,79,.4);
+    background:rgba(217,169,79,.09);
+    color:var(--brass);
+    font-size:12.5px; font-weight:600; letter-spacing:.02em;
+  }
+  .geld-knopf:hover{ background:rgba(217,169,79,.17); border-color:var(--brass); }
+  .geld-knopf:focus-visible{ outline:2px solid var(--brass); outline-offset:2px; }
+
+  .wofuer{
+    margin-top:18px; padding:20px 22px;
+    border-color:rgba(217,169,79,.4);
+    background:linear-gradient(180deg, rgba(217,169,79,.07), transparent 72%), var(--surface);
+  }
+  .wf-kopf{
+    font-size:10.5px; letter-spacing:.18em; text-transform:uppercase;
+    color:var(--brass); font-weight:600;
+  }
+  .wf-haupt{
+    margin-top:9px; font-size:clamp(19px,4.2vw,24px); font-weight:600;
+    letter-spacing:-.02em; line-height:1.25; text-wrap:balance;
+  }
+  .wf-witz, .wf-oder{
+    margin:11px 0 0; font-size:14.5px; line-height:1.55;
+    color:var(--muted); max-width:58ch;
+  }
+  .wf-oder{ color:var(--faint); }
+  .wf-fehlt{
+    margin:16px 0 0; padding-top:13px;
+    border-top:1px solid var(--line);
+    font-size:13.5px; color:var(--faint);
+  }
+
   /* ---------- Einstellungen ---------- */
   details.mehr{ margin-top:28px; }
   details.mehr summary{
@@ -431,6 +511,7 @@
         <div class="k">Gespart</div>
         <div class="v" id="kGeld">0 €</div>
         <div class="n" id="kGeldNote"></div>
+        <button type="button" class="geld-knopf" id="bWofuer">Was kriege ich dafür?</button>
       </div>
       <div class="kachel">
         <div class="k">Nicht geraucht</div>
@@ -443,6 +524,12 @@
         <div class="n">geschätzt, 11 Min. je Zigarette</div>
       </div>
     </div>
+
+    <div class="karte wofuer" id="wofuer" hidden></div>
+
+    <h2>Trophäen <span class="h2-zahl" id="trophaeenZahl"></span></h2>
+    <ul class="trophaeen" id="trophaeen"></ul>
+    <p class="tr-text" id="trophaeenText"></p>
 
     <h2>Freigeschaltet <span class="h2-zahl" id="anzahlFrei"></span></h2>
     <ul class="meilen" id="tage"></ul>
@@ -1204,6 +1291,118 @@ const LANGZEIT = [
 const MIN = 60000, STD = 60 * MIN, TAG = 24 * STD;
 
 /* ====================================================================
+   Was das gesparte Geld wert ist
+   --------------------------------------------------------------------
+   p  = Preis in Euro
+   e  = Fassung für genau eines („einmal ins Freibad“)
+   v  = Fassung für mehrere („mal ins Freibad“)
+   w  = eigener Witz, sonst greift eine allgemeine Zeile
+
+   Belegte Preise stehen als Kommentar dabei. Alles ohne Vermerk ist
+   geschätzt und darf jederzeit korrigiert werden.
+   ==================================================================== */
+const PREISE = [
+  { p:0.45,  e:"ein Brötchen beim Bäcker",            v:"Brötchen beim Bäcker" },
+  { p:0.99,  e:"ein Snickers",                        v:"Snickers" },
+  { p:1.29,  e:"eine Packung Fisherman's Friend",     v:"Packungen Fisherman's Friend",
+             w:"Wenn du unbedingt willst." },
+  { p:1.49,  e:"eine Tafel Schokolade",               v:"Tafeln Schokolade" },
+  { p:1.80,  e:"eine Kugel Eis",                      v:"Kugeln Eis" },
+  { p:2.12,  e:"ein Liter Benzin",                    v:"Liter Benzin" },          // belegt
+  { p:2.20,  e:"eine Tüte Chipsfrisch Ungarisch",     v:"Tüten Chipsfrisch Ungarisch",
+             w:"Die ganze Tüte. Nicht die halbe wie früher, als noch Zigaretten bezahlt werden mussten." },
+  { p:2.79,  e:"ein Snickers-Viererpack",             v:"Snickers-Viererpacks" },
+  { p:3.20,  e:"ein Kaffee zum Mitnehmen",            v:"Kaffee zum Mitnehmen" },
+  { p:3.20,  e:"ein Glas Bier in der Kneipe",         v:"Gläser Bier in der Kneipe" },
+  { p:3.49,  e:"ein kleines Nutella",                 v:"kleine Nutella-Gläser",    // belegt
+             w:"Für das große fehlen 50 Cent. Der Supermarkt will, dass du zunimmst." },
+  { p:3.50,  e:"einmal ins Freibad Mollbeck",         v:"mal ins Freibad Mollbeck" },// belegt
+  { p:3.80,  e:"ein Stück Kuchen im Café",            v:"Stücke Kuchen im Café" },
+  { p:3.99,  e:"ein großes Nutella, 750 Gramm",       v:"große Nutella-Gläser",     // belegt
+             w:"Merkwürdigerweise kaum teurer als das kleine." },
+  { p:3.99,  e:"eine Gustavo Gusto aus dem Tiefkühler", v:"Gustavo-Gusto-Pizzen",   // belegt
+             w:"Steinofen, dreißig Zentimeter, und du musst nicht mal aus dem Haus." },
+  { p:4.00,  e:"ein Lahmacun ohne Fleisch",           v:"Lahmacun ohne Fleisch",
+             w:"Für das Fleisch reicht es noch nicht." },
+  { p:4.50,  e:"einmal ins Hallenbad",                v:"mal ins Hallenbad" },
+  { p:4.99,  e:"ein Kilo Nutella",                    v:"Kilo-Gläser Nutella",      // belegt
+             w:"Ein Kilo. Am Stück. Niemand hält dich auf." },
+  { p:5.00,  e:"einmal Achterbahn auf der Cranger Kirmes", v:"mal Achterbahn auf der Cranger Kirmes" },
+  { p:5.50,  e:"ein Kasten Wasser",                   v:"Kästen Wasser" },
+  { p:6.00,  e:"eine große Tüte Popcorn",             v:"große Tüten Popcorn" },
+  { p:6.00,  e:"einmal Minigolf",                     v:"mal Minigolf" },
+  { p:6.50,  e:"ein Lahmacun mit Fleisch",            v:"Lahmacun mit Fleisch" },
+  { p:7.00,  e:"ein Döner",                           v:"Döner" },
+  { p:7.00,  e:"eine Flasche Wein",                   v:"Flaschen Wein" },
+  { p:8.00,  e:"eine Currywurst mit Pommes",          v:"Currywürste mit Pommes" },
+  { p:9.00,  e:"einmal ins Kino, Normalplatz",        v:"mal ins Kino, Normalplatz", // belegt
+             w:"Für den Premiumplatz reicht es noch nicht." },
+  { p:11.00, e:"einmal ins Kino, Premiumplatz",       v:"mal ins Kino, Premiumplatz" },// belegt
+  { p:11.00, e:"eine Pizza beim Italiener",           v:"Pizzen beim Italiener" },
+  { p:12.00, e:"einmal Poetry Slam",                  v:"mal Poetry Slam" },
+  { p:13.99, e:"ein Monat Netflix",                   v:"Monate Netflix" },
+  { p:15.00, e:"ein Kasten Bier",                     v:"Kästen Bier" },
+  { p:15.00, e:"zehn Minuten Kartbahn",               v:"mal zehn Minuten Kartbahn" },
+  { p:18.00, e:"ein Hauptgericht im Restaurant",      v:"Hauptgerichte im Restaurant" },
+  { p:18.00, e:"einmal VfL Bochum, Stehplatz",        v:"mal VfL Bochum, Stehplatz",
+             w:"Ob das eine Belohnung ist, musst du selbst entscheiden." },
+  { p:21.50, e:"einmal ZOOM Erlebniswelt",            v:"mal ZOOM Erlebniswelt" },  // belegt
+  { p:22.00, e:"einmal Friseur, Herren",              v:"mal Friseur, Herren" },
+  { p:24.00, e:"ein Kabarettabend",                   v:"Kabarettabende" },
+  { p:25.00, e:"eine Stunde Bowling",                 v:"Stunden Bowling" },
+  { p:25.00, e:"ein Tag in der Therme",               v:"Tage in der Therme" },
+  { p:28.00, e:"einmal Escape Room",                  v:"mal Escape Room" },
+  { p:29.00, e:"eine Zehnerkarte fürs Freibad Mollbeck", v:"Zehnerkarten fürs Freibad Mollbeck" }, // belegt
+  { p:30.00, e:"ein Comedy-Abend",                    v:"Comedy-Abende" },
+  { p:35.00, e:"ein Klassikkonzert",                  v:"Klassikkonzerte" },
+  { p:35.00, e:"ein Frühstück für zwei",              v:"Frühstücke für zwei" },
+  { p:45.00, e:"einmal Movie Park Bottrop",           v:"mal Movie Park Bottrop" },
+  { p:45.00, e:"einmal Friseur, Damen",               v:"mal Friseur, Damen" },
+  { p:55.00, e:"ein Musical in Oberhausen",           v:"Musicals in Oberhausen" },
+  { p:63.00, e:"eine Saisonkarte fürs Freibad Mollbeck", v:"Saisonkarten fürs Freibad Mollbeck", // belegt
+             w:"Den ganzen Sommer, bezahlt vom Nichtrauchen." },
+  { p:79.99, e:"EA FC 27 oder GTA 6",                 v:"mal EA FC 27 oder GTA 6",  // belegt
+             w:"Aufs Komma derselbe Preis. Entscheiden musst du selbst, das nimmt dir kein Zähler ab." },
+  { p:99.99, e:"GTA 6 in der Ultimate Edition",       v:"mal GTA 6 Ultimate" },     // belegt
+  { p:106.00,e:"einmal volltanken, fünfzig Liter",    v:"mal volltanken" },         // belegt
+  { p:109.99,e:"EA FC 27 Ultimate",                   v:"mal EA FC 27 Ultimate" },  // belegt
+  { p:120.00,e:"ein Bungee-Sprung",                   v:"Bungee-Sprünge" },
+  { p:140.00,e:"ein Hubschrauber-Rundflug",           v:"Hubschrauber-Rundflüge" },
+  { p:149.00,e:"ein Paar On Cloud Sneaker",           v:"Paar On Cloud Sneaker",    // belegt
+             w:"Als Frau kommst du ab 115 Euro weg, als Mann zahlst du bis 190 — ausnahmsweise mal andersherum." },
+  { p:149.95,e:"EA FC 27 Ultimate Plus",              v:"mal EA FC 27 Ultimate Plus", // belegt
+             w:"Siebzig Euro mehr als die Standard-Fassung. Dafür eine Woche früher spielen und Punkte für ein Kartenspiel." },
+  { p:150.00,e:"eine Winterjacke",                    v:"Winterjacken" },
+  { p:179.00,e:"dreißig Minuten Lamborghini Huracán fahren", v:"mal dreißig Minuten Lamborghini fahren", // belegt
+             w:"Selber fahren, wohlgemerkt. Gehören tut er dir danach immer noch nicht." },
+  { p:250.00,e:"eine Heißluftballonfahrt",            v:"Heißluftballonfahrten" },
+  { p:269.90,e:"ein Tandemsprung über Marl",          v:"Tandemsprünge über Marl",  // belegt
+             w:"Du hast aufgehört zu rauchen, um länger zu leben, und springst jetzt aus einem Flugzeug. Konsequent." },
+  { p:400.00,e:"ein Wochenende Amsterdam zu zweit",   v:"Wochenenden Amsterdam zu zweit" },
+  { p:500.00,e:"eine Waschmaschine",                  v:"Waschmaschinen" },
+  { p:700.00,e:"eine Woche Mallorca",                 v:"Wochen Mallorca" }
+].sort((a, b) => a.p - b.p);
+
+/* ====================================================================
+   Trophäen — die großen Etappen
+   --------------------------------------------------------------------
+   Bewusst wenige. Wenn jeder Tag eine Trophäe wäre, wäre keine etwas wert.
+   ==================================================================== */
+const TROPHAEEN = [
+  { ms:      1 * TAG, kurz:"1 Tag",    was:"Der erste Tag. Der schwerste von allen." },
+  { ms:      3 * TAG, kurz:"3 Tage",   was:"Nikotin restlos raus. Ab hier ist es Kopfsache." },
+  { ms:      7 * TAG, kurz:"1 Woche",  was:"Die Phase mit den meisten Rückfällen liegt hinter dir." },
+  { ms:     14 * TAG, kurz:"2 Wochen", was:"Kreislauf und Lungenfunktion legen messbar zu." },
+  { ms:     30 * TAG, kurz:"1 Monat",  was:"Ein ganzer Monat. Der Entzug ist Geschichte." },
+  { ms:    100 * TAG, kurz:"100 Tage", was:"Dreistellig. Das sagt sich leicht und war es nicht." },
+  { ms:    182 * TAG, kurz:"½ Jahr",   was:"Husten und Kurzatmigkeit haben stark abgenommen." },
+  { ms:    365 * TAG, kurz:"1 Jahr",   was:"Das Risiko einer koronaren Herzkrankheit ist etwa halbiert." },
+  { ms:    730 * TAG, kurz:"2 Jahre",  was:"Das Herzinfarktrisiko liegt nah an dem von Nichtrauchern." },
+  { ms:   1825 * TAG, kurz:"5 Jahre",  was:"Das Schlaganfallrisiko nähert sich dem von Nichtrauchern." },
+  { ms:   3650 * TAG, kurz:"10 Jahre", was:"Das Lungenkrebsrisiko ist etwa halbiert." }
+];
+
+/* ====================================================================
    5. Speicher — läuft auch weiter, wenn er gesperrt ist
    ==================================================================== */
 const SCHLUESSEL = "scarnet.rauchfrei.v1";
@@ -1457,6 +1656,7 @@ function zeichnen(){
     tageZeichnen(w.tage, profil, frisch);   // w.tage = abgeschlossene Tage
     $("cdTag").textContent = "Tag " + (w.tage + 1);
     $("cdText").textContent = tagesText(w.tage + 1, profil, true);   // Ziel-Fassung
+    trophaeenZeichnen(w.verstrichen);   // alle Trophäen liegen auf Tagesgrenzen
     letzterTag = w.tage;
   }
   naechstesZeichnen(w);
@@ -1573,6 +1773,85 @@ function tageZeichnen(fertig, p, frischNr){
     : "";
   $("anzahlFrei").textContent = fertig === 1 ? "· 1 Tag" : "· " + zahl(fertig) + " Tage";
 }
+
+/* ---------- Trophäen ---------- */
+function trophaeenZeichnen(verstrichen){
+  const naechste = TROPHAEEN.findIndex(t => t.ms > verstrichen);
+  $("trophaeen").innerHTML = TROPHAEEN.map((t, i) => {
+    const da   = verstrichen >= t.ms;
+    const dran = i === naechste;
+    return `<li class="${da ? "geholt" : dran ? "dran" : "zu"}">
+        <span class="tr-scheibe">${da ? "★" : dran ? "◇" : ""}</span>
+        <span class="tr-name">${esc(t.kurz)}</span>
+      </li>`;
+  }).join("");
+
+  const geholt = TROPHAEEN.filter(t => verstrichen >= t.ms).length;
+  $("trophaeenZahl").textContent = "· " + geholt + " von " + TROPHAEEN.length;
+
+  const t = naechste === -1 ? null : TROPHAEEN[naechste];
+  $("trophaeenText").textContent = t
+    ? "Als Nächstes: " + t.kurz + " — " + t.was
+    : "Alle geholt. Mehr Trophäen habe ich nicht vorgesehen.";
+}
+
+/* ---------- Was das gesparte Geld wert ist ---------- */
+const grossErst = s => s.charAt(0).toUpperCase() + s.slice(1);
+
+function kaufkraft(geld){
+  const drin = PREISE.filter(x => x.p <= geld);
+
+  // „bis ein Brötchen“ wäre falscher Kasus. Mit „dann ist … drin“ passt die
+  // Nominativform aus der Liste, und zwar für Dinge wie für Unternehmungen.
+  const dannDrin = (fehlbetrag, sache) =>
+    "Noch " + euro(fehlbetrag) + ", dann ist " + sache + " drin.";
+
+  if (!drin.length){
+    const erstes = PREISE[0];
+    return {
+      reicht: "Noch für nichts auf der Liste.",
+      witz:   "Aber der Tag ist jung.",
+      oder:   "",
+      fehlt:  dannDrin(erstes.p - geld, erstes.e)
+    };
+  }
+
+  // Unter mehreren Dingen zum selben Preis zufällig wählen — dann lohnt sich
+  // ein zweiter Klick, und der Knopf sagt nicht jedes Mal dasselbe.
+  const hoechster  = drin[drin.length - 1].p;
+  const kandidaten = drin.filter(x => x.p === hoechster);
+  const bestes     = kandidaten[Math.floor(Math.random() * kandidaten.length)];
+  const anzahl     = Math.floor(geld / bestes.p);
+
+  // Für die Oder-Zeile eine der billigsten Sachen, aber nicht immer dieselbe.
+  const billige  = PREISE.slice(0, 5).filter(x => x !== bestes);
+  const billig   = billige[Math.floor(Math.random() * billige.length)];
+  const wieViele = Math.floor(geld / billig.p);
+  const oder = wieViele >= 8 ? "Oder " + zahl(wieViele) + " " + billig.v + "." : "";
+
+  const naechstes = PREISE.find(x => x.p > geld);
+
+  return {
+    reicht: anzahl === 1 ? grossErst(bestes.e) : zahl(anzahl) + " " + bestes.v,
+    witz:   bestes.w || oder,
+    oder:   bestes.w ? oder : "",
+    fehlt:  naechstes
+      ? dannDrin(naechstes.p - geld, naechstes.e)
+      : "Auf der ganzen Liste steht nichts mehr, das du dir nicht leisten könntest."
+  };
+}
+
+$("bWofuer").onclick = () => {
+  const k = kaufkraft(rechnen(profil).geld);
+  const kasten = $("wofuer");
+  kasten.hidden = false;
+  kasten.innerHTML = `
+    <div class="wf-kopf">Dafür reicht es</div>
+    <div class="wf-haupt">${esc(k.reicht)}</div>
+    ${k.witz ? `<p class="wf-witz">${esc(k.witz)}</p>` : ""}
+    ${k.oder ? `<p class="wf-oder">${esc(k.oder)}</p>` : ""}
+    <p class="wf-fehlt">${esc(k.fehlt)}</p>`;
+};
 
 /** Der Countdown auf die nächste Freischaltung. Läuft im Sekundentakt und
     ist der einzige Ort, an dem etwas Zukünftiges steht — deshalb formuliert
