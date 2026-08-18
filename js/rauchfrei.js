@@ -1477,36 +1477,77 @@ document.addEventListener("keydown", e => {
 /* ---------------------------------------------------------------------
    Feuerwerk beim Tageswechsel
    ---------------------------------------------------------------------
-   Es liegt in der Zählerkarte, nicht über der ganzen Seite: die Belohnung
-   gehört zu der Zahl, die sich gerade geändert hat. Achtzehn Funken mit je
-   eigenem Winkel, eigener Weite und eigener Verzögerung — bei gleichen
-   Werten sähe es aus wie ein Zahnrad.
+   Drei versetzte Salven statt einer. Jede bringt einen Blitz, eine
+   Druckwelle und rund zwanzig Funken mit — zusammen etwa sechzig, nicht
+   achtzehn wie in der ersten Fassung.
+
+   Wichtig für den Eindruck ist weniger die Zahl der Funken als der Blitz:
+   eine kurze Aufhellung der ganzen Karte macht aus einem Funkenflug einen
+   Knall. Die Druckwelle liefert den Umriss dazu, und weil ein Teil der
+   Funken als Streifen statt als Punkt fliegt, sieht man die Richtung.
+
+   Alles liegt in der Zählerkarte, nicht über der Seite: die Belohnung
+   gehört zu der Zahl, die sich gerade geändert hat.
    --------------------------------------------------------------------- */
-const FUNKENFARBEN = ["#FFE7B2", "#D9A94F", "#62D6AE", "#E9F2EE"];
+const FUNKENFARBEN = ["#FFE7B2", "#D9A94F", "#62D6AE", "#FFFFFF", "#F0C97A"];
+
+/* Ort und Zeitpunkt der drei Salven. Die erste sitzt hinter der Zahl, die
+   beiden anderen versetzt daneben — alle drei an derselben Stelle sähe aus
+   wie ein einzelner, nur längerer Knall. */
+const SALVEN = [
+  { qx:"50%", qy:"38%", spaet:   0, n:24, weite:1.00, hell:1    },
+  { qx:"27%", qy:"48%", spaet: 330, n:19, weite:0.82, hell:0.45 },
+  { qx:"73%", qy:"44%", spaet: 640, n:19, weite:0.82, hell:0.45 }
+];
 
 function feuerwerk(tage){
   const karte = document.querySelector(".zaehler");
   if (!karte) return;
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-  const alt = karte.querySelector(".funken");
-  if (alt) alt.remove();
+  karte.querySelectorAll(".funken, .glueckwunsch").forEach(e => e.remove());
 
   const feld = document.createElement("div");
   feld.className = "funken";
   let h = "";
-  for (let i = 0; i < 18; i++){
-    const winkel = (Math.random() * 360) * Math.PI / 180;
-    const weite  = 70 + Math.random() * 130;
-    const x = Math.cos(winkel) * weite;
-    const y = Math.sin(winkel) * weite * 0.62 + 90;   // Schwerkraft: alle fallen
-    h += '<i style="--x:' + x.toFixed(0) + "px;--y:" + y.toFixed(0) + "px;--spaet:"
-       + Math.floor(Math.random() * 420) + "ms;background:"
-       + FUNKENFARBEN[i % FUNKENFARBEN.length] + '"></i>';
-  }
+
+  SALVEN.forEach(s => {
+    const ort = "--qx:" + s.qx + ";--qy:" + s.qy + ";--spaet:" + s.spaet + "ms;";
+    const blitzOrt = ort + "--hell:" + s.hell + ";";
+    h += '<span class="fw-blitz" style="' + blitzOrt + '"></span>';
+    h += '<span class="fw-ring"  style="' + ort + '"></span>';
+
+    for (let i = 0; i < s.n; i++){
+      const winkel = Math.random() * Math.PI * 2;
+      const weite  = (95 + Math.random() * 135) * s.weite;
+      const x = Math.cos(winkel) * weite;
+      // Schwerkraft: die Senkrechte wird gestaucht und alles fällt nach unten
+      const y = Math.sin(winkel) * weite * 0.55 + 85 + Math.random() * 55;
+
+      // Etwa ein Drittel fliegt als Streifen — daran sieht man die Richtung.
+      const streifen = Math.random() < 0.34;
+      const gr   = streifen ? 3 : 4 + Math.random() * 4;
+      const rund = streifen ? "1px" : "50%";
+
+      h += '<i style="' + ort
+         + "--x:" + x.toFixed(0) + "px;--y:" + y.toFixed(0) + "px;"
+         + "--gr:" + gr.toFixed(1) + "px;--rund:" + rund + ";"
+         + "--dreh:" + Math.floor(Math.random() * 540 - 270) + "deg;"
+         + "--dauer:" + Math.floor(1300 + Math.random() * 700) + "ms;"
+         + "--spaet:" + (s.spaet + Math.floor(Math.random() * 220)) + "ms;"
+         + "background:" + FUNKENFARBEN[Math.floor(Math.random() * FUNKENFARBEN.length)] + ";"
+         + (streifen ? "height:" + (9 + Math.random() * 7).toFixed(0) + "px;" : "")
+         + '"></i>';
+    }
+  });
+
   feld.innerHTML = h;
   karte.appendChild(feld);
-  setTimeout(() => feld.remove(), 2200);
+
+  // Die große Zahl setzt einmal nach.
+  karte.classList.remove("knall");
+  void karte.offsetWidth;
+  karte.classList.add("knall");
 
   const gw = document.createElement("div");
   gw.className = "glueckwunsch";
@@ -1514,5 +1555,7 @@ function feuerwerk(tage){
     ? "Herzlichen Glückwunsch — der erste Tag!"
     : "Herzlichen Glückwunsch — Tag " + tage + "!";
   karte.appendChild(gw);
-  setTimeout(() => gw.remove(), 3800);
+
+  setTimeout(() => { feld.remove(); karte.classList.remove("knall"); }, 3400);
+  setTimeout(() => gw.remove(), 4000);
 }

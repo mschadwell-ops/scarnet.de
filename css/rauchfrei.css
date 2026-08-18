@@ -693,50 +693,99 @@
   }
 
   /* ---------- Feuerwerk ----------
-     Wenn ein Tag umschlaegt und die Seite gerade offen ist. Die Funken sind
-     einzelne Punkte, die aus der Mitte des Zaehlers nach aussen fliegen und
-     dabei fallen — jeder mit eigenem Winkel, eigener Weite und eigener
-     Verzoegerung, sonst sieht es aus wie ein Zahnrad.
+     Wenn ein Tag umschlaegt und die Seite gerade offen ist.
 
-     Es liegt in der Zaehlerkarte und nicht ueber der ganzen Seite: die
+     Die erste Fassung waren achtzehn Punkte von sechs Pixeln auf einer 275
+     Pixel hohen Karte — das war ein Nieseln, kein Knall. Jetzt drei
+     versetzte Salven, jede mit Blitz, Druckwelle und rund zwanzig Funken,
+     dazu Streifen statt nur Punkten und ein kurzer Satz der grossen Zahl.
+
+     Alles liegt in der Zaehlerkarte und nicht ueber der Seite: die
      Belohnung gehoert zu der Zahl, die sich gerade geaendert hat. */
   .funken{
     position:absolute; inset:0; overflow:hidden;
     pointer-events:none; border-radius:inherit;
     z-index:0;               /* hinter der Zahl: sie soll lesbar bleiben */
   }
+
+  /* Der Blitz. Hellt die ganze Karte fuer einen Wimpernschlag auf — das ist
+     der Teil, der aus einem Funkenflug einen Knall macht. */
+  .fw-blitz{
+    position:absolute; inset:0; opacity:0;
+    background:radial-gradient(circle at var(--qx,50%) var(--qy,38%),
+               rgba(255,231,178,.60), rgba(255,231,178,.10) 38%, transparent 66%);
+    animation:fwBlitz 520ms ease-out forwards;
+    animation-delay:var(--spaet, 0ms);
+  }
+  /* Nur die erste Salve blitzt voll. Bei drei gleich hellen Blitzen waere
+     die Karte ueber eine Sekunde milchig und die Zahl darunter kaum noch zu
+     lesen — nachgesehen an einem eingefrorenen Bild. */
+  @keyframes fwBlitz{
+    0%   { opacity:0; }
+    7%   { opacity:var(--hell, 1); }
+    100% { opacity:0; }
+  }
+
+  /* Die Druckwelle: ein duenner Ring, der schnell aufgeht und verblasst. */
+  .fw-ring{
+    position:absolute; left:var(--qx,50%); top:var(--qy,38%);
+    width:18px; height:18px; margin:-9px 0 0 -9px;
+    border-radius:50%; border:2px solid rgba(255,231,178,.95);
+    opacity:0;
+    animation:fwRing 760ms cubic-bezier(.12,.7,.3,1) forwards;
+    animation-delay:var(--spaet, 0ms);
+  }
+  @keyframes fwRing{
+    0%   { transform:scale(.25); opacity:0; }
+    12%  { opacity:.95; }
+    100% { transform:scale(15); opacity:0; }
+  }
+
   .funken i{
-    position:absolute; left:50%; top:38%;
-    width:6px; height:6px; margin:-3px 0 0 -3px;
-    border-radius:50%; opacity:0;
-    animation:funke 1500ms ease-out forwards;
+    position:absolute; left:var(--qx,50%); top:var(--qy,38%);
+    width:var(--gr,5px); height:var(--gr,5px);
+    margin:calc(var(--gr,5px) / -2) 0 0 calc(var(--gr,5px) / -2);
+    border-radius:var(--rund, 50%);
+    opacity:0;
+    animation:funke var(--dauer,1600ms) cubic-bezier(.1,.72,.3,1) forwards;
     animation-delay:var(--spaet, 0ms);
   }
   @keyframes funke{
-    0%   { opacity:0; transform:translate(0,0) scale(.4); }
-    12%  { opacity:1; }
-    70%  { opacity:1; }
-    100% { opacity:0; transform:translate(var(--x), var(--y)) scale(.9); }
+    0%   { opacity:0; transform:translate(0,0) rotate(0deg) scale(.3); }
+    8%   { opacity:1; transform:translate(calc(var(--x) * .18), calc(var(--y) * .10)) rotate(20deg) scale(1.25); }
+    62%  { opacity:1; }
+    100% { opacity:0; transform:translate(var(--x), var(--y)) rotate(var(--dreh,180deg)) scale(.55); }
   }
+
+  /* Die grosse Zahl setzt einmal kurz nach — als haette der Knall sie
+     angestossen. */
+  @keyframes zahlKnall{
+    0%   { transform:scale(1); }
+    16%  { transform:scale(1.13); }
+    46%  { transform:scale(.98); }
+    100% { transform:scale(1); }
+  }
+  .zaehler.knall .tage{ animation:zahlKnall 760ms cubic-bezier(.2,.85,.3,1); }
 
   .glueckwunsch{
     position:absolute; left:0; right:0; top:12px;
     z-index:3;
     text-align:center; pointer-events:none;
-    font-size:11.5px; letter-spacing:.16em; text-transform:uppercase;
+    font-size:12.5px; letter-spacing:.16em; text-transform:uppercase;
     font-weight:700; color:var(--brass);
-    text-shadow:0 0 14px rgba(217,169,79,.5);
-    animation:gwEin 3600ms ease-out forwards;
+    text-shadow:0 0 16px rgba(217,169,79,.65);
+    animation:gwEin 3800ms cubic-bezier(.2,.9,.3,1) forwards;
   }
   @keyframes gwEin{
-    0%   { opacity:0; transform:translateY(6px); }
-    10%  { opacity:1; transform:none; }
-    78%  { opacity:1; }
+    0%   { opacity:0; transform:translateY(10px) scale(.9); }
+    9%   { opacity:1; transform:none; }
+    80%  { opacity:1; }
     100% { opacity:0; }
   }
 
   @media (prefers-reduced-motion:reduce){
     .funken{ display:none; }
+    .zaehler.knall .tage{ animation:none; }
     .glueckwunsch{ animation:none; opacity:1; }
   }
 
