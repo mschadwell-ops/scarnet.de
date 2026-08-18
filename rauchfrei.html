@@ -673,7 +673,39 @@
     font-size:26px; font-weight:300; color:var(--muted);
     font-variant-numeric:tabular-nums; letter-spacing:.02em;
   }
-  @media (prefers-reduced-motion:reduce){ .kr-kreis{ animation:none; } }
+  @media@media (prefers-reduced-motion:reduce){ .kr-kreis{ animation:none; } }
+
+  /* Tonschalter. Bewusst klein und unauffällig: er steht in einem Fenster,
+     das jemand im schwächsten Moment öffnet, und darf dort nichts
+     wegnehmen. Die drei Striche schlagen nur aus, solange der Ton läuft —
+     so sieht man auf einen Blick, ob er an ist, auch bei stumm gestelltem
+     Gerät. */
+  .kr-ton{
+    margin-top:4px; min-height:44px;
+    display:inline-flex; align-items:center; gap:10px;
+    padding:9px 18px; border-radius:999px;
+    background:none; border:1px solid var(--line);
+    color:var(--faint); font-family:inherit;
+    font-size:11.5px; letter-spacing:.14em; text-transform:uppercase;
+  }
+  .kr-ton:hover{ color:var(--muted); border-color:var(--line); }
+  .kr-ton[aria-pressed="true"]{
+    color:var(--air); border-color:rgba(98,214,174,.42);
+    background:var(--air-glow);
+  }
+  .ton-welle{ display:inline-flex; align-items:center; gap:2.5px; height:12px; }
+  .ton-welle i{
+    width:2px; height:3px; border-radius:1px;
+    background:currentColor; transition:height .2s;
+  }
+  .kr-ton[aria-pressed="true"] .ton-welle i{ animation:tonWelle 2.4s ease-in-out infinite; }
+  .kr-ton[aria-pressed="true"] .ton-welle i:nth-child(2){ animation-delay:.3s; }
+  .kr-ton[aria-pressed="true"] .ton-welle i:nth-child(3){ animation-delay:.6s; }
+  @keyframes tonWelle{ 0%,100%{ height:3px; } 45%{ height:12px; } }
+  @media (prefers-reduced-motion:reduce){
+    .kr-ton[aria-pressed="true"] .ton-welle i{ animation:none; height:8px; }
+  }
+
 
   .kr-stand{
     margin-top:22px; padding:15px 18px;
@@ -938,6 +970,11 @@
       <div class="kr-atem" id="krAtem">
         <div class="kr-kreis"><span id="krAtemWort">Einatmen</span></div>
         <div class="kr-uhr" id="krUhr">3:00</div>
+
+        <button type="button" class="kr-ton" id="bTon" aria-pressed="false">
+          <span class="ton-welle" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span id="tonWort">Ton aus</span>
+        </button>
       </div>
 
       <div class="kr-stand" id="krStand"></div>
@@ -1996,7 +2033,7 @@ function zeigen(welche){
   ANSICHTEN.forEach(a => $(a).hidden = (a !== welche));
 }
 
-const standard = () => ({ start:Date.now(), menge:20, preis:10, proSchachtel:22, beste:0, rueckfaelle:0, wellen:0, wellenNacht:0, letzteWelle:0, ruheErreicht:false });
+const standard = () => ({ start:Date.now(), menge:20, preis:10, proSchachtel:22, beste:0, rueckfaelle:0, wellen:0, wellenNacht:0, letzteWelle:0, ruheErreicht:false, ton:false });
 
 /* Datum UND Uhrzeit, nicht nur das Datum. Wer mittags aufhört, soll nicht
    rückdatiert auf Mitternacht starten und sofort zwölf Stunden geschenkt
@@ -2584,7 +2621,367 @@ function krisenStand(){
     + "<br>" + abschlussSatz();
 }
 
+/* ====================================================================
+   Atemklang — Musik zum Ein- und Ausatmen
+   --------------------------------------------------------------------
+   Hier wird keine Audiodatei geladen. Der Ton entsteht im Browser selbst,
+   Schwingung für Schwingung. Das hat drei Gründe: es gibt nichts, was
+   ausgeliefert werden müsste, der Klang folgt dem Atem auf die
+   Millisekunde genau, und es geht kein einziger Aufruf an einen fremden
+   Server — dieselbe Regel wie auf dem Rest der Seite.
+
+   Wie die Musik gebaut ist
+   ------------------------
+   Unten liegt ein Bordun auf D, der durchläuft und sich nie ändert. Er
+   ist der Boden, auf dem geatmet wird.
+
+   Darüber vier Akkorde, einer je Atemzug. Nach vierzig Sekunden fängt die
+   Folge von vorn an — lang genug, dass man sie nicht mitzählt. Alle vier
+   stehen gut über dem D, und von einem zum nächsten bewegt sich jede
+   Stimme höchstens einen Ganzton. Deshalb gleiten die Töne ineinander,
+   statt umzuschalten.
+
+   Der Atem steckt nicht in der Melodie, sondern im Klang. Beim Einatmen
+   öffnet sich ein Filter, der Akkord wird heller und voller, eine hohe
+   Stimme kommt dazu. Beim Ausatmen geht alles zurück — über sechs
+   Sekunden statt über vier, also spürbar langsamer. Man hört, wo im
+   Atemzug man ist, ohne auf den Kreis zu sehen. Das ist der eigentliche
+   Zweck: Augen zu, und die Anleitung läuft trotzdem weiter.
+   ==================================================================== */
+
+/* Frequenzen in Hertz, vier Stimmen je Akkord.
+   d-Moll mit None, B-Dur-Septime, F-Dur-Septime, a-Moll-Septime.
+   Wer nachrechnet, sieht es: von Zeile zu Zeile ändert sich je Stimme
+   höchstens ein Ganzton. Genau das macht den Wechsel unauffällig. */
+const AKKORDE = [
+  [293.66, 349.23, 440.00, 659.25],
+  [293.66, 349.23, 466.16, 587.33],
+  [261.63, 349.23, 440.00, 659.25],
+  [261.63, 329.63, 440.00, 659.25]
+];
+
+const EIN = 4, AUS = 6, ZYKLUS = EIN + AUS;   // Sekunden, wie beim Kreis
+
+let klang = null;         // wird erst gebaut, wenn jemand den Ton anschaltet
+let klangPlaner = null;   // plant die Atemzüge im Voraus ein
+
+/* Weiche Kurve statt gerader Rampe. Web Audio kennt nur gerade und
+   exponentielle Rampen; acht kurze Stücke entlang einer Kosinuskurve
+   ergeben ein sauberes Anschwellen und Abklingen. Anders als
+   setValueCurveAtTime können sie sich mit dem nächsten Atemzug nicht
+   beißen — und das wäre hier ein Aussetzer mitten im Ton. */
+function kurve(regler, ab, von, nach, dauer, exponentiell){
+  const STUFEN = 8;
+  regler.setValueAtTime(von, ab);
+  for (let i = 1; i <= STUFEN; i++){
+    const anteil = i / STUFEN;
+    const weich  = (1 - Math.cos(Math.PI * anteil)) / 2;
+    const wert   = exponentiell ? von * Math.pow(nach / von, weich)
+                                : von + (nach - von) * weich;
+    if (exponentiell) regler.exponentialRampToValueAtTime(Math.max(wert, 0.0001), ab + dauer * anteil);
+    else              regler.linearRampToValueAtTime(wert, ab + dauer * anteil);
+  }
+}
+
+/* Nachhall ohne Datei: ein Rauschimpuls, der exponentiell leiser wird, ist
+   die einfachste brauchbare Raumantwort. Zwei Kanäle mit unterschiedlichem
+   Rauschen, damit der Raum breit steht statt in der Mitte zu kleben. */
+function hallRaum(ctx, sekunden, abfall){
+  const laenge = Math.floor(ctx.sampleRate * sekunden);
+  const puffer = ctx.createBuffer(2, laenge, ctx.sampleRate);
+  for (let k = 0; k < 2; k++){
+    const daten = puffer.getChannelData(k);
+    for (let i = 0; i < laenge; i++){
+      daten[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / laenge, abfall);
+    }
+  }
+  return puffer;
+}
+
+function klangBauen(){
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) return null;
+
+  let ctx;
+  try { ctx = new AC(); } catch(e){ return null; }
+
+  // Ausgang. Der Begrenzer dahinter ist nur ein Netz: bei elf gleichzeitigen
+  // Schwingungen soll nichts übersteuern, auch wenn ich mich verrechne.
+  const meister = ctx.createGain();
+  meister.gain.value = 0;
+  const schutz = ctx.createDynamicsCompressor();
+  schutz.threshold.value = -3;
+  schutz.knee.value      = 8;
+  schutz.ratio.value     = 10;
+  schutz.attack.value    = 0.02;
+  schutz.release.value   = 0.35;
+  meister.connect(schutz);
+  schutz.connect(ctx.destination);
+
+  const hall = ctx.createConvolver();
+  hall.buffer = hallRaum(ctx, 3.4, 2.6);
+  const hallDaempfer = ctx.createBiquadFilter();
+  hallDaempfer.type = "lowpass";
+  hallDaempfer.frequency.value = 2200;
+  const hallWeg = ctx.createGain();
+  hallWeg.gain.value = 0.5;
+  hallWeg.connect(hall);
+  hall.connect(hallDaempfer);
+  hallDaempfer.connect(meister);
+
+  /* --- Bordun. Läuft durch und atmet nicht mit. Dass etwas ruhig bleibt,
+     während sich darüber alles bewegt, ist die halbe Wirkung. --- */
+  const bordunFilter = ctx.createBiquadFilter();
+  bordunFilter.type = "lowpass";
+  bordunFilter.frequency.value = 400;
+  const bordunTor = ctx.createGain();
+  bordunTor.gain.value = 0.30;
+  bordunFilter.connect(bordunTor);
+  bordunTor.connect(meister);
+
+  [[73.42, 0.50], [146.83, 0.26], [220.00, 0.05]].forEach(paar => {
+    const o = ctx.createOscillator();
+    o.type = "sine";
+    o.frequency.value = paar[0];
+    const g = ctx.createGain();
+    g.gain.value = paar[1];
+    o.connect(g);
+    g.connect(bordunFilter);
+    o.start();
+  });
+
+  /* --- Akkord. Der atmet mit: Filter auf beim Einatmen, Filter zu beim
+     Ausatmen. --- */
+  const padFilter = ctx.createBiquadFilter();
+  padFilter.type = "lowpass";
+  padFilter.Q.value = 0.9;
+  padFilter.frequency.value = 260;
+  const padTor = ctx.createGain();
+  padTor.gain.value = 0.22;
+  padFilter.connect(padTor);
+  padTor.connect(meister);
+  padTor.connect(hallWeg);
+
+  /* Jede Stimme doppelt, sieben Cent auseinander, eine nach links und eine
+     nach rechts. Zwei fast gleiche Töne schweben langsam ineinander — das
+     ist der Unterschied zwischen einem Testton und etwas, das man drei
+     Minuten lang aushält. */
+  const stimmen = AKKORDE[0].map((hz, i) => {
+    const oszillatoren = [-7, 7].map(cent => {
+      const o = ctx.createOscillator();
+      o.type = "triangle";
+      o.frequency.value = hz;
+      o.detune.value = cent;
+      const g = ctx.createGain();
+      g.gain.value = i === 3 ? 0.09 : 0.15;   // die oberste Stimme bleibt zurück
+      o.connect(g);
+      if (ctx.createStereoPanner){
+        const p = ctx.createStereoPanner();
+        p.pan.value = cent < 0 ? -0.4 : 0.4;
+        g.connect(p);
+        p.connect(padFilter);
+      } else {
+        g.connect(padFilter);   // ältere Browser: dann eben in der Mitte
+      }
+      o.start();
+      return o;
+    });
+    return { oszillatoren: oszillatoren, hz: hz };
+  });
+
+  /* --- Schimmer. Kommt nur beim Einatmen dazu, eine Oktave über dem
+     Akkord, und geht fast ganz in den Hall. Dadurch klingt das Einatmen
+     weiter, als der Raum ist, und das Ausatmen zieht sich wieder
+     zusammen. --- */
+  const schimmerTor = ctx.createGain();
+  schimmerTor.gain.value = 0;
+  schimmerTor.connect(hallWeg);
+  const schimmerTrocken = ctx.createGain();
+  schimmerTrocken.gain.value = 0.3;
+  schimmerTor.connect(schimmerTrocken);
+  schimmerTrocken.connect(meister);
+
+  const schimmer = [AKKORDE[0][2] * 2, AKKORDE[0][3] * 2].map((hz, i) => {
+    const o = ctx.createOscillator();
+    o.type = "sine";
+    o.frequency.value = hz;
+    const g = ctx.createGain();
+    g.gain.value = i ? 0.045 : 0.065;
+    o.connect(g);
+    g.connect(schimmerTor);
+    o.start();
+    return o;
+  });
+
+  return { ctx: ctx, meister: meister, hallWeg: hallWeg,
+           padFilter: padFilter, padTor: padTor, schimmerTor: schimmerTor,
+           stimmen: stimmen, schimmer: schimmer, naechster: 0, nr: 0 };
+}
+
+/* Ein Anschlag zu jedem Einatmen — für alle, die die Augen zumachen. Drei
+   leicht verstimmte Teiltöne, weil eine reine Oktave elektronisch klingt
+   und eine Glocke nie ganz sauber ist. Sehr leise: nach drei Minuten sind
+   das achtzehn Anschläge, und keiner davon soll auffallen. */
+function anschlag(t, grundton){
+  const ctx = klang.ctx;
+  [[1, 0.070], [2.01, 0.026], [3.02, 0.011]].forEach(paar => {
+    const o = ctx.createOscillator();
+    o.type = "sine";
+    o.frequency.value = grundton * paar[0];
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(paar[1], t + 0.07);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 3.6);
+    o.connect(g);
+    g.connect(klang.meister);
+    g.connect(klang.hallWeg);
+    o.start(t);
+    o.stop(t + 3.8);
+  });
+}
+
+/* Ein vollständiger Atemzug, im Voraus in die Web-Audio-Uhr geschrieben. */
+function zyklusPlanen(t, nr){
+  const akkord = AKKORDE[nr % AKKORDE.length];
+
+  // Akkordwechsel: die Stimmen gleiten in anderthalb Sekunden hinüber.
+  klang.stimmen.forEach(function(stimme, i){
+    stimme.oszillatoren.forEach(function(o){
+      o.frequency.setValueAtTime(stimme.hz, t);
+      o.frequency.exponentialRampToValueAtTime(akkord[i], t + 1.5);
+    });
+    stimme.hz = akkord[i];
+  });
+  [akkord[2] * 2, akkord[3] * 2].forEach(function(hz, i){
+    const o = klang.schimmer[i];
+    o.frequency.setValueAtTime(o.frequency.value, t);
+    o.frequency.exponentialRampToValueAtTime(hz, t + 1.5);
+  });
+
+  // Einatmen, vier Sekunden: Filter auf, Akkord voller, Schimmer kommt.
+  kurve(klang.padFilter.frequency, t, 260,  2400, EIN, true);
+  kurve(klang.padTor.gain,         t, 0.22, 1.00, EIN, false);
+  kurve(klang.schimmerTor.gain,    t, 0.00, 1.00, EIN, false);
+
+  // Ausatmen, sechs Sekunden: alles zurück, und zwar merklich langsamer.
+  kurve(klang.padFilter.frequency, t + EIN, 2400, 260,  AUS, true);
+  kurve(klang.padTor.gain,         t + EIN, 1.00, 0.22, AUS, false);
+  kurve(klang.schimmerTor.gain,    t + EIN, 1.00, 0.00, AUS, false);
+
+  anschlag(t, akkord[0] * 2);
+}
+
+/* Immer gut zwei Sekunden im Voraus planen. Die Web-Audio-Uhr läuft
+   unabhängig vom Bildschirm; dadurch bleibt der Atem im Takt, auch wenn
+   der Browser gerade mit etwas anderem beschäftigt ist. Ein Zeitgeber, der
+   den Ton direkt erzeugt, würde bei jedem Ruckler hörbar stolpern. */
+function planen(){
+  if (!klang) return;
+  while (klang.naechster < klang.ctx.currentTime + 2.5){
+    zyklusPlanen(klang.naechster, klang.nr);
+    klang.naechster += ZYKLUS;
+    klang.nr++;
+  }
+}
+
+function klangStarten(){
+  if (!klang) klang = klangBauen();
+  if (!klang) return false;
+
+  const ctx = klang.ctx;
+  if (ctx.state === "suspended") ctx.resume();
+  const jetzt = ctx.currentTime;
+
+  // Alles Geplante von einem früheren Durchgang wegräumen, sonst laufen
+  // zwei Atemzüge gegeneinander.
+  clearInterval(klangPlaner);
+  [klang.padFilter.frequency, klang.padTor.gain, klang.schimmerTor.gain]
+    .forEach(function(r){ r.cancelScheduledValues(jetzt); });
+  klang.padFilter.frequency.setValueAtTime(260, jetzt);
+  klang.padTor.gain.setValueAtTime(0.22, jetzt);
+  klang.schimmerTor.gain.setValueAtTime(0, jetzt);
+  klang.stimmen.forEach(function(s, i){
+    s.hz = AKKORDE[0][i];
+    s.oszillatoren.forEach(function(o){
+      o.frequency.cancelScheduledValues(jetzt);
+      o.frequency.setValueAtTime(s.hz, jetzt);
+    });
+  });
+
+  klang.nr = 0;
+  klang.naechster = jetzt + 0.25;
+
+  // Über anderthalb Sekunden aufblenden. Ein Ton, der sofort in voller
+  // Lautstärke da ist, erschreckt genau in dem Moment, in dem jemand ruhig
+  // werden soll.
+  klang.meister.gain.cancelScheduledValues(jetzt);
+  klang.meister.gain.setValueAtTime(0.0001, jetzt);
+  klang.meister.gain.linearRampToValueAtTime(0.22, jetzt + 1.5);
+
+  planen();
+  klangPlaner = setInterval(planen, 500);
+  return true;
+}
+
+function klangStoppen(){
+  clearInterval(klangPlaner);
+  klangPlaner = null;
+  if (!klang) return;
+
+  const ctx = klang.ctx, jetzt = ctx.currentTime;
+  klang.meister.gain.cancelScheduledValues(jetzt);
+  klang.meister.gain.setValueAtTime(Math.max(klang.meister.gain.value, 0.0001), jetzt);
+  klang.meister.gain.linearRampToValueAtTime(0.0001, jetzt + 1.1);
+
+  // Danach anhalten statt abbauen: einen Klangkontext bekommt man pro Seite
+  // nur ein paar Mal, und beim nächsten Öffnen soll der Ton sofort da sein.
+  setTimeout(function(){
+    if (klang && klang.ctx.state === "running") klang.ctx.suspend();
+  }, 1300);
+}
+
+/* Kreis, Wort und Musik auf denselben Start setzen. Wer den Ton mitten im
+   Ausatmen einschaltet, würde sonst gegen die Musik atmen. Der Kreis läuft
+   über eine CSS-Animation, und die lässt sich nur neu anstoßen, indem man
+   sie kurz abschaltet und einen Neuaufbau erzwingt. */
+function atemNeuStarten(){
+  kriseAtemStart = Date.now();
+  $("krAtemWort").textContent = "Einatmen";
+  const kreis = document.querySelector(".kr-kreis");
+  if (kreis){
+    kreis.style.animation = "none";
+    void kreis.offsetWidth;
+    kreis.style.animation = "";
+  }
+}
+
+function tonKnopfZeichnen(){
+  const an = !!profil.ton;
+  $("bTon").setAttribute("aria-pressed", an ? "true" : "false");
+  $("tonWort").textContent = an ? "Ton an" : "Ton aus";
+}
+
+/* Der Ton bleibt gemerkt. Wer ihn einmal anschaltet, bekommt ihn beim
+   nächsten Mal sofort — das Fenster geht immer über einen Knopfdruck auf,
+   und nur deshalb darf der Browser überhaupt Ton abspielen. */
+function tonUmschalten(){
+  if (profil.ton){
+    klangStoppen();
+    profil.ton = false;
+  } else {
+    if (!klangStarten()){
+      $("tonWort").textContent = "Geht hier nicht";
+      return;
+    }
+    profil.ton = true;
+    atemNeuStarten();
+  }
+  sichern();
+  tonKnopfZeichnen();
+}
+
 let kriseUhr = null, kriseAtem = null, kriseEnde = 0, letzterFakt = -1;
+let kriseAtemStart = 0;   // Beginn des laufenden Atemzugs, geteilt von Wort, Kreis und Ton
 let kriseSeit = 0;   // wann das Fenster aufging — daraus wird die Welle gezaehlt
 
 function faktZeigen(){
@@ -2604,8 +3001,11 @@ function kriseAuf(){
   $("krTitel").textContent = "Drei Minuten. Mehr will ich nicht.";
   faktZeigen();
 
+  tonKnopfZeichnen();
+  if (profil.ton) klangStarten();
+
   kriseEnde = Date.now() + 3 * MIN;
-  const atemStart = Date.now();
+  kriseAtemStart = Date.now();
 
   clearInterval(kriseUhr);
   kriseUhr = setInterval(() => {
@@ -2624,12 +3024,13 @@ function kriseAuf(){
   kriseAtem = setInterval(() => {
     // vier Sekunden ein, sechs aus — dieselbe Kurve wie die Animation
     $("krAtemWort").textContent =
-      ((Date.now() - atemStart) % 10000) < 4000 ? "Einatmen" : "Ausatmen";
+      ((Date.now() - kriseAtemStart) % 10000) < 4000 ? "Einatmen" : "Ausatmen";
   }, 200);
 }
 
 function kriseZu(){
   $("krise").hidden = true;
+  klangStoppen();
   clearInterval(kriseUhr);
   clearInterval(kriseAtem);
 }
@@ -2659,6 +3060,8 @@ $("bKriseWeg").onclick = () => {
   }
   kriseZu();
 };
+$("bTon").onclick = tonUmschalten;
+
 $("bKriseNoch").onclick = faktZeigen;
 
 $("bKriseGeraucht").onclick = () => {
