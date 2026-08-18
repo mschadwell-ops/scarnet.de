@@ -1047,19 +1047,128 @@ const TAGE = [
   "Drei Monate. Lungenfunktion und Kreislauf haben deutlich zugelegt — das war der große Abschnitt."
 ];
 
-/* Dokumentierte Langzeitmarken, die auf ihrem jeweiligen Tag erscheinen. */
+/* Dieselben 90 Tage, aber als Versprechen formuliert — für die Karte
+   „Als Nächstes“. Ein Ziel im Präsens zu beschreiben, behauptet, es sei
+   schon eingetreten; deshalb steht hier durchgehend die Zukunft. Gleiche
+   Reihenfolge wie oben, Eintrag n gehört zu Tag n. */
+const TAGE_ZIEL = [
+  "Puls und Blutdruck werden wieder auf normalen Werten sein, und das Kohlenmonoxid in deinem Blut wird gesunken sein.",
+  "Das Nikotin wird fast vollständig abgebaut sein. Geschmack und Geruch werden anfangen, sich zurückzumelden.",
+  "Das Nikotin wird restlos draußen sein. Die Bronchien werden sich entspannen und das Atmen wird leichter fallen.",
+  "Der stärkste körperliche Entzug wird hinter dir liegen. Ab diesem Moment arbeitet die Zeit für dich.",
+  "Der Sauerstoffgehalt in deinem Blut wird stabil normal sein. Deine Muskeln werden wieder alles bekommen, was sie brauchen.",
+  "Sechs Tage ohne Teernachschub. Die Selbstreinigung deiner Atemwege wird begonnen haben.",
+  "Eine ganze Woche wird voll sein. Die Phase mit den meisten Rückfällen wirst du überstanden haben.",
+  "Acht Tage. Der Griff zur Schachtel wird keine automatische Bewegung mehr sein.",
+  "Die Nikotinrezeptoren in deinem Gehirn werden beginnen, sich zurückzubilden. Das Verlangen verliert damit seine Grundlage.",
+  "Zehn Tage. Zweistellig — und der Morgen wird nicht mehr mit Husten anfangen.",
+  "Elf Tage ohne den ersten Griff am Morgen. Genau der war die härteste Gewohnheit.",
+  "Zwölf Tage. Die Durchblutung deiner Hände und Füße wird sich messbar verbessert haben.",
+  "Dreizehn Tage. Alles, was du seitdem gerochen hast, wirst du unverfälscht gerochen haben.",
+  "Zwei Wochen werden voll sein. Kreislauf und Lungenfunktion legen ab dann spürbar zu.",
+  "Fünfzehn Tage. Deine Kleidung wird seit über zwei Wochen nach nichts riechen.",
+  "Sechzehn Tage. Treppen sind das ehrlichste Messgerät — dann kannst du es ausprobieren.",
+  "Siebzehn Tage. Das Verlangen wird seltener kommen und schwächer ausfallen.",
+  "Achtzehn Tage. Dein Herz wird seitdem Hunderttausende Schläge weniger gemacht haben.",
+  "Neunzehn Tage. Wunden und kleine Verletzungen werden wieder in normalem Tempo heilen.",
+  "Zwanzig Tage. Du wirst zwanzigmal hintereinander dieselbe richtige Entscheidung getroffen haben.",
+  "Einundzwanzig Tage. Die Faustregel für neue Gewohnheiten wirst du erreicht haben.",
+  "Zweiundzwanzig Tage. Dein Geschmackssinn wird deutlich feiner sein als noch vor drei Wochen.",
+  "Dreiundzwanzig Tage. Von da an ist Zurück weiter weg als Weiter.",
+  "Vierundzwanzig Tage. Deine Nächte werden ruhiger — Nikotin war ein Aufputschmittel.",
+  "Fünfundzwanzig Tage. Deine Bronchien werden wieder mit eigener Kraft arbeiten.",
+  "Sechsundzwanzig Tage. Fast ein Monat, ohne dass es jemand feiert. Du wirst es wissen.",
+  "Siebenundzwanzig Tage. Deine Haut wird besser durchblutet sein, der graue Ton verschwindet.",
+  "Achtundzwanzig Tage. Vier volle Wochen, keine einzige Ausnahme.",
+  "Neunundzwanzig Tage. Der Entzug wird Geschichte sein, ab dann geht es nur noch um Gewohnheit.",
+  "Ein Monat wird voll sein. Der Körper wird die Reparatur längst begonnen haben.",
+  "Einunddreißig Tage. Dein Zuhause wird seit einem Monat nicht mehr nach Rauch riechen.",
+  "Zweiunddreißig Tage. Die Zahl deiner Rezeptoren wird auf dem Stand eines Nichtrauchers sein.",
+  "Dreiunddreißig Tage. Kein Automat, kein Kiosk, kein Umweg — einen ganzen Monat lang.",
+  "Vierunddreißig Tage. Ausdauer beim Sport wird die nächste Sache sein, die du merkst.",
+  "Fünfunddreißig Tage. Fünf Wochen. Das Verlangen wird eher als Erinnerung kommen.",
+  "Sechsunddreißig Tage. Deine Finger werden nach nichts mehr riechen.",
+  "Siebenunddreißig Tage. Erkältungen werden dich ab dann weniger hart treffen.",
+  "Achtunddreißig Tage. Kein Morgen mehr, der mit dem Suchen des Feuerzeugs anfängt.",
+  "Neununddreißig Tage. Die Flimmerhärchen in deinen Atemwegen werden wieder mitarbeiten.",
+  "Vierzig Tage. Vierzig Entscheidungen, jede einzeln getroffen.",
+  "Einundvierzig Tage. Dein Zahnfleisch wird besser durchblutet sein als vor sechs Wochen.",
+  "Zweiundvierzig Tage. Sechs Wochen — die Marke, ab der Chirurgen deutlich ruhiger operieren.",
+  "Dreiundvierzig Tage. Jeder Tag ab dann war früher unvorstellbar.",
+  "Vierundvierzig Tage. Der Husten, falls er kam, wird weniger werden.",
+  "Fünfundvierzig Tage. Anderthalb Monate. Nichts daran wird Zufall gewesen sein.",
+  "Sechsundvierzig Tage. Du wirst Situationen überstanden haben, die früher immer eine Zigarette bedeuteten.",
+  "Siebenundvierzig Tage. Deine Lunge wird mehr Volumen schaffen als am ersten Tag.",
+  "Achtundvierzig Tage. Dein Blutdruck wird niedriger liegen als in deiner Raucherzeit.",
+  "Neunundvierzig Tage. Sieben volle Wochen.",
+  "Fünfzig Tage. Eine runde Zahl, die vor sieben Wochen weit weg aussah.",
+  "Einundfünfzig Tage. Passivrauch wird in dieser Zeit niemand von dir abbekommen haben.",
+  "Zweiundfünfzig Tage. Dein Geruchssinn wird sich seinem alten Zustand nähern.",
+  "Dreiundfünfzig Tage. Kein Aschenbecher, den jemand leeren musste.",
+  "Vierundfünfzig Tage. Dein Ruhepuls wird messbar niedriger liegen als früher.",
+  "Fünfundfünfzig Tage. Das Verlangen wird nur noch in bestimmten Situationen auftauchen.",
+  "Sechsundfünfzig Tage. Acht Wochen. Zwei Monate werden fast voll sein.",
+  "Siebenundfünfzig Tage. Deine Kondition wird besser sein als am Anfang, auch ohne Training.",
+  "Achtundfünfzig Tage. Kein Regen, in dem du draußen gestanden hast, weil du musstest.",
+  "Neunundfünfzig Tage. Der Körper wird den größten Teil der schnellen Reparatur erledigt haben.",
+  "Zwei Monate werden voll sein. Ab dann geht es um das Langsame: Gefäße, Lunge, Risikowerte.",
+  "Einundsechzig Tage. Zwei Monate und einen Tag — auch der zählt einzeln.",
+  "Zweiundsechzig Tage. Deine Entzündungswerte im Blut werden niedriger liegen als in der Raucherzeit.",
+  "Dreiundsechzig Tage. Neun Wochen ohne Ausnahme.",
+  "Vierundsechzig Tage. Deine Stimme wird klarer klingen, wenn du morgens redest.",
+  "Fünfundsechzig Tage. Die Sauerstoffversorgung deiner Muskeln wird auf Nichtraucherniveau sein.",
+  "Sechsundsechzig Tage. Die Forschung nennt oft 66 Tage, bis eine Gewohnheit sitzt. Dann sitzt sie.",
+  "Siebenundsechzig Tage. Der Automatismus wird weg sein — was bleibt, ist eine bewusste Sache, und die ist leichter.",
+  "Achtundsechzig Tage. Nichts an deiner Wohnung wird noch daran erinnern.",
+  "Neunundsechzig Tage. Fast zehn Wochen.",
+  "Siebzig Tage. Zehn Wochen, ohne eine einzige.",
+  "Einundsiebzig Tage. Deine Zähne werden sich seit über zwei Monaten nicht weiter verfärbt haben.",
+  "Zweiundsiebzig Tage. Deine Wundheilung wird auf normalem Stand sein.",
+  "Dreiundsiebzig Tage. Ein Fünftel eines Jahres.",
+  "Vierundsiebzig Tage. Dein Herz wird seit zweieinhalb Monaten im eigenen Takt schlagen.",
+  "Fünfundsiebzig Tage. Fünfundsiebzig Abende, an denen du nicht rausgegangen bist.",
+  "Sechsundsiebzig Tage. Deine Lungenkapazität wird weiter gestiegen sein, langsam und stetig.",
+  "Siebenundsiebzig Tage. Elf Wochen.",
+  "Achtundsiebzig Tage. Kein Gedanke mehr daran, ob die Schachtel bis morgen reicht.",
+  "Neunundsiebzig Tage. Dein Schlaf wird tiefer sein als in deiner Raucherzeit.",
+  "Achtzig Tage, in denen dein Körper nur aufgeräumt und nichts nachgeliefert bekommen hat.",
+  "Einundachtzig Tage. Deine Geschmacksnerven werden auf vollem Niveau arbeiten.",
+  "Zweiundachtzig Tage. Dein Risiko für Atemwegsinfekte wird niedriger sein als noch im ersten Monat.",
+  "Dreiundachtzig Tage. Zwölf Wochen werden fast voll sein.",
+  "Vierundachtzig Tage. Zwölf Wochen. Deine Lungenfunktion wird deutlich zugelegt haben.",
+  "Fünfundachtzig Tage. Ab dann zählst du eher in Monaten als in Tagen.",
+  "Sechsundachtzig Tage. Kein Ritual mehr, das dich an die Zigarette bindet.",
+  "Siebenundachtzig Tage. Deine Durchblutung wird auf einem Stand sein, den du seit Jahren nicht hattest.",
+  "Achtundachtzig Tage. Fast drei Monate, ohne dass es eine Rolle gespielt hat.",
+  "Neunundachtzig Tage. Einen Tag später sind es drei Monate.",
+  "Drei Monate werden voll sein. Lungenfunktion und Kreislauf werden deutlich zugelegt haben — der große Abschnitt."
+];
+
+/* Dokumentierte Langzeitmarken, die auf ihrem jeweiligen Tag erscheinen.
+   `ziel` ist die Fassung für die Vorschau, `text` die für Erreichtes. */
 const LANGZEIT = [
-  { tag:120,  text:"Vier Monate. Husten und Verschleimung nehmen jetzt deutlich ab." },
-  { tag:150,  text:"Fünf Monate. Die Selbstreinigung der Atemwege läuft wieder vollständig." },
-  { tag:180,  text:"Ein halbes Jahr. Husten und Kurzatmigkeit haben stark abgenommen." },
-  { tag:210,  text:"Sieben Monate. Die Flimmerhärchen in den Bronchien arbeiten wieder weitgehend normal." },
-  { tag:270,  text:"Neun Monate. Die Erholung der Atemwege ist im Wesentlichen abgeschlossen." },
-  { tag:365,  text:"Ein Jahr. Das Risiko einer koronaren Herzkrankheit ist etwa halbiert." },
-  { tag:730,  text:"Zwei Jahre. Das Herzinfarktrisiko liegt deutlich näher an dem von Nichtrauchern." },
-  { tag:1095, text:"Drei Jahre. Die Gefäße haben sich weit über das hinaus erholt, was im ersten Jahr möglich war." },
-  { tag:1825, text:"Fünf Jahre. Das Schlaganfallrisiko nähert sich dem von Menschen, die nie geraucht haben." },
-  { tag:3650, text:"Zehn Jahre. Das Lungenkrebsrisiko ist etwa halbiert." },
-  { tag:5475, text:"Fünfzehn Jahre. Das Risiko für Herzkrankheiten entspricht dem von Nichtrauchern." }
+  { tag:120,  text:"Vier Monate. Husten und Verschleimung nehmen jetzt deutlich ab.",
+              ziel:"Vier Monate werden voll sein. Husten und Verschleimung werden ab dann deutlich abnehmen." },
+  { tag:150,  text:"Fünf Monate. Die Selbstreinigung der Atemwege läuft wieder vollständig.",
+              ziel:"Fünf Monate. Die Selbstreinigung deiner Atemwege wird wieder vollständig laufen." },
+  { tag:180,  text:"Ein halbes Jahr. Husten und Kurzatmigkeit haben stark abgenommen.",
+              ziel:"Ein halbes Jahr wird voll sein. Husten und Kurzatmigkeit werden stark abgenommen haben." },
+  { tag:210,  text:"Sieben Monate. Die Flimmerhärchen in den Bronchien arbeiten wieder weitgehend normal.",
+              ziel:"Sieben Monate. Die Flimmerhärchen in deinen Bronchien werden wieder weitgehend normal arbeiten." },
+  { tag:270,  text:"Neun Monate. Die Erholung der Atemwege ist im Wesentlichen abgeschlossen.",
+              ziel:"Neun Monate. Die Erholung deiner Atemwege wird im Wesentlichen abgeschlossen sein." },
+  { tag:365,  text:"Ein Jahr. Das Risiko einer koronaren Herzkrankheit ist etwa halbiert.",
+              ziel:"Ein ganzes Jahr wird voll sein. Dein Risiko einer koronaren Herzkrankheit wird etwa halbiert sein." },
+  { tag:730,  text:"Zwei Jahre. Das Herzinfarktrisiko liegt deutlich näher an dem von Nichtrauchern.",
+              ziel:"Zwei Jahre. Dein Herzinfarktrisiko wird deutlich näher an dem von Nichtrauchern liegen." },
+  { tag:1095, text:"Drei Jahre. Die Gefäße haben sich weit über das hinaus erholt, was im ersten Jahr möglich war.",
+              ziel:"Drei Jahre. Deine Gefäße werden sich weit über das hinaus erholt haben, was im ersten Jahr möglich war." },
+  { tag:1825, text:"Fünf Jahre. Das Schlaganfallrisiko nähert sich dem von Menschen, die nie geraucht haben.",
+              ziel:"Fünf Jahre. Dein Schlaganfallrisiko wird sich dem von Menschen nähern, die nie geraucht haben." },
+  { tag:3650, text:"Zehn Jahre. Das Lungenkrebsrisiko ist etwa halbiert.",
+              ziel:"Zehn Jahre. Dein Lungenkrebsrisiko wird etwa halbiert sein." },
+  { tag:5475, text:"Fünfzehn Jahre. Das Risiko für Herzkrankheiten entspricht dem von Nichtrauchern.",
+              ziel:"Fünfzehn Jahre. Dein Risiko für Herzkrankheiten wird dem von Nichtrauchern entsprechen." }
 ];
 
 const MIN = 60000, STD = 60 * MIN, TAG = 24 * STD;
@@ -1317,7 +1426,7 @@ function zeichnen(){
     const frisch = (letzterTag >= 0 && w.tage === letzterTag + 1) ? w.tage : null;
     tageZeichnen(w.tage, profil, frisch);   // w.tage = abgeschlossene Tage
     $("cdTag").textContent = "Tag " + (w.tage + 1);
-    $("cdText").textContent = tagesText(w.tage + 1, profil);
+    $("cdText").textContent = tagesText(w.tage + 1, profil, true);   // Ziel-Fassung
     letzterTag = w.tage;
   }
   naechstesZeichnen(w);
@@ -1340,28 +1449,43 @@ function spruchZeichnen(tage){
     Bis Tag 90 ein eigener Eintrag, danach die dokumentierten Langzeitmarken
     und sonst ein aus den eigenen Zahlen errechneter Erfolg. Der wechselt
     täglich und ist immer wahr, ohne dass ich Medizin erfinden muss. */
-function tagesText(nr, p){
-  if (nr >= 1 && nr <= TAGE.length) return TAGE[nr - 1];
+function tagesText(nr, p, alsZiel){
+  if (nr >= 1 && nr <= TAGE.length) return alsZiel ? TAGE_ZIEL[nr - 1] : TAGE[nr - 1];
 
   const lang = LANGZEIT.find(m => m.tag === nr);
-  if (lang) return lang.text;
+  if (lang) return alsZiel ? lang.ziel : lang.text;
 
   const zig  = p.menge * nr;
   const geld = zig * (p.preis / p.proSchachtel);
 
-  if (nr % 365 === 0) return (nr / 365) + " Jahre rauchfrei. " + zahl(zig) + " Zigaretten, die es nie gegeben hat.";
-  if (nr % 30 === 0)  return Math.round(nr / 30) + " Monate rauchfrei — bis hierher " + euro(geld) + " nicht ausgegeben.";
-  if (nr % 7 === 0)   return "Woche " + (nr / 7) + " abgeschlossen, ohne eine einzige.";
+  if (nr % 365 === 0) return alsZiel
+    ? (nr / 365) + " Jahre werden voll sein — " + zahl(zig) + " Zigaretten, die es nie gegeben hat."
+    : (nr / 365) + " Jahre rauchfrei. " + zahl(zig) + " Zigaretten, die es nie gegeben hat.";
+  if (nr % 30 === 0) return alsZiel
+    ? Math.round(nr / 30) + " Monate werden voll sein — bis dahin " + euro(geld) + " nicht ausgegeben."
+    : Math.round(nr / 30) + " Monate rauchfrei — bis hierher " + euro(geld) + " nicht ausgegeben.";
+  if (nr % 7 === 0) return alsZiel
+    ? "Woche " + (nr / 7) + " wird abgeschlossen sein, ohne eine einzige."
+    : "Woche " + (nr / 7) + " abgeschlossen, ohne eine einzige.";
 
   switch (nr % 5){
-    case 0: return zahl(zig) + " Zigaretten nicht geraucht.";
-    case 1: return euro(geld) + " nicht ausgegeben.";
-    case 2: return dauerAusMinuten(zig * 11) + " Lebenszeit zurückgerechnet.";
-    case 3: return zahl(Math.floor(zig / p.proSchachtel)) + " Schachteln, die niemand gekauft hat.";
+    case 0: return alsZiel
+      ? "Dann sind es " + zahl(zig) + " Zigaretten, die du nicht geraucht hast."
+      : zahl(zig) + " Zigaretten nicht geraucht.";
+    case 1: return alsZiel
+      ? "Dann sind es " + euro(geld) + ", die du nicht ausgegeben hast."
+      : euro(geld) + " nicht ausgegeben.";
+    case 2: return alsZiel
+      ? "Dann wirst du " + dauerAusMinuten(zig * 11) + " Lebenszeit zurückgerechnet haben."
+      : dauerAusMinuten(zig * 11) + " Lebenszeit zurückgerechnet.";
+    case 3: return alsZiel
+      ? "Dann sind es " + zahl(Math.floor(zig / p.proSchachtel)) + " Schachteln, die niemand gekauft hat."
+      : zahl(Math.floor(zig / p.proSchachtel)) + " Schachteln, die niemand gekauft hat.";
   }
+
   // Jeder fünfte Tag trifft keinen der Rechenwege. Damit dort nicht immer
-  // dasselbe steht, wandert er durch diese Liste.
-  const rest = [
+  // dasselbe steht, wandert er durch diese Liste — je Fassung eine eigene.
+  const erreicht = [
     "Tag " + nr + " — und es ist längst normal geworden.",
     "Deine Lunge arbeitet seit " + nr + " Tagen ohne Nachschub.",
     nr + " Tage, an denen du nicht bei Regen vor der Tür gestanden hast.",
@@ -1371,7 +1495,17 @@ function tagesText(nr, p){
     nr + " Tage ohne einen einzigen Umweg zum Automaten.",
     "Tag " + nr + " — die Sache ist entschieden, nicht mehr offen."
   ];
-  return rest[Math.floor(nr / 5) % rest.length];
+  const ziel = [
+    "Tag " + nr + " — und es wird längst normal sein.",
+    "Dann wird deine Lunge seit " + nr + " Tagen ohne Nachschub arbeiten.",
+    "Dann sind es " + nr + " Tage, an denen du nicht bei Regen vor der Tür gestanden hast.",
+    "Dann riecht seit " + nr + " Tagen nichts mehr an dir nach Rauch.",
+    "Dann sind es " + nr + " Tage, in denen dein Herz im eigenen Takt geschlagen hat.",
+    "Dann wird seit " + nr + " Tagen niemand Passivrauch von dir abbekommen haben.",
+    "Dann sind es " + nr + " Tage ohne einen einzigen Umweg zum Automaten.",
+    "Tag " + nr + " — die Sache wird entschieden sein, nicht mehr offen."
+  ];
+  return (alsZiel ? ziel : erreicht)[Math.floor(nr / 5) % 8];
 }
 
 /** Drei Zustände, und die Unterscheidung ist wichtig:
