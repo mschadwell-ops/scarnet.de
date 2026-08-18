@@ -153,7 +153,12 @@
   @media (prefers-reduced-motion:reduce){
     .atem{ animation:none; }
   }
-  .zaehler > *:not(.atem):not(.rauch){ position:relative; }
+  /* Hebt den Inhalt ueber die Atem- und Rauchschicht. Feuerwerk und
+     Glueckwunsch muessen ausgenommen bleiben: sie sind absolut gesetzt, und
+     diese Regel ist mit drei Klassen staerker als eine einzelne — sie hat
+     ihnen sonst wortwoertlich den Boden unter den Fuessen weggezogen und sie
+     ans Ende des Kartentextes gestellt. */
+  .zaehler > *:not(.atem):not(.rauch):not(.funken):not(.glueckwunsch){ position:relative; }
 
   /* ---------- Rauch am ersten Tag ----------
      Kein Bild, nur weichgezeichnete Farbverläufe, die aufsteigen. Die Stärke
@@ -504,7 +509,6 @@
   .seg > i{
     display:block; width:100%; height:20px; border-radius:3px;
     background:var(--line-soft); border:1px solid var(--line);
-    transition:background .25s, border-color .25s, box-shadow .25s;
   }
   /* Die letzte Zeile hat nur zwei Tage. Die fünf Blindfelder halten die
      Segmentbreite über alle Zeilen gleich — ohne sie wären die zwei Tage
@@ -526,13 +530,6 @@
     box-shadow:0 0 7px rgba(217,169,79,.5);
   }
 
-  /* Die Auswahl wird UNTER dem Balken markiert, nicht auf ihm. Ein Umriss
-     von 2 px bei 2 px Abstand belegt auf einem 38 px breiten Feld so viel
-     Fläche, dass er wie eine andere Füllung wirkt — nachgemessen. */
-  .seg.gewaehlt::after{
-    content:""; position:absolute; left:22%; right:22%; bottom:1px;
-    height:2px; border-radius:1px; background:var(--text);
-  }
   .seg:focus-visible{ outline:2px solid var(--air); outline-offset:1px; }
 
   .bz-stern{
@@ -565,7 +562,6 @@
   .fern button.da{
     background:rgba(217,169,79,.16); border-color:rgba(217,169,79,.5); color:var(--brass);
   }
-  .fern button.gewaehlt{ border-color:var(--text); color:var(--text); }
 
   /* Die Antwort auf einen Tipper. Der Kasten steht immer da: ohne Auswahl
      zeigt er das nächste Ziel, nach einem Tipper den angetippten Tag. Ein
@@ -615,6 +611,126 @@
     background:conic-gradient(transparent 0deg, rgba(198,255,236,.95) 34deg, transparent 86deg);
   }
   .trophaeen.wellen li.geholt .tr-name{ color:var(--air); }
+
+
+  /* ---------- Tagesfenster ----------
+     Der Erfolg eines Tages stand vorher als Textzeile unter dem ganzen
+     Block — bei fuenf Baenderzeilen und zwei Reihen Chips also weit
+     entfernt von dem Feld, das man angetippt hatte. Dass beides
+     zusammengehoert, war nicht zu erkennen.
+
+     Jetzt oeffnet ein Tipper ein eigenes Fenster ueber der Seite. Damit ist
+     der Zusammenhang eindeutig, und es gibt Platz fuer die Zahlen, statt
+     sie in einen Satz zu quetschen. */
+  .tagfenster{
+    position:fixed; inset:0; z-index:60;
+    display:grid; place-items:center;
+    padding:24px 18px;
+    background:rgba(5,11,9,.82);
+    -webkit-backdrop-filter:blur(3px); backdrop-filter:blur(3px);
+    animation:tfAuf .18s ease-out;
+  }
+  .tagfenster[hidden]{ display:none; }
+  @keyframes tfAuf{ from{ opacity:0; } }
+
+  .tf-inhalt{
+    width:100%; max-width:22rem;
+    background:var(--surface); border:1px solid var(--line);
+    border-radius:16px; padding:24px 22px 20px;
+    text-align:center; position:relative;
+    animation:tfHoch .22s cubic-bezier(.2,.9,.3,1);
+  }
+  @keyframes tfHoch{ from{ transform:translateY(14px) scale(.97); opacity:0; } }
+
+  .tf-zu{
+    position:absolute; top:8px; right:8px;
+    width:36px; height:36px; padding:0;
+    background:none; border:none; border-radius:50%;
+    color:var(--faint); font-size:20px; line-height:1; cursor:pointer;
+  }
+  .tf-zu:hover{ color:var(--text); background:var(--surface-2); }
+
+  .tf-marke{
+    font-size:10px; letter-spacing:.18em; text-transform:uppercase;
+    color:var(--faint); font-weight:600;
+  }
+  .tf-marke.da{ color:var(--brass); }
+  .tf-tag{
+    margin:5px 0 2px; font-size:27px; font-weight:600; letter-spacing:-.02em;
+    color:var(--text);
+  }
+  .tf-titel{ font-size:14px; color:var(--air); margin-bottom:18px; }
+
+  .tf-zahlen{
+    display:grid; grid-template-columns:1fr 1fr; gap:1px;
+    background:var(--line-soft); border:1px solid var(--line);
+    border-radius:12px; overflow:hidden; margin-bottom:16px;
+  }
+  .tf-zahlen div{ background:var(--surface-2); padding:14px 8px; }
+  .tf-zahlen .k{
+    font-size:9.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--faint);
+  }
+  .tf-zahlen .v{
+    margin-top:6px; font-size:22px; font-weight:600; letter-spacing:-.02em;
+    font-variant-numeric:tabular-nums;
+  }
+  .tf-zahlen .zig .v{ color:var(--air); }
+  .tf-zahlen .geld .v{ color:var(--brass); }
+
+  .tf-satz{ font-size:13.5px; line-height:1.6; color:var(--muted); }
+  .tf-satz b{ color:var(--text); font-weight:600; }
+
+  @media (prefers-reduced-motion:reduce){
+    .tagfenster, .tf-inhalt{ animation:none; }
+  }
+
+  /* ---------- Feuerwerk ----------
+     Wenn ein Tag umschlaegt und die Seite gerade offen ist. Die Funken sind
+     einzelne Punkte, die aus der Mitte des Zaehlers nach aussen fliegen und
+     dabei fallen — jeder mit eigenem Winkel, eigener Weite und eigener
+     Verzoegerung, sonst sieht es aus wie ein Zahnrad.
+
+     Es liegt in der Zaehlerkarte und nicht ueber der ganzen Seite: die
+     Belohnung gehoert zu der Zahl, die sich gerade geaendert hat. */
+  .funken{
+    position:absolute; inset:0; overflow:hidden;
+    pointer-events:none; border-radius:inherit;
+    z-index:0;               /* hinter der Zahl: sie soll lesbar bleiben */
+  }
+  .funken i{
+    position:absolute; left:50%; top:38%;
+    width:6px; height:6px; margin:-3px 0 0 -3px;
+    border-radius:50%; opacity:0;
+    animation:funke 1500ms ease-out forwards;
+    animation-delay:var(--spaet, 0ms);
+  }
+  @keyframes funke{
+    0%   { opacity:0; transform:translate(0,0) scale(.4); }
+    12%  { opacity:1; }
+    70%  { opacity:1; }
+    100% { opacity:0; transform:translate(var(--x), var(--y)) scale(.9); }
+  }
+
+  .glueckwunsch{
+    position:absolute; left:0; right:0; top:12px;
+    z-index:3;
+    text-align:center; pointer-events:none;
+    font-size:11.5px; letter-spacing:.16em; text-transform:uppercase;
+    font-weight:700; color:var(--brass);
+    text-shadow:0 0 14px rgba(217,169,79,.5);
+    animation:gwEin 3600ms ease-out forwards;
+  }
+  @keyframes gwEin{
+    0%   { opacity:0; transform:translateY(6px); }
+    10%  { opacity:1; transform:none; }
+    78%  { opacity:1; }
+    100% { opacity:0; }
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    .funken{ display:none; }
+    .glueckwunsch{ animation:none; opacity:1; }
+  }
 
   /* ---------- Geldkarte mit Knopf und Antwort ---------- */
   .geldkarte{

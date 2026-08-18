@@ -291,7 +291,13 @@ function zeichnen(){
   const rest = Math.max(0, 1 - w.verstrichen / TAG);
   $("rauch").style.setProperty("--rauch", rest.toFixed(3));
 
-  $("kGeld").textContent = euro(w.geld);
+  /* Auf ganze Cent abschneiden, nicht runden. euro() rundet ueber
+     toLocaleString, die Muenze rechnet mit Math.floor — dadurch zeigte die
+     Zahl den naechsten Cent schon an, waehrend die Muenze noch bei 99
+     Prozent stand. Beide zaehlen jetzt denselben Cent, und der Sprung
+     passiert in derselben Sekunde. Abschneiden ist ausserdem die ehrliche
+     Richtung: es wird nie mehr behauptet, als tatsaechlich gespart ist. */
+  $("kGeld").textContent = euro(Math.floor(w.geld * 100) / 100);
   muenzeZeichnen(w);
   const schachteln = Math.floor(w.schachteln);
   $("kGeldNote").textContent = schachteln === 1
@@ -320,6 +326,7 @@ function zeichnen(){
     $("cdTag").textContent = "Tag " + (w.tage + 1);
     $("cdText").textContent = tagesText(w.tage + 1, profil, true);   // Ziel-Fassung
     erfolgeZeichnen(w.verstrichen, frisch);   // alle Marken liegen auf Tagesgrenzen
+    if (frisch) feuerwerk(w.tage);            // nur beim echten Umschlag, nicht beim Aufbau
     wellenZeichnen();
     letzterTag = w.tage;
   }
@@ -550,7 +557,6 @@ function tageZeichnen(fertig, p, frischNr){
    zusammengekommen ist — nicht geraucht und nicht ausgegeben, gerechnet mit
    den eigenen Einstellungen. Zweites Antippen hebt die Auswahl auf.
    --------------------------------------------------------------------- */
-let erfolgWahl = null;   // angetippter Tag, oder null für „nächstes Ziel“
 
 const BAENDER = [
   { kopf:"W1", von: 1, bis: 7 },
@@ -573,36 +579,11 @@ function erfolgName(nr){
   return t ? t.kurz : "Tag " + nr;
 }
 
-/* Was am Ende eines bestimmten Tages zusammengekommen ist. Drei Zeitformen,
-   weil derselbe Satz sonst für einen erreichten und einen offenen Tag
-   dasselbe behaupten würde — der Fehler, der mir in diesem Projekt schon
-   dreimal unterlaufen ist. Die Formulierungen vermeiden bewusst ein Verb
-   hinter dem Namen: „100 Tage steht noch aus“ wäre falsch, „100 Tage stehen“
-   für „Tag 7“ auch. */
-function erfolgSatz(nr, verstrichen){
-  const zig  = nr * profil.menge;
-  const geld = zig * (profil.preis / profil.proSchachtel);
-  const z = '<b class="zig">' + zahl(zig) + " Zigaretten</b>";
-  const g = '<b class="geld">' + euro(geld) + "</b>";
-  const name = "<b>" + esc(erfolgName(nr)) + "</b>";
-  const fertig = Math.floor(verstrichen / TAG);
-
-  if (nr <= fertig)
-    return name + " — erreicht.<br>Am Ende dieses Tages: " + z + " nicht geraucht, " + g + " nicht ausgegeben.";
-  if (nr === fertig + 1)
-    return name + " — läuft.<br>Heute Abend: " + z + " nicht geraucht, " + g + " nicht ausgegeben.";
-  return name + " — offen.<br>Wenn es soweit ist: " + z + " nicht geraucht, " + g + " nicht ausgegeben.";
-}
 
 function erfolgAntwort(verstrichen){
   const kasten = $("erfolgAntwort");
-  if (erfolgWahl !== null){
-    kasten.innerHTML = erfolgSatz(erfolgWahl, verstrichen)
-      + '<span class="tipp">Noch einmal tippen schließt das wieder.</span>';
-    return;
-  }
   const fertig = Math.floor(verstrichen / TAG);
-  const hinweis = '<span class="tipp">Tipp auf ein Feld zeigt, was an dem Tag zusammenkommt.</span>';
+  const hinweis = '<span class="tipp">Tipp auf ein Feld — dann steht da, was an dem Tag zusammengekommen ist.</span>';
 
   if (fertig < TAGESTROPHAEEN.length){
     const t = TAGESTROPHAEEN[fertig];      // der laufende Tag
@@ -628,7 +609,7 @@ function erfolgeZeichnen(verstrichen, frischNr){
     for (let n = b.von; n <= b.bis; n++){
       const zustand = fertig >= n ? "da" : n === laufend ? "jetzt" : "zu";
       segs += '<button type="button" class="seg ' + zustand
-            + (erfolgWahl === n ? " gewaehlt" : "") + '" data-tag="' + n
+            + '" data-tag="' + n
             + '" aria-label="Tag ' + n + '"><i></i></button>';
     }
     for (let f = b.bis - b.von + 1; f < BAND_BREIT; f++)
@@ -644,7 +625,7 @@ function erfolgeZeichnen(verstrichen, frischNr){
   ferne().forEach(t => {
     const tage = Math.round(t.ms / TAG);
     h += '<button type="button" class="' + (verstrichen >= t.ms ? "da" : "")
-       + (erfolgWahl === tage ? " gewaehlt" : "") + '" data-tag="' + tage
+       + '" data-tag="' + tage
        + '">' + esc(t.kurz) + "</button>";
   });
   h += "</div>";
@@ -663,9 +644,7 @@ function erfolgeZeichnen(verstrichen, frischNr){
 $("erfolge").addEventListener("click", e => {
   const knopf = e.target.closest("[data-tag]");
   if (!knopf) return;
-  const nr = parseInt(knopf.dataset.tag, 10);
-  erfolgWahl = (erfolgWahl === nr) ? null : nr;
-  erfolgeZeichnen(rechnen(profil).verstrichen, null);
+  tagfensterAuf(parseInt(knopf.dataset.tag, 10));
 });
 
 /* ---------- Standhaft-Trophäen ---------- */
@@ -1442,3 +1421,98 @@ $("fImport").onchange = e => {
     zeigen("ansichtAnmeldung");
   }
 })();
+/* ---------------------------------------------------------------------
+   Tagesfenster
+   ---------------------------------------------------------------------
+   Der Erfolg eines Tages stand vorher als Zeile unter dem ganzen Block —
+   bei fünf Bänderzeilen und zwei Reihen Chips also weit weg von dem Feld,
+   das man angetippt hatte. Dass beides zusammengehört, war nicht zu sehen.
+   Jetzt geht ein eigenes Fenster auf.
+   --------------------------------------------------------------------- */
+function tagfensterAuf(nr){
+  const zig  = nr * profil.menge;
+  const geld = zig * (profil.preis / profil.proSchachtel);
+  const verstrichen = rechnen(profil).verstrichen;
+  const fertig = Math.floor(verstrichen / TAG);
+
+  const istTag = nr >= 1 && nr <= TAGESTROPHAEEN.length;
+  const marke  = TROPHAEEN.find(x => Math.round(x.ms / TAG) === nr);
+
+  const kopf  = istTag ? "Tag " + nr : (marke ? marke.kurz : "Tag " + nr);
+  const titel = istTag ? TAGESTROPHAEEN[nr - 1].titel : (marke ? marke.was : "");
+
+  const zustand = nr <= fertig ? "erreicht" : nr === fertig + 1 ? "läuft gerade" : "noch offen";
+  const satz = nr <= fertig
+    ? "So weit warst du am Ende dieses Tages."
+    : nr === fertig + 1
+      ? "So weit bist du heute Abend."
+      : "So weit wirst du sein, wenn es soweit ist.";
+
+  $("tfMarke").textContent = zustand;
+  $("tfMarke").className = "tf-marke" + (nr <= fertig ? " da" : "");
+  $("tfTag").textContent = kopf;
+  $("tfTitel").textContent = titel;
+  $("tfZig").textContent = zahl(zig);
+  $("tfGeld").textContent = euro(geld);
+  $("tfSatz").textContent = satz;
+
+  $("tagfenster").hidden = false;
+  $("tfZu").focus();
+}
+
+function tagfensterZu(){
+  $("tagfenster").hidden = true;
+}
+
+$("tfZu").onclick = tagfensterZu;
+/* Ein Tipper neben den Kasten schließt ebenfalls — auf dem Handy ist das
+   die Geste, die alle erwarten. */
+$("tagfenster").addEventListener("click", e => {
+  if (e.target === $("tagfenster")) tagfensterZu();
+});
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && !$("tagfenster").hidden) tagfensterZu();
+});
+
+/* ---------------------------------------------------------------------
+   Feuerwerk beim Tageswechsel
+   ---------------------------------------------------------------------
+   Es liegt in der Zählerkarte, nicht über der ganzen Seite: die Belohnung
+   gehört zu der Zahl, die sich gerade geändert hat. Achtzehn Funken mit je
+   eigenem Winkel, eigener Weite und eigener Verzögerung — bei gleichen
+   Werten sähe es aus wie ein Zahnrad.
+   --------------------------------------------------------------------- */
+const FUNKENFARBEN = ["#FFE7B2", "#D9A94F", "#62D6AE", "#E9F2EE"];
+
+function feuerwerk(tage){
+  const karte = document.querySelector(".zaehler");
+  if (!karte) return;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+  const alt = karte.querySelector(".funken");
+  if (alt) alt.remove();
+
+  const feld = document.createElement("div");
+  feld.className = "funken";
+  let h = "";
+  for (let i = 0; i < 18; i++){
+    const winkel = (Math.random() * 360) * Math.PI / 180;
+    const weite  = 70 + Math.random() * 130;
+    const x = Math.cos(winkel) * weite;
+    const y = Math.sin(winkel) * weite * 0.62 + 90;   // Schwerkraft: alle fallen
+    h += '<i style="--x:' + x.toFixed(0) + "px;--y:" + y.toFixed(0) + "px;--spaet:"
+       + Math.floor(Math.random() * 420) + "ms;background:"
+       + FUNKENFARBEN[i % FUNKENFARBEN.length] + '"></i>';
+  }
+  feld.innerHTML = h;
+  karte.appendChild(feld);
+  setTimeout(() => feld.remove(), 2200);
+
+  const gw = document.createElement("div");
+  gw.className = "glueckwunsch";
+  gw.textContent = tage === 1
+    ? "Herzlichen Glückwunsch — der erste Tag!"
+    : "Herzlichen Glückwunsch — Tag " + tage + "!";
+  karte.appendChild(gw);
+  setTimeout(() => gw.remove(), 3800);
+}
