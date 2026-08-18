@@ -313,26 +313,58 @@
   }
   .trophaeen::-webkit-scrollbar{ display:none; }
   .trophaeen li{
-    flex:none; width:70px; text-align:center;
+    flex:none; width:74px; text-align:center;
   }
+
+  /* Die Scheibe selbst ist nur der Kern. Der Ring aussen herum ist die
+     eigentliche Anzeige: beim nächsten Ziel füllt er sich anteilig, bei
+     geholten läuft ein Lichtpunkt herum — versetzt von links nach rechts,
+     damit die Reihe wie eine Laufleiste wirkt. */
   .tr-scheibe{
+    position:relative;
     display:grid; place-items:center;
-    width:46px; height:46px; margin:0 auto 7px;
+    width:50px; height:50px; margin:0 auto 9px;
     border-radius:50%; font-size:17px; line-height:1;
-    border:1.5px solid var(--line); background:var(--surface);
+    background:var(--surface);
     color:var(--faint);
-    transition:.3s;
+    transition:color .3s, background .3s;
   }
+  .tr-scheibe::before,
+  .tr-scheibe::after{
+    content:""; position:absolute; inset:-4px;
+    border-radius:50%;
+    pointer-events:none;
+    -webkit-mask:radial-gradient(closest-side, transparent 78%, #000 79%);
+            mask:radial-gradient(closest-side, transparent 78%, #000 79%);
+  }
+  .tr-scheibe::before{ background:rgba(255,255,255,.07); }   /* die Spur */
+
+  /* Geholt: voller Messingring plus umlaufender Lichtpunkt */
   .trophaeen li.geholt .tr-scheibe{
-    border-color:var(--brass);
-    background:linear-gradient(160deg, rgba(217,169,79,.28), rgba(217,169,79,.07));
+    background:linear-gradient(160deg, rgba(217,169,79,.26), rgba(217,169,79,.06));
     color:var(--brass);
-    box-shadow:0 0 12px rgba(217,169,79,.28);
   }
+  .trophaeen li.geholt .tr-scheibe::before{
+    background:rgba(217,169,79,.55);
+  }
+  .trophaeen li.geholt .tr-scheibe::after{
+    background:conic-gradient(transparent 0deg, rgba(255,231,178,.95) 34deg, transparent 86deg);
+    animation:ringLauf 3.2s linear infinite;
+    animation-delay:var(--verzug, 0s);
+  }
+  @keyframes ringLauf{ to{ transform:rotate(360deg); } }
+
+  /* Als Nächstes dran: der Ring zeigt, wie weit es bis dahin noch ist */
   .trophaeen li.dran .tr-scheibe{
-    border:2px dashed var(--air);
     color:var(--air);
-    box-shadow:0 0 10px var(--air-glow);
+    box-shadow:0 0 12px var(--air-glow);
+  }
+  .trophaeen li.dran .tr-scheibe::after{
+    background:conic-gradient(var(--air) calc(var(--fortschritt, 0) * 1%), transparent 0);
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    .trophaeen li.geholt .tr-scheibe::after{ animation:none; }
   }
   .tr-name{
     display:block; font-size:11px; letter-spacing:.04em;
@@ -345,23 +377,37 @@
     max-width:60ch;
   }
 
-  /* ---------- Geld-Knopf ---------- */
-  .geld-knopf{
-    margin-top:13px; width:100%;
-    padding:9px 10px; min-height:0;
-    border-radius:8px;
-    border:1px solid rgba(217,169,79,.4);
-    background:rgba(217,169,79,.09);
-    color:var(--brass);
-    font-size:12.5px; font-weight:600; letter-spacing:.02em;
+  /* ---------- Geldkarte mit Knopf und Antwort ---------- */
+  .geldkarte{
+    margin-top:24px;
+    padding:18px 20px 20px;
+    border-color:rgba(217,169,79,.3);
   }
-  .geld-knopf:hover{ background:rgba(217,169,79,.17); border-color:var(--brass); }
+  .geldkarte .k{
+    font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--faint);
+  }
+  .geldkarte .v{
+    margin-top:8px; font-size:clamp(28px,6vw,34px); font-weight:600;
+    letter-spacing:-.025em; font-variant-numeric:tabular-nums; color:var(--brass);
+  }
+  .geldkarte .n{ margin-top:3px; font-size:12.5px; color:var(--muted); }
+
+  .geld-knopf{
+    margin-top:15px; width:100%;
+    padding:11px 10px; min-height:0;
+    border-radius:9px;
+    border:1px solid rgba(217,169,79,.45);
+    background:rgba(217,169,79,.1);
+    color:var(--brass);
+    font-size:13px; font-weight:600; letter-spacing:.02em;
+  }
+  .geld-knopf:hover{ background:rgba(217,169,79,.18); border-color:var(--brass); }
   .geld-knopf:focus-visible{ outline:2px solid var(--brass); outline-offset:2px; }
 
+  /* Die Antwort sitzt in derselben Karte, direkt unter dem Knopf. */
   .wofuer{
-    margin-top:18px; padding:20px 22px;
-    border-color:rgba(217,169,79,.4);
-    background:linear-gradient(180deg, rgba(217,169,79,.07), transparent 72%), var(--surface);
+    margin-top:16px; padding-top:16px;
+    border-top:1px solid rgba(217,169,79,.28);
   }
   .wf-kopf{
     font-size:10.5px; letter-spacing:.18em; text-transform:uppercase;
@@ -506,13 +552,17 @@
       <blockquote id="sText"></blockquote>
     </figure>
 
+    <!-- Das Geld steht allein, damit die Antwort auf „Was kriege ich dafür“
+         direkt darunter erscheint und nicht hinter den anderen Kacheln. -->
+    <div class="karte geldkarte">
+      <div class="k">Gespart</div>
+      <div class="v" id="kGeld">0 €</div>
+      <div class="n" id="kGeldNote"></div>
+      <button type="button" class="geld-knopf" id="bWofuer">Was kriege ich dafür?</button>
+      <div class="wofuer" id="wofuer" hidden></div>
+    </div>
+
     <div class="kacheln">
-      <div class="kachel geld">
-        <div class="k">Gespart</div>
-        <div class="v" id="kGeld">0 €</div>
-        <div class="n" id="kGeldNote"></div>
-        <button type="button" class="geld-knopf" id="bWofuer">Was kriege ich dafür?</button>
-      </div>
       <div class="kachel">
         <div class="k">Nicht geraucht</div>
         <div class="v" id="kZig">0</div>
@@ -524,8 +574,6 @@
         <div class="n">geschätzt, 11 Min. je Zigarette</div>
       </div>
     </div>
-
-    <div class="karte wofuer" id="wofuer" hidden></div>
 
     <h2>Trophäen <span class="h2-zahl" id="trophaeenZahl"></span></h2>
     <ul class="trophaeen" id="trophaeen"></ul>
@@ -1777,11 +1825,22 @@ function tageZeichnen(fertig, p, frischNr){
 /* ---------- Trophäen ---------- */
 function trophaeenZeichnen(verstrichen){
   const naechste = TROPHAEEN.findIndex(t => t.ms > verstrichen);
+
   $("trophaeen").innerHTML = TROPHAEEN.map((t, i) => {
     const da   = verstrichen >= t.ms;
     const dran = i === naechste;
-    return `<li class="${da ? "geholt" : dran ? "dran" : "zu"}">
-        <span class="tr-scheibe">${da ? "★" : dran ? "◇" : ""}</span>
+
+    // Fortschritt seit der vorherigen Trophäe, nicht seit Tag null — sonst
+    // stünde der Ring bei den späten Marken jahrelang fast unbewegt.
+    let stil = "--verzug:" + (i * 0.18).toFixed(2) + "s";
+    if (dran){
+      const vorher = i > 0 ? TROPHAEEN[i - 1].ms : 0;
+      const anteil = ((verstrichen - vorher) / (t.ms - vorher)) * 100;
+      stil += ";--fortschritt:" + Math.max(0, Math.min(100, anteil)).toFixed(1);
+    }
+
+    return `<li class="${da ? "geholt" : dran ? "dran" : "zu"}" style="${stil}">
+        <span class="tr-scheibe">${da ? "★" : ""}</span>
         <span class="tr-name">${esc(t.kurz)}</span>
       </li>`;
   }).join("");
