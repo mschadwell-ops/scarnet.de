@@ -438,6 +438,21 @@
     max-width:60ch;
   }
 
+
+  /* Die Wellen-Trophäen tragen Minze statt Messing: Zeit ist Messing,
+     Standhaftigkeit ist Atem. So sind die beiden Reihen auf einen Blick
+     auseinanderzuhalten. */
+  .trophaeen.wellen li.geholt .tr-scheibe{
+    border-color:transparent;
+    background:linear-gradient(160deg, rgba(98,214,174,.26), rgba(98,214,174,.06));
+    color:var(--air);
+  }
+  .trophaeen.wellen li.geholt .tr-scheibe::before{ background:rgba(98,214,174,.55); }
+  .trophaeen.wellen li.geholt .tr-scheibe::after{
+    background:conic-gradient(transparent 0deg, rgba(198,255,236,.95) 34deg, transparent 86deg);
+  }
+  .trophaeen.wellen li.geholt .tr-name{ color:var(--air); }
+
   /* ---------- Geldkarte mit Knopf und Antwort ---------- */
   .geldkarte{
     margin-top:24px;
@@ -832,6 +847,10 @@
     <h2>Trophäen <span class="h2-zahl" id="trophaeenZahl"></span></h2>
     <ul class="trophaeen" id="trophaeen"></ul>
     <p class="tr-text" id="trophaeenText"></p>
+
+    <h2>Standhaft <span class="h2-zahl" id="wellenZahl"></span></h2>
+    <ul class="trophaeen wellen" id="wellen"></ul>
+    <p class="tr-text" id="wellenText"></p>
 
     <h2>Freigeschaltet <span class="h2-zahl" id="anzahlFrei"></span></h2>
     <ul class="meilen" id="tage"></ul>
@@ -1842,6 +1861,32 @@ const TROPHAEEN = [
 ];
 
 /* ====================================================================
+   Standhaft — Trophäen für überstandene Wellen
+   --------------------------------------------------------------------
+   Die Zeittrophäen oben belohnen etwas, das von allein vergeht. Diese
+   hier belohnen das Einzige, was in diesem Programm wirklich eine
+   Handlung ist: den Krisenknopf drücken und trotzdem nicht rauchen.
+   ==================================================================== */
+const WELLEN = [
+  { n:"Erste Welle", hat:p => (p.wellen||0) >= 1,
+    was:"Einmal durchgehalten, als es schwer war." },
+  { n:"5 Wellen",    hat:p => (p.wellen||0) >= 5,
+    was:"Fünfmal die Welle abwarten statt ihr nachgeben." },
+  { n:"10 Wellen",   hat:p => (p.wellen||0) >= 10,
+    was:"Zehnmal. Das ist kein Zufall mehr, das ist Übung." },
+  { n:"25 Wellen",   hat:p => (p.wellen||0) >= 25,
+    was:"Fünfundzwanzigmal. Du weißt inzwischen, wie das geht." },
+  { n:"50 Wellen",   hat:p => (p.wellen||0) >= 50,
+    was:"Fünfzigmal standgehalten." },
+  { n:"100 Wellen",  hat:p => (p.wellen||0) >= 100,
+    was:"Hundertmal. Dagegen ist eine Zigarette ein schwacher Gegner." },
+  { n:"Nachts",      hat:p => (p.wellenNacht||0) >= 1,
+    was:"Eine Welle zwischen 22 und 5 Uhr überstanden. Nachts ist jeder Vorsatz dünner." },
+  { n:"7 Tage Ruhe", hat:p => !!p.ruheErreicht,
+    was:"Eine ganze Woche, ohne den Knopf zu brauchen." }
+];
+
+/* ====================================================================
    5. Speicher — läuft auch weiter, wenn er gesperrt ist
    ==================================================================== */
 const SCHLUESSEL = "scarnet.rauchfrei.v1";
@@ -1949,7 +1994,7 @@ function zeigen(welche){
   ANSICHTEN.forEach(a => $(a).hidden = (a !== welche));
 }
 
-const standard = () => ({ start:Date.now(), menge:20, preis:10, proSchachtel:22, beste:0, rueckfaelle:0 });
+const standard = () => ({ start:Date.now(), menge:20, preis:10, proSchachtel:22, beste:0, rueckfaelle:0, wellen:0, wellenNacht:0, letzteWelle:0, ruheErreicht:false });
 
 /* Datum UND Uhrzeit, nicht nur das Datum. Wer mittags aufhört, soll nicht
    rückdatiert auf Mitternacht starten und sofort zwölf Stunden geschenkt
@@ -2005,6 +2050,8 @@ function starten(){
     $("speicherWarnung").textContent =
       "Dieser Browser lässt kein Speichern zu — die Angaben gelten nur, solange die Seite offen ist.";
   }
+  wellenZeichnen();
+
   zeichnen();
   clearInterval(uhrLaeuft);
   uhrLaeuft = setInterval(zeichnen, 1000);
@@ -2104,6 +2151,7 @@ function zeichnen(){
     $("cdTag").textContent = "Tag " + (w.tage + 1);
     $("cdText").textContent = tagesText(w.tage + 1, profil, true);   // Ziel-Fassung
     trophaeenZeichnen(w.verstrichen);   // alle Trophäen liegen auf Tagesgrenzen
+    wellenZeichnen();
     letzterTag = w.tage;
   }
   naechstesZeichnen(w);
@@ -2287,6 +2335,39 @@ function trophaeenZeichnen(verstrichen){
   $("trophaeenText").textContent = t
     ? "Als Nächstes: " + t.kurz + " — " + t.was
     : "Alle geholt. Mehr Trophäen habe ich nicht vorgesehen.";
+}
+
+
+/* ---------- Standhaft-Trophäen ---------- */
+function wellenZeichnen(){
+  // „7 Tage Ruhe“ gilt, sobald eine Woche seit dem letzten Knopfdruck vergangen
+  // ist. Einmal erreicht, bleibt es stehen — eine Trophäe, die wieder
+  // verschwindet, gibt es in keinem Spiel.
+  if (!profil.ruheErreicht && (profil.wellen || 0) > 0 && profil.letzteWelle
+      && Date.now() - profil.letzteWelle >= 7 * TAG){
+    profil.ruheErreicht = true;
+    sichern();
+  }
+
+  const naechste = WELLEN.findIndex(t => !t.hat(profil));
+
+  $("wellen").innerHTML = WELLEN.map((t, i) => {
+    const da   = t.hat(profil);
+    const dran = i === naechste;
+    return `<li class="${da ? "geholt" : dran ? "dran" : "zu"}" style="--verzug:${(i * 0.18).toFixed(2)}s">
+        <span class="tr-scheibe">${da ? "★" : ""}</span>
+        <span class="tr-name">${esc(t.n)}</span>
+      </li>`;
+  }).join("");
+
+  const anzahl = profil.wellen || 0;
+  $("wellenZahl").textContent = "· " + (anzahl === 1 ? "1 Welle" : zahl(anzahl) + " Wellen");
+
+  const t = naechste === -1 ? null : WELLEN[naechste];
+  $("wellenText").textContent = anzahl === 0
+    ? "Noch keine. Wenn dich das Verlangen packt, drück unten rechts und halte durch — genau das zählt hier."
+    : t ? "Als Nächstes: " + t.n + " — " + t.was
+        : "Alles geholt. Mehr habe ich nicht vorgesehen.";
 }
 
 /* ---------- Was das gesparte Geld wert ist ---------- */
@@ -2484,10 +2565,14 @@ function krisenStand(){
   return "Du bist seit <b>" + zeit + "</b> rauchfrei, hast <b>"
     + zahl(Math.floor(w.nichtGeraucht)) + "</b> Zigaretten nicht geraucht und <b>"
     + euro(w.geld) + "</b> nicht ausgegeben."
+    + (profil.wellen > 0
+        ? "<br>Und du hast das hier schon <b>" + profil.wellen + "-mal</b> geschafft."
+        : "")
     + "<br>" + abschlussSatz();
 }
 
 let kriseUhr = null, kriseAtem = null, kriseEnde = 0, letzterFakt = -1;
+let kriseSeit = 0;   // wann das Fenster aufging — daraus wird die Welle gezaehlt
 
 function faktZeigen(){
   let i;
@@ -2498,6 +2583,9 @@ function faktZeigen(){
 }
 
 function kriseAuf(){
+  kriseSeit = Date.now();
+  profil.letzteWelle = kriseSeit;
+  sichern();
   $("krise").hidden = false;
   $("krStand").innerHTML = krisenStand();
   $("krTitel").textContent = "Drei Minuten. Mehr will ich nicht.";
@@ -2534,7 +2622,30 @@ function kriseZu(){
 }
 
 $("bKrise").onclick     = kriseAuf;
-$("bKriseWeg").onclick  = kriseZu;
+/* „Geht wieder“ zählt die Welle. Die zehn Sekunden Mindestdauer verhindern
+   nur, dass ein versehentlicher Doppeltipp als überstandene Welle gilt —
+   sie sind keine Prüfung, sondern ein Filter gegen Rutschfinger. */
+$("bKriseWeg").onclick = () => {
+  const dauer = Date.now() - kriseSeit;
+
+  if (dauer >= 10000){
+    profil.wellen = (profil.wellen || 0) + 1;
+    const std = new Date().getHours();
+    if (std >= 22 || std < 5) profil.wellenNacht = (profil.wellenNacht || 0) + 1;
+    sichern();
+
+    // Der Moment der Belohnung: kurz stehen lassen, dann schließen.
+    $("krTitel").textContent = "Welle überstanden.";
+    $("krFakt").textContent = profil.wellen === 1
+      ? "Das war die erste. Jede weitere fällt leichter, weil du jetzt weißt, dass sie vorbeigeht."
+      : "Das war die " + profil.wellen + ". Du weißt inzwischen, wie das geht.";
+    $("krStand").innerHTML = "";
+    wellenZeichnen();
+    setTimeout(kriseZu, 2200);
+    return;
+  }
+  kriseZu();
+};
 $("bKriseNoch").onclick = faktZeigen;
 
 $("bKriseGeraucht").onclick = () => {
