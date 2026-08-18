@@ -219,8 +219,9 @@
   }
   .meilen li.da .wann{ color:var(--air); }
 
-  /* Heute hervorgehoben, morgen als blasser Ausblick darüber. */
-  .meilen li.heute{
+  /* Der laufende Tag ist hervorgehoben, aber nicht abgehakt: offener Ring
+     statt gefülltem Punkt. Gefüllt wird erst, wenn die 24 Stunden um sind. */
+  .meilen li.laeuft{
     background:var(--surface-2);
     border-radius:8px;
     padding-left:12px;
@@ -228,9 +229,13 @@
     margin:4px -12px;
     border-bottom-color:transparent;
   }
-  .meilen li.heute .punkt{ background:var(--air); border-color:var(--air); box-shadow:0 0 0 4px var(--air-glow); }
-  .meilen li.heute .was{ color:var(--text); font-weight:500; }
-  .meilen li.heute .wann{ color:var(--air); }
+  .meilen li.laeuft .punkt{
+    background:none;
+    border:2px solid var(--air);
+    box-shadow:0 0 0 4px var(--air-glow);
+  }
+  .meilen li.laeuft .was{ color:var(--text); font-weight:500; }
+  .meilen li.laeuft .wann{ color:var(--air); }
   .meilen li.kommt{ opacity:.45; }
   .meilen li.kommt .was{ color:var(--muted); }
   .davor{
@@ -1268,7 +1273,7 @@ function zeichnen(){
   // Textmarkierung des Nutzers zerstören.
   if (w.tage !== letzterTag){
     spruchZeichnen(w.tage);
-    tageZeichnen(w.tage + 1, profil);   // erster Tag ist Tag 1, nicht Tag 0
+    tageZeichnen(w.tage, profil);   // w.tage = vollständig abgeschlossene Tage
     letzterTag = w.tage;
   }
 
@@ -1324,21 +1329,36 @@ function tagesText(nr, p){
   return rest[Math.floor(nr / 5) % rest.length];
 }
 
-/** Heute hervorgehoben, die letzten Tage darunter, morgen als Ausblick. */
-function tageZeichnen(tagNr, p){
-  const zeilen = [{ nr:tagNr + 1, zustand:"kommt" }];
-  for (let n = tagNr; n >= Math.max(1, tagNr - 5); n--){
-    zeilen.push({ nr:n, zustand: n === tagNr ? "heute" : "da" });
+/** Drei Zustände, und die Unterscheidung ist wichtig:
+    „läuft“  — der Tag, in dem man gerade steckt. Offener Ring, noch nicht
+               abgehakt. Der Text steht schon da, damit man sieht, worauf
+               der Tag hinausläuft.
+    „da“     — abgeschlossen, volle 24 Stunden vorbei. Gefüllter Punkt.
+    „kommt“  — Ausblick auf morgen.
+
+    `fertig` ist die Zahl vollständig abgeschlossener Tage. Vorher wurde der
+    laufende Tag als erledigt markiert; dadurch stand „Eine ganze Woche“
+    schon nach sechs Tagen und 23 Stunden da, also bevor es stimmte. */
+function tageZeichnen(fertig, p){
+  const laeuft = fertig + 1;
+
+  const zeilen = [
+    { nr: laeuft + 1, zustand:"kommt",  wann:"morgen" },
+    { nr: laeuft,     zustand:"laeuft", wann:"Tag " + laeuft + " · läuft" }
+  ];
+  for (let n = fertig; n >= Math.max(1, fertig - 4); n--){
+    zeilen.push({ nr:n, zustand:"da", wann:"Tag " + n });
   }
+
   $("tage").innerHTML = zeilen.map(z => `
       <li class="${z.zustand}">
         <span class="punkt"></span>
         <span class="was">${esc(tagesText(z.nr, p))}</span>
-        <span class="wann">${z.zustand === "kommt" ? "morgen" : "Tag " + z.nr}</span>
+        <span class="wann">${z.wann}</span>
       </li>`).join("");
 
-  $("tageDavor").textContent = tagNr > 6
-    ? "und " + zahl(tagNr - 6) + " weitere davor"
+  $("tageDavor").textContent = fertig > 5
+    ? "und " + zahl(fertig - 5) + " weitere davor"
     : "";
 }
 
