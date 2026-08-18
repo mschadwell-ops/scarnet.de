@@ -240,6 +240,45 @@
     margin:0; font-size:17px; line-height:1.55; text-wrap:balance; max-width:56ch;
   }
 
+  /* ---------- Mach doch lieber ----------
+     Sieht aus wie die Spruchkarte, hat aber einen Knopf: die Tagesweisheit
+     steht fest, die Alternativen sollen durchblätterbar sein. Deshalb sind
+     es zwei Karten und nicht eine. */
+  .stattdessen .art{ color:var(--muted); }
+  .stattdessen .art .wo{ color:var(--air); }
+  .stattdessen blockquote{ font-size:16px; }
+  .st-knopf{
+    margin-top:15px; width:100%;
+    padding:11px 10px; min-height:0; border-radius:9px;
+    border:1px solid rgba(98,214,174,.4);
+    background:rgba(98,214,174,.09);
+    color:var(--air);
+    font-size:13px; font-weight:600; letter-spacing:.02em;
+  }
+  .st-knopf:hover{ background:rgba(98,214,174,.16); border-color:var(--air); }
+
+  /* Beim Blättern kurz aufblitzen, damit man sieht, dass sich etwas getan
+     hat. Ohne das wirkt ein Textwechsel auf dem Handy wie ein Aussetzer. */
+  @keyframes stFrisch{
+    0%   { opacity:.25; transform:translateY(4px); }
+    100% { opacity:1;   transform:none; }
+  }
+  .stattdessen.frisch blockquote,
+  .stattdessen.frisch .art{ animation:stFrisch .32s ease-out 1; }
+  @media (prefers-reduced-motion:reduce){
+    .stattdessen.frisch blockquote,
+    .stattdessen.frisch .art{ animation:none; }
+  }
+
+  /* Im Krisenfenster steht der Vorschlag unter dem Grund. Kein eigener
+     Knopf — „Noch einen Grund“ wechselt beides zusammen. */
+  .kr-statt{
+    margin:16px auto 0; max-width:46ch;
+    padding-top:14px; border-top:1px solid var(--line);
+    font-size:14.5px; line-height:1.6; color:var(--muted);
+  }
+  .kr-statt b{ color:var(--air); font-weight:600; }
+
   /* ---------- Kennzahlen ---------- */
   .kacheln{
     display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
@@ -457,7 +496,9 @@
 
   /* ---------- Geldkarte mit Knopf und Antwort ---------- */
   .geldkarte{
-    margin-top:24px;
+    /* Oben UND unten. Vorher stand hier nur margin-top, dadurch klebte die
+       Karte am unteren Rand an der Kachelgruppe darunter. */
+    margin:24px 0;
     padding:18px 20px 20px;
     border-color:rgba(217,169,79,.3);
   }
@@ -847,6 +888,12 @@
       <blockquote id="sText"></blockquote>
     </figure>
 
+    <figure class="karte spruch stattdessen" id="stattKarte">
+      <div class="art">Mach doch lieber <span class="wo" id="stWo"></span></div>
+      <blockquote id="stText"></blockquote>
+      <button type="button" class="st-knopf" id="bStatt">Noch eine Idee</button>
+    </figure>
+
     <!-- Das Geld steht allein, damit die Antwort auf „Was kriege ich dafür“
          direkt darunter erscheint und nicht hinter den anderen Kacheln. -->
     <div class="karte geldkarte">
@@ -980,6 +1027,8 @@
       <div class="kr-stand" id="krStand"></div>
 
       <blockquote class="kr-fakt" id="krFakt"></blockquote>
+
+      <div class="kr-statt" id="krStatt"></div>
 
       <div class="kr-knoepfe">
         <button type="button" class="haupt" id="bKriseWeg">Geht wieder</button>
@@ -2206,6 +2255,7 @@ function zeichnen(){
   // Textmarkierung des Nutzers zerstören.
   if (w.tage !== letzterTag){
     spruchZeichnen(w.tage);
+    stattZeichnen();
     // Nur wenn der Tag gerade eben umgeschlagen ist, leuchtet der neue
     // Eintrag kurz auf. Beim ersten Aufbau der Seite wäre das Effekthascherei.
     const frisch = (letzterTag >= 0 && w.tage === letzterTag + 1) ? w.tage : null;
@@ -2260,10 +2310,58 @@ function muenzeZeichnen(w){
   }
 }
 
+/* Ein Beutel statt Würfeln. Bei purem Zufall käme bei 518 Einträgen im
+   Schnitt nach etwa 27 Griffen der erste Doppelte — und genau das zerstört
+   den Eindruck, dass die Liste endlos ist. Hier wird die ganze Liste
+   gemischt und der Reihe nach abgearbeitet; erst wenn sie durch ist, wird
+   neu gemischt. So sieht man alle 518, bevor sich einer wiederholt. */
+let stBeutel = [], stKrBeutel = [];
+
+/* Im Krisenfenster taugt nicht jeder Vorschlag. Wer gerade vor der Tür
+   steht und es kaum aushält, kann nicht die Gefriertruhe abtauen und keine
+   Karotten vorschneiden. Dort kommt nur, was sofort geht und überall geht —
+   alles andere wäre in dem Moment Hohn. */
+const AKUT = ["Sofort", "Stress", "Pause", "Mund"];
+
+/* Erst beim ersten Bedarf ausrechnen, nicht hier. Diese Zeilen stehen im
+   Quelltext über der Liste selbst — würde hier direkt gerechnet, liefe der
+   Zugriff in die zeitliche Totzone und das ganze Skript stünde still. */
+let akutNr = null;
+function akutNummern(){
+  if (!akutNr)
+    akutNr = STATTDESSEN.map((s, i) => AKUT.indexOf(s.w) >= 0 ? i : -1).filter(i => i >= 0);
+  return akutNr;
+}
+
+function ausBeutel(beutel, quelle){
+  if (!beutel.length){
+    if (quelle) beutel.push.apply(beutel, quelle);
+    else for (let i = 0; i < STATTDESSEN.length; i++) beutel.push(i);
+    for (let i = beutel.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [beutel[i], beutel[j]] = [beutel[j], beutel[i]];
+    }
+  }
+  return STATTDESSEN[beutel.pop()];
+}
+
+function stattZeichnen(){
+  const s = ausBeutel(stBeutel);
+  $("stWo").textContent = s.w;
+  $("stText").textContent = s.t;
+
+  // Klasse kurz setzen und wieder abnehmen, sonst läuft die Animation nur
+  // beim ersten Mal.
+  const karte = $("stattKarte");
+  karte.classList.remove("frisch");
+  void karte.offsetWidth;
+  karte.classList.add("frisch");
+}
+
 function spruchZeichnen(tage){
   const versatz = parseInt(meineId.slice(0, 6), 16) % SPRUECHE.length;
   const s = SPRUECHE[(tage + versatz) % SPRUECHE.length];
-  const namen = { fakt:"Fakt", mut:"Zuspruch", tipp:"Tipp", blick:"So gesehen" };
+  const namen = { fakt:"Fakt", mut:"Zuspruch", tipp:"Tipp", blick:"Ach übrigens" };
   $("sArt").textContent = namen[s.k] || "Gedanke";
   $("sText").textContent = s.t;
 }
@@ -2561,6 +2659,544 @@ $("bWofuer").onclick = () => {
   };
   schritt();
 };
+
+/* ====================================================================
+   Mach doch lieber — Alternativen zum Rauchen
+   --------------------------------------------------------------------
+   Der Sinn der Liste ist ihre Länge. Wer dreimal denselben Vorschlag
+   liest, hört auf hinzusehen; wer nach hundert Griffen noch nichts
+   doppelt hatte, glaubt irgendwann, dass es immer weitergeht.
+
+   Sortiert nach dem Anlass, nicht nach der Tätigkeit. Denn niemand
+   sucht „etwas mit den Händen“ — man steht nach dem Essen da, sitzt im
+   Auto oder ist gerade wütend. Die Kennung w ist genau dieser Anlass
+   und wird als Marke über dem Vorschlag angezeigt.
+
+   Bewusst nichts drin: Nikotinprodukte jeder Art, E-Zigaretten und
+   Alkohol als Ersatz. Das erste ist eine ärztliche Entscheidung, das
+   zweite tauscht nur den Rauch aus, und das dritte senkt genau die
+   Schwelle, die hier halten soll.
+   ==================================================================== */
+const STATTDESSEN = [
+  {w:"Hände", t:"Erdnüsse in der Schale. Das Knacken und Pulen beschäftigt die Hände genauso lange wie eine Zigarette — und darum ging es die ganze Zeit."},
+  {w:"Hände", t:"Pistazien. Dauern noch länger als Erdnüsse, weil manche nicht aufgehen wollen."},
+  {w:"Hände", t:"Sonnenblumenkerne knacken. In Amerika ist das der Klassiker beim Aufhören, und zwar aus gutem Grund: Hände und Mund sind gleichzeitig beschäftigt."},
+  {w:"Hände", t:"Eine Kastanie in die Jackentasche. Immer wenn die Hand hineinfährt, findet sie etwas."},
+  {w:"Hände", t:"Einen Kugelschreiber mit Klickmechanik nehmen. Nervt alle anderen im Raum, aber du rauchst nicht."},
+  {w:"Hände", t:"Eine Büroklammer aufbiegen und wieder zurück. Zwei Minuten sind rum, bevor du es merkst."},
+  {w:"Hände", t:"Einen Knetball kaufen und in die Schreibtischschublade legen. Nicht in die Tasche — er soll da sein, wo du sitzt."},
+  {w:"Hände", t:"Fingernägel schneiden und feilen. Dauert ungefähr so lange wie zwei Zigaretten und sieht hinterher besser aus."},
+  {w:"Hände", t:"Nagelhaut eincremen. Klingt albern, beschäftigt aber beide Hände und riecht nach etwas anderem."},
+  {w:"Hände", t:"Den Schlüsselbund ausmisten. Da hängt garantiert ein Schlüssel dran, der nirgendwo mehr passt."},
+  {w:"Hände", t:"Die Geldbörse ausräumen. Alte Kassenzettel, abgelaufene Karten, ein Pfandbon von 2023."},
+  {w:"Hände", t:"Das Ladekabelknäuel entwirren. Das eine, das seit Monaten in der Schublade liegt."},
+  {w:"Hände", t:"Kopfhörerkabel entknoten. Wenn du kabellose hast: die Ladeschale reinigen."},
+  {w:"Hände", t:"Schnürsenkel neu einfädeln, gerade statt gekreuzt. Sieht besser aus und dauert erstaunlich lange."},
+  {w:"Hände", t:"Die Brille richtig putzen. Nicht am Hemd — mit Wasser, Spülmittel und einem Tuch."},
+  {w:"Hände", t:"Die Uhr abnehmen und das Armband säubern. Da sitzt mehr, als dir lieb ist."},
+  {w:"Hände", t:"Einen Zauberwürfel besorgen. Eine Seite kriegt jeder hin, und das reicht schon für fünf Minuten."},
+  {w:"Hände", t:"Münzen sortieren und rollen. Bringt am Ende sogar Geld, das du sowieso schon sparst."},
+  {w:"Hände", t:"Ein Blatt Papier zu etwas falten. Papierflieger zählt."},
+  {w:"Hände", t:"Kritzeln. Einfach einen Stift nehmen und die Hand laufen lassen, ohne Ziel."},
+  {w:"Hände", t:"Etwas abzeichnen, das vor dir steht. Die Tasse. Es muss niemand sehen."},
+  {w:"Hände", t:"Einen Palstek üben, bis er sitzt. Der einzige Knoten, den man wirklich braucht."},
+  {w:"Hände", t:"Mit zwei Bällen jonglieren lernen. Zwei sind machbar, drei sind das nächste Ziel."},
+  {w:"Hände", t:"Karten mischen üben. Der Bogen, bei dem sie von selbst zurückfallen."},
+  {w:"Hände", t:"Eine Runde Solitär mit echten Karten. Am Bildschirm gilt nicht, die Hände sollen etwas tun."},
+  {w:"Hände", t:"Ein paar Legosteine auf den Schreibtisch stellen. Bauen ohne Anleitung."},
+  {w:"Hände", t:"Fünf Puzzleteile suchen. Nur fünf, dann darfst du aufhören."},
+  {w:"Hände", t:"Häkeln oder stricken anfangen. Ein Topflappen ist in zwei Abenden fertig."},
+  {w:"Hände", t:"Die Fahrradkette ölen. Danach greift die Schaltung wieder, und du hast dreckige Finger statt gelber."},
+  {w:"Hände", t:"Die Schraubenkiste sortieren. Nach Größe, nicht nach Farbe."},
+  {w:"Hände", t:"Den Werkzeugkasten ausräumen und neu einräumen. Du findest Dinge, die du zweimal gekauft hast."},
+  {w:"Hände", t:"Ein Küchenmesser schärfen. Ein stumpfes Messer nervt jeden Tag, und heute hast du die Zeit."},
+  {w:"Hände", t:"Gemüse schneiden, ohne dass es einen Anlass gibt. Schneiden beruhigt, das ist bekannt."},
+  {w:"Hände", t:"Teig kneten. Zehn Minuten mit den Händen, danach ist der Kopf leer."},
+  {w:"Hände", t:"Eine Pflanze umtopfen. Erde an den Fingern ist das Gegenteil von Rauchgeruch."},
+  {w:"Hände", t:"Trockene Blätter von den Zimmerpflanzen abzupfen. Es sind immer mehr, als man denkt."},
+  {w:"Hände", t:"Handcreme nehmen und eine ganze Minute einmassieren. Jeden Finger einzeln."},
+  {w:"Hände", t:"Hände waschen, kalt, gründlich. Der Reflex war ja auch nur ein Reflex."},
+  {w:"Hände", t:"Die Fingerknöchel dehnen und die Handgelenke kreisen. Wer tippt, hat das nötig."},
+  {w:"Hände", t:"Ein Haargummi ums Handgelenk. Wenn es kribbelt, einmal ziehen und loslassen."},
+  {w:"Hände", t:"Kaffeebohnen von Hand mahlen. Die Handmühle ist die langsamste und beste Art, drei Minuten zu verbrauchen."},
+  {w:"Hände", t:"Tee aufgießen und beim Ziehen danebenstehen. Das Warten ist der eigentliche Punkt."},
+  {w:"Hände", t:"Schuhe putzen. Ein Paar reicht, und es ist das Paar, das du morgen anziehst."},
+  {w:"Hände", t:"Ein Fenster putzen. Eins, nicht alle. Sonst fängst du nie an."},
+  {w:"Hände", t:"Den Badspiegel putzen. Danach siehst du dich schärfer, was ein zweischneidiges Geschenk ist."},
+  {w:"Hände", t:"Die Tastatur umdrehen und ausklopfen. Erschrick nicht."},
+  {w:"Hände", t:"Den Bildschirm abwischen. Erst dann merkt man, wie viel man durch eine graue Schicht angeschaut hat."},
+  {w:"Hände", t:"Das Auto innen ausräumen. Alles raus, was nicht reingehört."},
+  {w:"Hände", t:"Geschirr von Hand abtrocknen, obwohl es auch von allein trocknet."},
+  {w:"Hände", t:"Die Besteckschublade ausleeren und auswischen. Da unten liegt Zeug."},
+  {w:"Hände", t:"Das Gewürzregal ordnen und dabei die Verfallsdaten lesen. Kurkuma von 2019 kann weg."},
+  {w:"Hände", t:"Bücher neu einsortieren. Nach Farbe ist erlaubt, auch wenn Leute darüber die Nase rümpfen."},
+  {w:"Hände", t:"Ein Bild aufhängen, das seit Monaten hinter dem Schrank steht. Nagel, Hammer, fertig."},
+  {w:"Hände", t:"Wäsche zusammenlegen. T-Shirts nach der Methode mit den drei Griffen."},
+  {w:"Hände", t:"Socken paaren. Der Sockenkorb hat noch nie jemanden zum Rauchen gebracht."},
+  {w:"Hände", t:"Die Spülmaschine ausräumen. Vier Minuten, und sie ist danach frei für das nächste Geschirr."},
+  {w:"Hände", t:"Ein Kabel aufwickeln und mit einem Kabelbinder sichern. Einmal richtig statt fünfmal falsch."},
+  {w:"Hände", t:"Den Rucksack ausleeren. Der Boden ist eine Zeitkapsel."},
+  {w:"Hände", t:"Handschuhe, Mützen und Schals in eine Kiste räumen. Im Sommer besonders befriedigend."},
+  {w:"Hände", t:"Die Fernbedienung aufmachen und die Batteriekontakte sauber machen. Sie hakt doch sowieso."},
+  {w:"Mund", t:"Ein Kaugummi. Aber langsam kauen, nicht mahlen — es soll zehn Minuten halten."},
+  {w:"Mund", t:"Einen Zahnstocher. Der älteste Trick der Welt und immer noch der billigste."},
+  {w:"Mund", t:"Einen Strohhalm in ein Glas Wasser. Die Bewegung zum Mund ist genau die, die dir fehlt."},
+  {w:"Mund", t:"Eine Zimtstange. Man hält sie wie eine Zigarette, sie schmeckt aber nach etwas."},
+  {w:"Mund", t:"Karottensticks. Vorher schneiden, in ein Glas Wasser stellen, in den Kühlschrank. Dann sind sie da, wenn es soweit ist."},
+  {w:"Mund", t:"Gurkenstreifen mit Salz. Kalt, knackig, dauert."},
+  {w:"Mund", t:"Selleriestangen. Schmecken nach wenig und genau das ist der Punkt: Es geht ums Kauen."},
+  {w:"Mund", t:"Einen Apfel in Schnitze schneiden statt reinbeißen. Zehn Stücke halten länger als ein Apfel."},
+  {w:"Mund", t:"Gefrorene Weintrauben. Klingt seltsam, ist aber wie Eis ohne Reue."},
+  {w:"Mund", t:"Einen Eiswürfel lutschen. Kalt lenkt zuverlässiger ab als süß."},
+  {w:"Mund", t:"Ein Wassereis. Kostet dreißig Cent und dauert zehn Minuten."},
+  {w:"Mund", t:"Ein saures Bonbon. Sauer überschreibt den Reiz schneller als süß."},
+  {w:"Mund", t:"Pfefferminzbonbons in jede Jacke legen. In jede, nicht in eine."},
+  {w:"Mund", t:"Lakritz. Man liebt es oder hasst es, aber kauen muss man in beiden Fällen."},
+  {w:"Mund", t:"Salzstangen. Die Form ist verdächtig ähnlich, und das darf ruhig so sein."},
+  {w:"Mund", t:"Eine Reiswaffel. Laut, trocken, überraschend lange beschäftigt."},
+  {w:"Mund", t:"Popcorn ohne Butter. Eine Schüssel hält länger als eine Schachtel je gehalten hat."},
+  {w:"Mund", t:"Kürbiskerne. Salzig, knackig, und die Hände machen mit."},
+  {w:"Mund", t:"Ein Glas Wasser mit Zitrone. Nicht nippen — in einem Zug austrinken."},
+  {w:"Mund", t:"Sprudelwasser statt stillem. Das Prickeln ersetzt das Kratzen im Hals, das du eigentlich vermisst."},
+  {w:"Mund", t:"Ingwertee. Scharf genug, dass der Mund eine Weile beschäftigt ist."},
+  {w:"Mund", t:"Pfefferminztee. Wirkt gegen den schalen Geschmack, der in den ersten Tagen dazugehört."},
+  {w:"Mund", t:"Ein Glas Buttermilch. Viele berichten, dass Zigaretten danach widerlich schmecken."},
+  {w:"Mund", t:"Den Kaffee heute durch Tee ersetzen. Nicht für immer — nur bis der Reflex Kaffee-und-Zigarette abgeklungen ist."},
+  {w:"Mund", t:"Espresso im Stehen trinken und danach sofort Zähne putzen. Der Ablauf lässt keine Lücke."},
+  {w:"Mund", t:"Zähne putzen. Zwei Minuten, und danach will niemand rauchen."},
+  {w:"Mund", t:"Zahnseide. Unbeliebt, aber der Zahnarzt merkt es und du hast fünf Minuten verbraucht."},
+  {w:"Mund", t:"Einmal mit Mundwasser spülen. Der Geschmack bleibt lange genug, um die Welle zu überstehen."},
+  {w:"Mund", t:"Trockenobst. Aprikosen und Datteln kauen sich lang."},
+  {w:"Mund", t:"Studentenfutter. Nüsse und Rosinen wechseln sich ab, das hält die Aufmerksamkeit."},
+  {w:"Mund", t:"Oliven. Kern rausarbeiten inbegriffen, das kostet extra Zeit."},
+  {w:"Mund", t:"Cocktailtomaten. Eine nach der anderen, nicht die Schale auf einmal."},
+  {w:"Mund", t:"Radieschen. Scharf, kalt, laut — drei Reize auf einmal."},
+  {w:"Mund", t:"Kohlrabi in Stiften. Das unterschätzteste Gemüse in diesem Zusammenhang."},
+  {w:"Mund", t:"Paprikastreifen. Rot ist süßer als grün, falls du es leichter willst."},
+  {w:"Mund", t:"Käsewürfel. Kein Zucker, viel Geschmack, hält satt."},
+  {w:"Mund", t:"Einen Joghurt löffeln, aber mit dem kleinsten Löffel im Haus."},
+  {w:"Mund", t:"Eine Tasse Brühe. Warm und salzig ist erstaunlich beruhigend."},
+  {w:"Mund", t:"Auf einer Zitronenscheibe herumkauen. Die Grimasse danach ist Teil der Ablenkung."},
+  {w:"Mund", t:"Edamame. Aus der Schale drücken, essen, wiederholen — Hände und Mund zusammen."},
+  {w:"Mund", t:"Knäckebrot. Trocken, laut und sättigend, ohne dass es viel ist."},
+  {w:"Mund", t:"Ein Glas kalte Milch, in einem Zug. Danach ist der Mund erst mal belegt."},
+  {w:"Mund", t:"Kaugummi mit Xylit. Gut für die Zähne, die in den nächsten Wochen ohnehin gefeiert werden dürfen."},
+  {w:"Pause", t:"Trotzdem rausgehen. Jacke an, vor die Tür, fünf Minuten stehen. Die Pause war immer das Eigentliche, die Zigarette nur der Vorwand."},
+  {w:"Pause", t:"Auf den Balkon und nichts tun. Kein Handy, keine Aufgabe. Nur draußen sein."},
+  {w:"Pause", t:"Einmal um den Block. Genau die Zeit, die eine Zigarette gedauert hätte."},
+  {w:"Pause", t:"Ans Fenster stellen und zwei Minuten rausschauen. Nicht scrollen — schauen."},
+  {w:"Pause", t:"Drei Etagen hoch und wieder runter. Danach ist der Kopf frei und der Puls oben, aber diesmal aus dem richtigen Grund."},
+  {w:"Pause", t:"Auf die Bank vor der Tür setzen. Der Ort war nie das Problem."},
+  {w:"Pause", t:"Kaffee holen und dabei absichtlich den langen Weg nehmen."},
+  {w:"Pause", t:"In den Hof gehen und den Himmel angucken. Es kostet nichts und niemand fragt nach."},
+  {w:"Pause", t:"Mit den Kollegen mit rausgehen, aber ohne. Das ist die härteste Übung und die, die am meisten bringt."},
+  {w:"Pause", t:"Kopfhörer auf und ein Lied ganz durchhören. Von vorne bis hinten, ohne wegzudrücken."},
+  {w:"Pause", t:"Augen zu, drei Minuten, mehr nicht. Kein Ziel, kein Atemzählen, einfach zu."},
+  {w:"Pause", t:"Fenster auf und Durchzug machen. Zwei Minuten frische Luft im Raum ändern erstaunlich viel."},
+  {w:"Pause", t:"Barfuß auf den Balkon, auch im Herbst. Kalte Füße sind ein sehr wirksamer Themenwechsel."},
+  {w:"Pause", t:"Rausgehen und einfach das Wetter angucken. In NRW gibt es davon reichlich."},
+  {w:"Pause", t:"Eine Runde durch den Garten, auch wenn der Garten drei Quadratmeter hat."},
+  {w:"Pause", t:"Die Post holen. Auch wenn du weißt, dass nichts drin ist."},
+  {w:"Pause", t:"Den Müll runterbringen. Zwei Minuten Treppe, zwei Minuten Luft, Aufgabe erledigt."},
+  {w:"Pause", t:"Zum Briefkasten an der Ecke laufen, auch ohne Brief. Der Weg ist der Zweck."},
+  {w:"Pause", t:"Auf dem Parkplatz einmal ums Auto gehen und die Reifen angucken. Klingt nach Ausrede, ist aber eine."},
+  {w:"Pause", t:"Sich hinsetzen und eine Tasse Tee trinken, ohne dabei etwas anderes zu machen."},
+  {w:"Pause", t:"Zehn Minuten auf das Sofa legen und die Decke anschauen. Nichtstun ist eine Fähigkeit."},
+  {w:"Pause", t:"Eine Runde ums Gebäude, aber in die andere Richtung als sonst."},
+  {w:"Pause", t:"An die frische Luft und dabei bewusst tief einatmen. Es geht jetzt wieder."},
+  {w:"Pause", t:"Zum Bäcker laufen und nichts kaufen. Nur riechen."},
+  {w:"Pause", t:"Die Mittagspause verlängern statt sie zu unterbrechen. Du hast jetzt die Zeit dafür."},
+  {w:"Pause", t:"In den Stadtgarten und einmal quer durch. Zwanzig Minuten und der Tag sieht anders aus."},
+  {w:"Pause", t:"Auf den Bahnhof gehen und Züge anschauen. Ja, wirklich. Es beruhigt."},
+  {w:"Pause", t:"An einer Ampel stehen bleiben, obwohl sie grün ist, und einmal durchatmen."},
+  {w:"Pause", t:"Fünf Minuten im Auto sitzen bleiben, bevor du reingehst. Ohne Radio."},
+  {w:"Pause", t:"Am Fenster stehen und Leuten beim Vorbeigehen zusehen. Das ist keine verlorene Zeit."},
+  {w:"Pause", t:"In die Küche gehen und in Ruhe abwaschen. Warmes Wasser, keine Eile."},
+  {w:"Pause", t:"Auf die Treppe setzen. Genau da, wo du sonst gestanden hast."},
+  {w:"Pause", t:"Rausgehen und drei Dinge suchen, die du noch nie bemerkt hast. Es gibt immer drei."},
+  {w:"Pause", t:"Zehn Minuten auf den Balkon mit einem Buch. Zwei Seiten reichen."},
+  {w:"Pause", t:"Den Hund ausführen. Falls du keinen hast: der Nachbar hat einen und wird begeistert sein."},
+  {w:"Pause", t:"Die Wäsche aufhängen. Draußen, langsam, Stück für Stück."},
+  {w:"Pause", t:"Auf dem Weg nach Hause eine Haltestelle früher aussteigen."},
+  {w:"Pause", t:"Im Stehen frühstücken, dafür danach fünf Minuten sitzen bleiben."},
+  {w:"Pause", t:"Eine Runde auf dem Parkplatz gehen und dabei telefonieren. Zwei Fliegen."},
+  {w:"Pause", t:"Auf den Balkon, Kaffee mitnehmen, und ihn heiß trinken statt lauwarm nebenbei."},
+  {w:"Stress", t:"Viermal langsam einatmen, sechsmal langsam ausatmen. Das lange Ausatmen beruhigt das Nervensystem — genau die Wirkung, die du der Zigarette zugeschrieben hast."},
+  {w:"Stress", t:"Zwanzig Kniebeugen. Anspannung will raus, nicht rein."},
+  {w:"Stress", t:"Zehn Liegestütze. Wenn zehn zu viel sind, dann fünf an der Wand."},
+  {w:"Stress", t:"Dreißig Sekunden Hampelmänner. Lächerlich, wirksam, vorbei."},
+  {w:"Stress", t:"Kaltes Wasser übers Gesicht. Der Körper schaltet dabei messbar herunter."},
+  {w:"Stress", t:"Die Unterarme dreißig Sekunden unter kaltes Wasser halten."},
+  {w:"Stress", t:"Kalt duschen, die letzten dreißig Sekunden. Danach ist das Verlangen nicht mehr das größte Thema."},
+  {w:"Stress", t:"Den Nacken dehnen. Ohr zur Schulter, zwanzig Sekunden je Seite."},
+  {w:"Stress", t:"Die Schultern zehnmal kreisen lassen, langsam, nach hinten."},
+  {w:"Stress", t:"Die Fäuste fest ballen, fünf Sekunden halten, loslassen. Fünfmal."},
+  {w:"Stress", t:"Laut ausatmen. Nicht seufzen — richtig hörbar durch den Mund."},
+  {w:"Stress", t:"Aufschreiben, was dich gerade aufregt. Drei Zeilen reichen, und es muss niemand lesen."},
+  {w:"Stress", t:"Jemandem schreiben, dass es dir gerade schwerfällt. Aussprechen nimmt der Sache die Größe."},
+  {w:"Stress", t:"Die lauteste Musik anmachen, die du hast, und einmal durchhören."},
+  {w:"Stress", t:"Ins Kissen brüllen. Es ist niemand da, der es hört, und es hilft mehr als es sollte."},
+  {w:"Stress", t:"Fünf Minuten spazieren, aber schnell. Nicht schlendern — Tempo."},
+  {w:"Stress", t:"Die Treppe nehmen, zweimal rauf und runter, bis die Puste kommt."},
+  {w:"Stress", t:"Etwas aufräumen, das dich seit Wochen ärgert. Anspannung braucht ein Ziel."},
+  {w:"Stress", t:"Den Boden wischen. Körperlich, sinnvoll, und danach ist etwas sauber."},
+  {w:"Stress", t:"Fünf Dinge benennen, die du gerade siehst. Vier, die du hörst. Drei, die du fühlst. Das holt den Kopf zurück."},
+  {w:"Stress", t:"Die Hände auf den Bauch legen und zusehen, wie er sich hebt. Zehn Atemzüge."},
+  {w:"Stress", t:"Rausgehen und schnell gehen, bis der Ärger hinterherhinkt."},
+  {w:"Stress", t:"Den Kiefer lockern. Wahrscheinlich beißt du gerade die Zähne zusammen."},
+  {w:"Stress", t:"Ein Glas eiskaltes Wasser in einem Zug. Der Reiz ist stark genug, um die Welle zu unterbrechen."},
+  {w:"Stress", t:"Auf die Uhr sehen und dir vornehmen: fünf Minuten. Danach entscheidest du neu."},
+  {w:"Stress", t:"Etwas mit Kraft tun. Holz stapeln, Kisten tragen, Möbel rücken."},
+  {w:"Stress", t:"Die Schuhe anziehen und laufen gehen. Zehn Minuten, nicht mehr."},
+  {w:"Stress", t:"Boxen gegen ein Kissen. Es ist nicht albern, wenn es funktioniert."},
+  {w:"Stress", t:"Die Wohnung lüften und dabei in jedem Raum kurz stehen bleiben."},
+  {w:"Stress", t:"Einen Zettel nehmen und alles draufschreiben, was heute noch ansteht. Der Kopf hört danach auf zu kreisen."},
+  {w:"Stress", t:"Das Handy in einen anderen Raum legen. Ein Teil der Anspannung liegt darin."},
+  {w:"Stress", t:"Die Augen für zwanzig Sekunden mit den Handflächen abdecken. Dunkelheit ist eine Pause."},
+  {w:"Stress", t:"Einmal richtig gähnen, auch gestellt. Der Körper springt darauf an."},
+  {w:"Stress", t:"Die Fußsohlen bewusst auf den Boden drücken. Beide, gleichzeitig, zehn Sekunden."},
+  {w:"Stress", t:"Etwas Schweres heben und wieder absetzen. Zehnmal. Der Körper kriegt seine Anspannung los."},
+  {w:"Stress", t:"Die Zähne putzen, aber gründlich. Es beschäftigt Hände, Mund und Kopf gleichzeitig."},
+  {w:"Stress", t:"Auf den Balkon und dreißig Sekunden lang nur zuhören. Wie viele verschiedene Geräusche sind es?"},
+  {w:"Stress", t:"Sich hinsetzen und die Hände ruhig auf die Oberschenkel legen. Zwei Minuten. Nichts weiter."},
+  {w:"Stress", t:"Zwei Minuten dehnen. Waden, Rücken, Nacken. Nichts Kompliziertes."},
+  {w:"Stress", t:"Rausgehen und einmal laut ausatmen, wo dich keiner hört."},
+  {w:"Nach dem Essen", t:"Sofort Zähne putzen. Das ist der einzige Trick, der gegen die Zigarette danach zuverlässig funktioniert."},
+  {w:"Nach dem Essen", t:"Vom Tisch aufstehen, ohne sitzen zu bleiben. Das Sitzenbleiben ist der Auslöser, nicht das Essen."},
+  {w:"Nach dem Essen", t:"Direkt abräumen und spülen. Die Lücke zwischen Teller und Sofa ist die gefährliche."},
+  {w:"Nach dem Essen", t:"Einen Kaugummi, sofort. Nicht in fünf Minuten — sofort."},
+  {w:"Nach dem Essen", t:"Ein Glas kaltes Wasser trinken. Es setzt einen Schlusspunkt hinter die Mahlzeit."},
+  {w:"Nach dem Essen", t:"Einen kurzen Verdauungsspaziergang. Zehn Minuten, ohne Ziel."},
+  {w:"Nach dem Essen", t:"Ein Stück Obst als Nachtisch. Der Mund bleibt beschäftigt, der Reflex läuft ins Leere."},
+  {w:"Nach dem Essen", t:"Pfefferminztee statt Kaffee. Der Kaffee danach war oft nur die Begleitung."},
+  {w:"Nach dem Essen", t:"Den Tisch abwischen und die Küche fertig machen. Erst dann hinsetzen."},
+  {w:"Nach dem Essen", t:"Eine Zitronenscheibe. Sauer überschreibt den Geschmack, den die Zigarette abgelöst hätte."},
+  {w:"Nach dem Essen", t:"Aufstehen und die Spülmaschine einräumen. Fünf Minuten, und der Moment ist vorbei."},
+  {w:"Nach dem Essen", t:"Ein Glas Buttermilch. Viele sagen, dass danach nichts mehr schmeckt, was raucht."},
+  {w:"Nach dem Essen", t:"Sofort die Zahnseide nehmen. Wer das macht, raucht in den nächsten zehn Minuten nicht."},
+  {w:"Nach dem Essen", t:"Beim Restaurantbesuch als Erster aufstehen und zahlen gehen. Die Runde draußen fällt dann aus."},
+  {w:"Nach dem Essen", t:"Den Nachtisch bewusst hinauszögern und langsam essen. Er füllt genau die Lücke."},
+  {w:"Nach dem Essen", t:"Direkt den Abwasch machen, obwohl es eine Maschine gibt. Warme Hände, klarer Kopf."},
+  {w:"Nach dem Essen", t:"Nach dem Essen die Wohnung lüften. Aufstehen, Fenster auf, stehen bleiben."},
+  {w:"Nach dem Essen", t:"Einen Espresso im Stehen an der Theke. Trinken, zahlen, gehen."},
+  {w:"Nach dem Essen", t:"Ein Stück dunkle Schokolade langsam im Mund zergehen lassen. Es dauert länger, als man denkt."},
+  {w:"Nach dem Essen", t:"Den Teller selbst wegbringen, auch wenn jemand anders abräumt."},
+  {w:"Nach dem Essen", t:"Sich vornehmen, nach dem Essen immer dasselbe zu tun. Der alte Ablauf braucht einen neuen."},
+  {w:"Nach dem Essen", t:"Karottensticks als Nachtisch. Klingt trostlos, funktioniert aber."},
+  {w:"Nach dem Essen", t:"Mundwasser. Der Geschmack hält länger als das Verlangen."},
+  {w:"Nach dem Essen", t:"Nach dem Mittag zehn Minuten rausgehen statt in die Raucherecke."},
+  {w:"Nach dem Essen", t:"Nach dem Essen aufräumen statt aufs Handy. Die leere Hand ist das Problem."},
+  {w:"Nach dem Essen", t:"Einen Apfel essen. Er putzt nebenbei die Zähne und beschäftigt zehn Minuten."},
+  {w:"Nach dem Essen", t:"Direkt ein Kaugummi und gleichzeitig aufstehen. Beides zusammen, nicht nacheinander."},
+  {w:"Nach dem Essen", t:"Den Kaffee im Sitzen weglassen und stattdessen im Gehen trinken."},
+  {w:"Nach dem Essen", t:"Sich ein festes Ritual bauen: Teller weg, Zähne putzen, Fenster auf. Drei Schritte, jedes Mal gleich."},
+  {w:"Nach dem Essen", t:"Nach dem Abendessen sofort duschen. Danach geht keiner mehr raus."},
+  {w:"Leerlauf", t:"Eine Runde Tetris. Der Klassiker gegen kreisende Gedanken, und es gibt sogar Studien dazu."},
+  {w:"Leerlauf", t:"Ein Kreuzworträtsel anfangen. Nicht fertig machen — nur anfangen."},
+  {w:"Leerlauf", t:"Ein Sudoku. Leicht reicht, es geht ums Beschäftigtsein, nicht ums Können."},
+  {w:"Leerlauf", t:"Fotos vom letzten Urlaub durchsehen. Zehn Minuten sind weg, bevor du es merkst."},
+  {w:"Leerlauf", t:"Die Fotogalerie ausmisten. Da liegen dreihundert Bildschirmfotos, die keiner braucht."},
+  {w:"Leerlauf", t:"Eine Podcast-Folge anfangen. Beim Zuhören raucht es sich schlecht, weil man mitdenkt."},
+  {w:"Leerlauf", t:"Ein Kapitel lesen. Ein einziges, dann darfst du aufhören."},
+  {w:"Leerlauf", t:"Ein Video über etwas ansehen, das dich noch nie interessiert hat. Zufallsprinzip."},
+  {w:"Leerlauf", t:"Eine Runde Schach gegen den Computer. Auf der niedrigsten Stufe, damit es Spaß macht."},
+  {w:"Leerlauf", t:"Die App aufmachen und den Zähler ansehen. Genau dafür ist er da."},
+  {w:"Leerlauf", t:"Nachrechnen, was du bis Weihnachten gespart haben wirst. Die Zahl überrascht jedes Mal."},
+  {w:"Leerlauf", t:"Aufschreiben, was du dir von dem Geld kaufst. Konkret, mit Preis."},
+  {w:"Leerlauf", t:"Eine Einkaufsliste für die Woche schreiben. Langweilig, aber es beschäftigt."},
+  {w:"Leerlauf", t:"Den Kalender durchgehen und einen Termin machen, den du seit Wochen schiebst."},
+  {w:"Leerlauf", t:"Den Posteingang leeren. Zehn Mails, dann Schluss."},
+  {w:"Leerlauf", t:"Eine Rechnung bezahlen, die noch offen ist. Danach ist ein Ärger weniger im Kopf."},
+  {w:"Leerlauf", t:"Die Handy-Apps sortieren, die du nie benutzt. Löschen ist erlaubt."},
+  {w:"Leerlauf", t:"Ein Rezept raussuchen und die Zutaten notieren. Kochen ist der beste Zeitfresser überhaupt."},
+  {w:"Leerlauf", t:"Eine Wunschliste anlegen. Nur Dinge, die dich wirklich interessieren."},
+  {w:"Leerlauf", t:"Eine Playlist bauen. Zwanzig Lieder, thematisch, mit Anspruch."},
+  {w:"Leerlauf", t:"Alte Musik hören, die du seit Jahren nicht mehr angemacht hast."},
+  {w:"Leerlauf", t:"Etwas nachschlagen, das du schon immer wissen wolltest. Irgendwas."},
+  {w:"Leerlauf", t:"Eine Sprache anfangen. Fünf Minuten am Tag, mehr braucht es nicht zum Anfangen."},
+  {w:"Leerlauf", t:"Die Route für einen Ausflug planen, den du machen willst."},
+  {w:"Leerlauf", t:"Auf der Karte nachsehen, was in dreißig Minuten Fahrt alles erreichbar ist."},
+  {w:"Leerlauf", t:"Eine Postkarte schreiben. Ja, mit Stift. Es dauert und macht jemandem Freude."},
+  {w:"Leerlauf", t:"Ein Tagebuch anfangen. Drei Sätze über heute reichen."},
+  {w:"Leerlauf", t:"Aufschreiben, wie viele Zigaretten du nicht geraucht hast, und daneben, was du stattdessen getan hast."},
+  {w:"Leerlauf", t:"Ein Bild bearbeiten oder einen Rahmen aussuchen. Etwas Optisches."},
+  {w:"Leerlauf", t:"Den Schreibtisch komplett leerräumen und nur das zurückstellen, was du benutzt."},
+  {w:"Leerlauf", t:"Die Lesezeichen im Browser aufräumen. Das ist eine Reise in die Vergangenheit."},
+  {w:"Leerlauf", t:"Passwörter aufräumen. Unangenehm, aber du hast jetzt Zeit dafür."},
+  {w:"Leerlauf", t:"Ein Spiel installieren, das du früher mochtest. Nostalgie hält länger als eine Zigarette."},
+  {w:"Leerlauf", t:"Eine Runde an der Konsole. Eine Runde ist eine Runde — der Timer läuft trotzdem weiter."},
+  {w:"Leerlauf", t:"Ein Quiz machen. Hauptstädte, Flaggen, Filmzitate, egal."},
+  {w:"Leerlauf", t:"Auf einer Karte alle Orte markieren, an denen du schon warst."},
+  {w:"Leerlauf", t:"Nachsehen, was in Recklinghausen diesen Monat läuft. Meistens mehr, als man denkt."},
+  {w:"Leerlauf", t:"Eine Serie anfangen, aber wirklich hinsetzen und schauen, nicht nebenbei."},
+  {w:"Leerlauf", t:"Zeichnen lernen. Ein Kreis, ein Würfel, ein Zylinder — damit fängt jeder an."},
+  {w:"Leerlauf", t:"Eine Sache reparieren, die seit Monaten kaputt ist. Nur eine."},
+  {w:"Leerlauf", t:"Die Schublade mit dem Kram durchgehen. Jeder hat sie."},
+  {w:"Leerlauf", t:"Alte Nachrichten mit jemandem durchlesen, den du magst."},
+  {w:"Leerlauf", t:"Ein Kochbuch durchblättern und drei Sachen markieren."},
+  {w:"Leerlauf", t:"Ein Modell bauen, ein Puzzle anfangen, etwas mit vielen Teilen."},
+  {w:"Leerlauf", t:"Den Kleiderschrank durchgehen und drei Teile zum Spenden rauslegen."},
+  {w:"Leerlauf", t:"Nachsehen, was dein altes Fahrrad an neuen Reifen bräuchte."},
+  {w:"Leerlauf", t:"Die Bedienungsanleitung von etwas lesen, das du seit Jahren falsch benutzt."},
+  {w:"Leerlauf", t:"Eine To-do-Liste machen und alles streichen, was nie wichtig war."},
+  {w:"Leerlauf", t:"Nachschauen, was ein Flug nach irgendwo gerade kostet. Träumen ist erlaubt."},
+  {w:"Leerlauf", t:"Ein Kartenspiel gegen dich selbst. Solitär hat Generationen durch Wartezeiten gebracht."},
+  {w:"Leerlauf", t:"Die Küchenschublade mit den Deckeln sortieren. Es gibt immer zu viele Deckel."},
+  {w:"Leerlauf", t:"Sich eine Doku über etwas Absurdes ansehen. Tiefseefische zum Beispiel."},
+  {w:"Leerlauf", t:"Etwas auswendig lernen. Ein Gedicht, ein Zitat, eine Telefonnummer."},
+  {w:"Leerlauf", t:"Die Fotos vom Handy sichern. Nervig, überfällig, beschäftigt."},
+  {w:"Leerlauf", t:"Nachsehen, wann der nächste Zahnarzttermin fällig wäre. Deine Zähne haben es gerade besser."},
+  {w:"Unterwegs", t:"Im Auto den Aschenbecher rausnehmen und Kaugummis reinlegen. Der Griff geht dann ins Leere."},
+  {w:"Unterwegs", t:"Wasserflasche in den Getränkehalter. Immer, in jedes Auto."},
+  {w:"Unterwegs", t:"Beim Fahren die Fenster aufmachen. Frische Luft statt Rauch, gleiche Bewegung."},
+  {w:"Unterwegs", t:"Einen Podcast starten, bevor du losfährst. Nicht danach — vorher."},
+  {w:"Unterwegs", t:"Beim Tanken direkt weiterfahren statt kurz zu stehen. Die Tankstelle war nie nur zum Tanken da."},
+  {w:"Unterwegs", t:"Im Stau laut mitsingen. Es sieht niemand, und wenn doch, ist es ihm egal."},
+  {w:"Unterwegs", t:"Das Auto innen einmal ausräumen und saugen. Danach riecht es nach nichts, und das ist neu."},
+  {w:"Unterwegs", t:"Einen Duftbaum aufhängen. Ein anderer Geruch bricht die Verbindung."},
+  {w:"Unterwegs", t:"Beim Warten auf den Bus zwei Haltestellen weiterlaufen."},
+  {w:"Unterwegs", t:"Am Bahnsteig auf und ab gehen statt zu stehen."},
+  {w:"Unterwegs", t:"Beim Warten ein paar Wadenheber machen. Sieht keiner, hilft trotzdem."},
+  {w:"Unterwegs", t:"Im Zug ans Fenster setzen und rausschauen statt aufs Handy."},
+  {w:"Unterwegs", t:"Auf dem Weg zur Arbeit die Strecke einmal ändern. Neue Wege haben keine alten Haltepunkte."},
+  {w:"Unterwegs", t:"Die letzte Haltestelle vor dem Ziel aussteigen und laufen."},
+  {w:"Unterwegs", t:"Beim Autofahren einen Kaugummi nehmen, bevor du losfährst."},
+  {w:"Unterwegs", t:"Sonnenblumenkerne ins Auto legen. Beschäftigt beide Hände, außer der am Lenkrad."},
+  {w:"Unterwegs", t:"Am Rastplatz aussteigen und einmal um das Auto gehen."},
+  {w:"Unterwegs", t:"Beim Warten am Schalter die Umgebung genau ansehen. Wie viele Türen? Wie viele Lampen?"},
+  {w:"Unterwegs", t:"Auf dem Parkplatz ganz hinten parken. Der Weg ist die Pause."},
+  {w:"Unterwegs", t:"Im Wartezimmer eine Zeitschrift von hinten nach vorne lesen."},
+  {w:"Unterwegs", t:"Beim Tanken drinnen einen Kaffee holen statt draußen zu stehen."},
+  {w:"Unterwegs", t:"Vor der Fahrt Zähne putzen. Der Reflex am Steuer läuft dann ins Leere."},
+  {w:"Unterwegs", t:"Beim Warten den Kalender durchgehen und einen Termin verschieben, der nicht passt."},
+  {w:"Unterwegs", t:"Im Flughafen oder Bahnhof einmal die ganze Halle abgehen."},
+  {w:"Unterwegs", t:"Auf der Fähre oder im Zug an Deck gehen und nur schauen."},
+  {w:"Unterwegs", t:"Vor dem Losfahren zwei Minuten sitzen bleiben und durchatmen."},
+  {w:"Unterwegs", t:"Beim Warten jemandem schreiben, an den du länger nicht gedacht hast."},
+  {w:"Unterwegs", t:"Ein Hörbuch anfangen. Autofahrten sind der beste Ort dafür."},
+  {w:"Unterwegs", t:"Beim Warten die Nachrichten lesen, aber nur die guten."},
+  {w:"Unterwegs", t:"Im Auto den Rückspiegel und die Scheiben innen putzen. Sie sind jetzt sowieso sauberer."},
+  {w:"Unterwegs", t:"An der Ampel bewusst die Schultern lockerlassen. Sie sind oben, garantiert."},
+  {w:"Unterwegs", t:"Beim Aussteigen den Schlüssel in die Hand nehmen, die sonst zur Schachtel ging."},
+  {w:"Unterwegs", t:"Auf dem Heimweg absichtlich einen Umweg gehen. Fünf Minuten mehr, aber ohne."},
+  {w:"Unterwegs", t:"Am Kiosk vorbeigehen, ohne reinzugehen, und dabei bis zwanzig zählen."},
+  {w:"Unterwegs", t:"Im Auto die Playlist wechseln statt zum Handschuhfach zu greifen."},
+  {w:"Morgens", t:"Die erste Zigarette war die schwerste Gewohnheit. Steh auf und geh sofort ins Bad, ohne Umweg über den Balkon."},
+  {w:"Morgens", t:"Vor dem Kaffee duschen. Die Reihenfolge zu ändern nimmt dem Ablauf die Automatik."},
+  {w:"Morgens", t:"Ein großes Glas Wasser direkt nach dem Aufstehen. Der Körper will das ohnehin."},
+  {w:"Morgens", t:"Den Kaffee im Stehen trinken statt im Sitzen. Sitzen war der Auslöser."},
+  {w:"Morgens", t:"Den Morgenkaffee auf einen Tee umstellen, nur für die ersten zwei Wochen."},
+  {w:"Morgens", t:"Zähne putzen, bevor du überhaupt in die Küche gehst."},
+  {w:"Morgens", t:"Fenster auf, zwei Minuten in der Kälte stehen. Wacher als jede Zigarette."},
+  {w:"Morgens", t:"Auf dem Weg zur Arbeit eine Station früher aussteigen und laufen."},
+  {w:"Morgens", t:"Fünf Minuten dehnen, bevor du dich anziehst."},
+  {w:"Morgens", t:"Das Bett machen. Kleiner Erfolg, aber der erste des Tages."},
+  {w:"Morgens", t:"Frühstücken, auch wenn du es sonst nicht tust. Ein leerer Magen macht das Verlangen stärker."},
+  {w:"Morgens", t:"Die Schuhe schon abends rausstellen. Morgens fehlt die Zeit für alte Rituale."},
+  {w:"Morgens", t:"Radio an, bevor du wach genug bist, um an etwas anderes zu denken."},
+  {w:"Morgens", t:"Zwanzig Kniebeugen vor dem Frühstück. Danach ist der Kreislauf da, wo er sein soll."},
+  {w:"Morgens", t:"Direkt nach dem Aufstehen die App aufmachen und die neue Zahl ansehen."},
+  {w:"Morgens", t:"Kalt abduschen, die letzten zwanzig Sekunden. Es ersetzt den Kick."},
+  {w:"Morgens", t:"Den Balkon meiden, solange es noch schwerfällt. Orte haben ein Gedächtnis."},
+  {w:"Morgens", t:"Den Weg zur Arbeit einmal anders nehmen. Ohne die Tankstelle."},
+  {w:"Morgens", t:"Frühstück am Tisch statt im Stehen. Es dauert länger und füllt die Zeit."},
+  {w:"Morgens", t:"Eine Handvoll Nüsse zum Kaffee. Etwas im Mund, etwas in der Hand."},
+  {w:"Morgens", t:"Die ersten zehn Minuten des Tages ohne Handy. Der Kopf startet dann ruhiger."},
+  {w:"Morgens", t:"Vor der Arbeit einmal um den Block. Auch wenn es regnet, gerade dann."},
+  {w:"Morgens", t:"Sich morgens vornehmen: heute nur heute. Nicht für immer."},
+  {w:"Morgens", t:"Den Wecker fünf Minuten früher stellen und die Zeit im Bad verbringen."},
+  {w:"Morgens", t:"Beim Anziehen ein Lied laufen lassen und es zu Ende hören."},
+  {w:"Morgens", t:"Orangensaft statt Kaffee, einmal probieren. Sauer am Morgen bricht den Reflex."},
+  {w:"Morgens", t:"Die Jacke ohne Umweg über die alte Tasche anziehen. Taschen haben Erinnerungen."},
+  {w:"Morgens", t:"Auf dem Weg zur Arbeit Kaugummi kaufen statt am Automaten stehen zu bleiben."},
+  {w:"Morgens", t:"Sich morgens einmal im Spiegel ansehen und den Tag laut ansagen. Klingt seltsam, wirkt."},
+  {w:"Morgens", t:"Die Kaffeetasse wechseln. Eine andere Tasse ist ein anderer Ablauf."},
+  {w:"Abends", t:"Nach dem Abendessen sofort duschen. Danach geht keiner mehr vor die Tür."},
+  {w:"Abends", t:"Den Feierabend mit etwas beginnen, das Hände braucht. Kochen zum Beispiel."},
+  {w:"Abends", t:"Abends früher ins Bett. Müdigkeit macht schwach, und die letzten Stunden sind die härtesten."},
+  {w:"Abends", t:"Beim Fernsehen etwas zum Knabbern in Reichweite. Aber vorher hinstellen, nicht währenddessen holen."},
+  {w:"Abends", t:"Vorm Fernseher die Hände beschäftigen. Falten, sortieren, kritzeln."},
+  {w:"Abends", t:"Ein Bad nehmen. Vierzig Minuten, in denen nichts geht."},
+  {w:"Abends", t:"Den Abend mit einem Spaziergang beenden statt mit einer Zigarette."},
+  {w:"Abends", t:"Abends die Sachen für morgen rauslegen. Beschäftigt und spart Zeit."},
+  {w:"Abends", t:"Beim Bier oder Wein aufpassen — Alkohol senkt genau die Schwelle, die dich hält. Wenn es geht, die ersten Wochen weglassen."},
+  {w:"Abends", t:"Wenn du ausgehst, vorher jemandem sagen, dass du nicht mehr rauchst. Danach ist es schwerer, es zu vergessen."},
+  {w:"Abends", t:"Beim Ausgehen als Erster nach draußen gehen und einmal um den Block, statt in der Raucherecke zu landen."},
+  {w:"Abends", t:"Abends Tee statt der letzten Runde. Der Körper kommt runter, ohne Umweg."},
+  {w:"Abends", t:"Vor dem Schlafen zehn Minuten lesen. Der Kopf braucht einen Schlusspunkt."},
+  {w:"Abends", t:"Den Abend planen, damit keine Lücke entsteht. Lücken sind gefährlich."},
+  {w:"Abends", t:"Abends die Küche fertig machen, statt es auf morgen zu schieben."},
+  {w:"Abends", t:"Beim Serienabend die Folge nicht anhalten. Die Pause dazwischen war der Auslöser."},
+  {w:"Abends", t:"Nach der Arbeit direkt umziehen. Andere Kleidung, anderer Modus."},
+  {w:"Abends", t:"Vor dem Schlafengehen aufschreiben, was heute gut lief. Auch wenn es nur das hier war."},
+  {w:"Abends", t:"Abends das Fenster aufmachen und zwei Minuten hinaussehen. Der letzte Blick des Tages."},
+  {w:"Abends", t:"Wenn du spät noch wach bist: Zähne putzen und ins Bett. Nachts ist jeder Vorsatz dünner."},
+  {w:"Abends", t:"Am Wochenende abends etwas vornehmen, wo nicht geraucht wird. Kino, Schwimmbad, Bowling."},
+  {w:"Abends", t:"Abends jemanden anrufen statt rauszugehen. Reden füllt dieselbe Zeit."},
+  {w:"Abends", t:"Die letzte Stunde des Tages ohne Bildschirm. Der Schlaf wird in den ersten Wochen ohnehin unruhig sein."},
+  {w:"Abends", t:"Bei Schlaflosigkeit aufstehen und etwas Langweiliges tun, statt zu grübeln. Grübeln endet oft draußen."},
+  {w:"Abends", t:"Abends den Aschenbecher auf dem Balkon entsorgen. Kein Ort, kein Ritual."},
+  {w:"Mit anderen", t:"Sagen, dass du aufgehört hast. Laut, vor Leuten. Danach ist es unangenehmer, es zurückzunehmen."},
+  {w:"Mit anderen", t:"Mit den Rauchern mitgehen, aber ohne. Nach dem dritten Mal ist es keine Frage mehr."},
+  {w:"Mit anderen", t:"Oder eben nicht mitgehen. Beides ist erlaubt, du musst dir nichts beweisen."},
+  {w:"Mit anderen", t:"Jemandem schreiben, der auch aufgehört hat. Es gibt immer einen."},
+  {w:"Mit anderen", t:"Jemanden fragen, wie er es geschafft hat. Die meisten erzählen es gern."},
+  {w:"Mit anderen", t:"Sich mit jemandem verabreden, der nicht raucht. Umgebung wirkt stärker als Willenskraft."},
+  {w:"Mit anderen", t:"Beim Angebot einer Zigarette einfach danke sagen und weiterreden. Keine Erklärung nötig."},
+  {w:"Mit anderen", t:"Sich einen Satz zurechtlegen für die Frage, warum du nicht mehr rauchst. Kurz, damit es nicht zur Diskussion wird."},
+  {w:"Mit anderen", t:"Jemandem von deinem Zähler erzählen. Zahlen machen es real."},
+  {w:"Mit anderen", t:"Mit dem Partner ausmachen, dass er nicht fragt, ob es schwerfällt. Es fällt schwer, das reicht."},
+  {w:"Mit anderen", t:"Wer mit dir aufhört, verdoppelt die Chance für euch beide. Frag jemanden."},
+  {w:"Mit anderen", t:"Den Kindern oder Enkeln erzählen, dass du aufgehört hast. Danach willst du es nicht zurücknehmen."},
+  {w:"Mit anderen", t:"Auf einer Feier bewusst neben jemanden stellen, der nicht raucht."},
+  {w:"Mit anderen", t:"Beim Treffen draußen eine Aufgabe übernehmen: Getränke holen, Grill übernehmen. Beschäftigte Hände fragen nicht."},
+  {w:"Mit anderen", t:"Jemanden bitten, dich anzurufen, wenn es schwer wird. Und es dann auch tun."},
+  {w:"Mit anderen", t:"Sich mit jemandem zum Spazieren verabreden statt auf einen Kaffee."},
+  {w:"Mit anderen", t:"Wenn dir jemand eine anbietet: nimm sie nicht in die Hand. Die Hand entscheidet oft vor dem Kopf."},
+  {w:"Mit anderen", t:"Eine Wette abschließen. Geld verlieren tut weh genug, um zu helfen."},
+  {w:"Mit anderen", t:"Jemandem sagen, wie viel du schon gespart hast. Sich selbst zu hören wirkt anders als es zu denken."},
+  {w:"Mit anderen", t:"Beim Feierabendbier vorher ansagen, dass du nach zwei gehst. Alkohol und Vorsatz vertragen sich schlecht."},
+  {w:"Mit anderen", t:"Ein Treffen vorschlagen, bei dem geraucht werden nicht geht. Kino, Museum, Schwimmbad."},
+  {w:"Mit anderen", t:"Jemandem helfen, der gerade etwas braucht. Fremde Probleme verdrängen eigene zuverlässig."},
+  {w:"Mit anderen", t:"Mit jemandem telefonieren, während das Verlangen läuft. Fünfzehn Minuten, und es ist vorbei."},
+  {w:"Mit anderen", t:"Dem Kollegen, der auch aufhören will, dieses Ding hier zeigen."},
+  {w:"Mit anderen", t:"Sich nicht rechtfertigen. Du schuldest niemandem eine Begründung dafür, dass du gesund bleiben willst."},
+  {w:"Mit anderen", t:"Wenn jemand sagt, eine geht doch: Das sagt der Raucher zu sich selbst, nicht zu dir."},
+  {w:"Mit anderen", t:"Beim nächsten Familientreffen die Rolle des Fahrers übernehmen. Fahrer rauchen weniger und trinken nicht."},
+  {w:"Mit anderen", t:"Jemandem sagen, wie viele Tage es sind. Genau heute, mit der Zahl."},
+  {w:"Mit anderen", t:"Das Kind, den Hund oder den Nachbarn mit nach draußen nehmen. Begleitung ändert die Pause."},
+  {w:"Mit anderen", t:"Sich abends mit jemandem zum Kochen verabreden. Zwei Stunden ohne eine einzige Lücke."},
+  {w:"Sofort", t:"Bis sechzig zählen. Langsam. Danach entscheidest du neu — und meistens anders."},
+  {w:"Sofort", t:"Ein Glas Wasser holen und in einem Zug austrinken."},
+  {w:"Sofort", t:"Aufstehen und den Raum wechseln. Nur das, sonst nichts."},
+  {w:"Sofort", t:"Die Hände unter kaltes Wasser halten, dreißig Sekunden."},
+  {w:"Sofort", t:"Einmal tief einatmen und doppelt so lange ausatmen. Dreimal."},
+  {w:"Sofort", t:"Zwanzig Sekunden die Augen zumachen und nichts tun."},
+  {w:"Sofort", t:"Zehn Kniebeugen, sofort, wo du gerade stehst."},
+  {w:"Sofort", t:"Einen Kaugummi nehmen, bevor du weiterdenkst."},
+  {w:"Sofort", t:"Die Zähne putzen. Zwei Minuten, und die Welle ist durch."},
+  {w:"Sofort", t:"Das Fenster aufreißen und den Kopf rausstrecken."},
+  {w:"Sofort", t:"Aufschreiben, wie lange du schon durchhältst. Die Zahl allein hilft."},
+  {w:"Sofort", t:"Den Krisenknopf hier drücken. Genau dafür ist er da."},
+  {w:"Sofort", t:"Laut sagen: nicht jetzt. Aussprechen wirkt anders als denken."},
+  {w:"Sofort", t:"Die Schuhe anziehen. Allein das reicht oft, um den Moment zu verpassen."},
+  {w:"Sofort", t:"Auf die Uhr sehen und dir fünf Minuten geben. Nur fünf."},
+  {w:"Sofort", t:"An etwas Saures beißen. Zitrone, Gurke, saures Bonbon."},
+  {w:"Sofort", t:"Die Schultern hochziehen, fünf Sekunden halten, fallen lassen. Dreimal."},
+  {w:"Sofort", t:"Das Handy weglegen und die Hände auf den Tisch legen. Beide, flach."},
+  {w:"Sofort", t:"Einmal um den Tisch gehen. Es sieht albern aus und es funktioniert."},
+  {w:"Sofort", t:"Kaltes Wasser ins Gesicht. Das schaltet den Körper messbar herunter."},
+  {w:"Sofort", t:"Sich fragen, was du wirklich brauchst. Pause, Luft, Essen oder Ruhe — nichts davon steckt in einer Zigarette."},
+  {w:"Sofort", t:"Die Hand, die greifen will, absichtlich in die Hosentasche stecken."},
+  {w:"Sofort", t:"Einen Schluck von etwas Heißem. Das Halten der Tasse ersetzt mehr, als man denkt."},
+  {w:"Sofort", t:"Fünf Dinge im Raum benennen, die blau sind. Der Kopf kann nur eins auf einmal."},
+  {w:"Sofort", t:"Die Treppe hochlaufen und wieder runter. Einmal reicht."},
+  {w:"Sofort", t:"Sich an das letzte Mal erinnern, als du eine Welle überstanden hast. Es ging."},
+  {w:"Sofort", t:"Den Zähler ansehen und laut sagen, wie viele Tage es sind."},
+  {w:"Sofort", t:"Zwei Minuten warten. Nur zwei. Das Verlangen kommt in Wellen und geht wieder."},
+  {w:"Sofort", t:"Sich vorstellen, wie es sich in zehn Minuten anfühlt, nicht geraucht zu haben."},
+  {w:"Sofort", t:"Aufstehen und irgendetwas aufheben, das auf dem Boden liegt."},
+  {w:"Sofort", t:"Die Nase in etwas stecken, das stark riecht. Kaffee, Zitrone, Minze."},
+  {w:"Sofort", t:"Jemandem eine Nachricht schreiben. Egal was."},
+  {w:"Sofort", t:"Den Kopf unter die kalte Dusche. Radikal, aber es wirkt sofort."},
+  {w:"Sofort", t:"Die Musik lauter machen und eine Strophe mitsingen."},
+  {w:"Sofort", t:"Sich hinsetzen, wenn du stehst. Oder aufstehen, wenn du sitzt."},
+  {w:"Sofort", t:"Bis zwanzig zählen, rückwärts, auf Englisch. Der Kopf ist dann anderweitig beschäftigt."},
+  {w:"Sofort", t:"Ein Stück Papier zerknüllen und in den Eimer werfen. Aus drei Metern."},
+  {w:"Sofort", t:"Die Fäuste ballen und wieder öffnen, zehnmal, kräftig."},
+  {w:"Sofort", t:"An das Geld denken, das gerade in der Tasche bleibt. Zehn Cent, dreißig Cent, fünfzig."},
+  {w:"Sofort", t:"Sich sagen: Das Verlangen gehört nicht zu dir. Es ist ein Restsignal aus einer alten Verdrahtung."},
+  {w:"Draußen", t:"Eine Runde laufen. Nicht joggen — laufen. Zwanzig Minuten reichen."},
+  {w:"Draußen", t:"Aufs Fahrrad und einmal die Runde fahren, die du kennst."},
+  {w:"Draußen", t:"In den Wald. Bäume machen etwas mit dem Kopf, das sich schwer erklären lässt."},
+  {w:"Draußen", t:"Im Stadtgarten eine Runde drehen. Zwanzig Minuten und der Tag ist ein anderer."},
+  {w:"Draußen", t:"Zur Halde hoch. Das Ruhrgebiet hat davon genug, und oben ist die Aussicht umsonst."},
+  {w:"Draußen", t:"Am Kanal entlanggehen. Wasser und gerade Wege sind eine gute Kombination."},
+  {w:"Draußen", t:"Schwimmen gehen. Im Wasser raucht niemand, und die Lunge merkt den Unterschied schon nach zwei Wochen."},
+  {w:"Draußen", t:"Den Rasen mähen. Laut, körperlich, danach sieht man das Ergebnis."},
+  {w:"Draußen", t:"Unkraut jäten. Die reinste Form der beschäftigten Hände."},
+  {w:"Draußen", t:"Laub harken. Es kommt sowieso immer wieder."},
+  {w:"Draußen", t:"Das Auto von Hand waschen. Eine Stunde, in der nichts anderes geht."},
+  {w:"Draußen", t:"Das Fahrrad putzen und die Kette ölen."},
+  {w:"Draußen", t:"Auf dem Balkon etwas einpflanzen. Kräuter reichen, die riechen auch noch gut."},
+  {w:"Draußen", t:"Zum Markt gehen und dort einkaufen statt im Laden. Dauert länger, und genau das ist gut."},
+  {w:"Draußen", t:"Angeln. Der einzige Sport, bei dem Warten der Punkt ist."},
+  {w:"Draußen", t:"Eine Runde im Park sitzen und nichts tun. Nur sitzen."},
+  {w:"Draußen", t:"Zum Sportplatz gehen und ein paar Runden laufen. Es sieht niemand."},
+  {w:"Draußen", t:"Basketball, Fußball, irgendwas mit einem Ball. Zehn Minuten reichen."},
+  {w:"Draußen", t:"Bei Regen rausgehen. Es ist kein Wetter, es ist ein Gefühl."},
+  {w:"Draußen", t:"Eine Wanderung planen und am Wochenende machen."},
+  {w:"Draußen", t:"Fotos machen. Zehn Bilder auf einem Spaziergang, aber gute."},
+  {w:"Draußen", t:"Im Winter Schnee schippen. Der Nachbar freut sich auch."},
+  {w:"Draußen", t:"Die Mülltonne rausstellen und noch fünf Minuten draußen bleiben."},
+  {w:"Draußen", t:"Zum See fahren. Auch wenn es nur zum Danebenstehen ist."},
+  {w:"Draußen", t:"Bäume anschauen und versuchen, drei Arten zu erkennen. Es sind meistens Buche, Eiche und Ahorn."},
+  {w:"Draußen", t:"Auf einer Bank sitzen und Vögel beobachten. Es ist nicht albern, es ist ruhig."},
+  {w:"Draußen", t:"Barfuß über den Rasen. Zwei Minuten reichen, und der Kopf ist woanders."},
+  {w:"Draußen", t:"Zum Sonnenuntergang rausgehen. Es kostet nichts und passiert jeden Tag."},
+  {w:"Draußen", t:"Klettern gehen. Die Hände sind dabei so beschäftigt wie nie."},
+  {w:"Draußen", t:"Mit dem Rad zur Arbeit statt mit dem Auto. Einmal die Woche zum Anfangen."},
+  {w:"Zuhause", t:"Den Kühlschrank ausräumen und auswischen. Zwanzig Minuten, sofort sichtbar."},
+  {w:"Zuhause", t:"Eine Schublade ausmisten. Eine, nicht alle."},
+  {w:"Zuhause", t:"Die Betten frisch beziehen. Anstrengend genug, dass man danach zufrieden ist."},
+  {w:"Zuhause", t:"Staubsaugen. Ein Zimmer reicht."},
+  {w:"Zuhause", t:"Die Fenster putzen. Nach dem Aufhören sieht man ohnehin klarer, jetzt auch wörtlich."},
+  {w:"Zuhause", t:"Die Vorhänge waschen. Die haben jahrelang mitgeraucht."},
+  {w:"Zuhause", t:"Die Polster absaugen. Auch die riechen noch nach der alten Zeit."},
+  {w:"Zuhause", t:"Alle Kleidung waschen, die nach Rauch riecht. Das ist ein sehr befriedigender Nachmittag."},
+  {w:"Zuhause", t:"Die Wände abwischen, wenn dort geraucht wurde. Das Wasser wird gelb und du wirst wütend genug, um dabeizubleiben."},
+  {w:"Zuhause", t:"Das Bad putzen. Es dauert vierzig Minuten und niemand macht es freiwillig — heute schon."},
+  {w:"Zuhause", t:"Die Küche komplett aufräumen. Arbeitsflächen leer, alles weg."},
+  {w:"Zuhause", t:"Wäsche waschen und aufhängen. Der Geruch von frischer Wäsche gehört jetzt dir."},
+  {w:"Zuhause", t:"Den Balkon fegen und aufräumen. Er hat eine neue Bestimmung."},
+  {w:"Zuhause", t:"Bilder aufhängen, die seit dem Umzug hinter dem Schrank stehen."},
+  {w:"Zuhause", t:"Möbel umstellen. Ein anderer Raum unterbricht alte Abläufe."},
+  {w:"Zuhause", t:"Den Keller oder Dachboden angehen. Eine Kiste reicht für heute."},
+  {w:"Zuhause", t:"Etwas verkaufen, das du nicht mehr brauchst. Fotos machen, einstellen, fertig."},
+  {w:"Zuhause", t:"Kochen. Etwas mit vielen Schritten, das lange dauert."},
+  {w:"Zuhause", t:"Backen. Brot braucht Zeit und Hände, beides passt gerade."},
+  {w:"Zuhause", t:"Für morgen vorkochen. Zwei Stunden Küche sind zwei Stunden ohne Lücke."},
+  {w:"Zuhause", t:"Die Gefriertruhe abtauen. Das schiebst du seit einem Jahr."},
+  {w:"Zuhause", t:"Alle Glühbirnen prüfen und die kaputten wechseln."},
+  {w:"Zuhause", t:"Die Rauchmelder testen. Praktisch, und der Name passt heute besonders."},
+  {w:"Zuhause", t:"Die Heizkörper entlüften. Zischt, dauert, ist danach erledigt."},
+  {w:"Zuhause", t:"Die Dusche entkalken. Unangenehm, aber es beschäftigt dreißig Minuten."},
+  {w:"Zuhause", t:"Das Sofa abziehen und den Bezug waschen."},
+  {w:"Zuhause", t:"Alle Ladekabel einsammeln und an einen Ort legen."},
+  {w:"Zuhause", t:"Die Hausapotheke durchgehen und Abgelaufenes aussortieren."},
+  {w:"Zuhause", t:"Papierkram sortieren. Der Stapel wird nicht kleiner, wenn du wartest."},
+  {w:"Zuhause", t:"Ordner anlegen für die Sachen, die du jedes Jahr suchst."},
+  {w:"Zuhause", t:"Die Werkzeugkiste sortieren und nachsehen, was fehlt."},
+  {w:"Zuhause", t:"Ein Regal aufbauen oder eins umbauen. Etwas mit Schrauben."},
+  {w:"Zuhause", t:"Die Pflanzen gießen und umtopfen, was zu eng steht."},
+  {w:"Zuhause", t:"Den Fußboden wischen. Warmes Wasser, gutes Ergebnis."},
+  {w:"Zuhause", t:"Die Türgriffe und Lichtschalter abwischen. Niemand macht das, und alle fassen sie an."},
+  {w:"Kopf", t:"Aufschreiben, warum du aufgehört hast. Zehn Gründe, nummeriert. Für den Tag, an dem du sie brauchst."},
+  {w:"Kopf", t:"Ausrechnen, was du in fünf Jahren gespart haben wirst. Die Zahl ist unangenehm groß."},
+  {w:"Kopf", t:"Aufschreiben, was du mit dem Geld machst. Konkret, mit Preis und Datum."},
+  {w:"Kopf", t:"Sich klarmachen: Du gibst nichts auf. Du hörst auf, etwas zu bezahlen, das dir schadet."},
+  {w:"Kopf", t:"Dir vorstellen, wie du in einem Jahr darüber redest. Beiläufig, als wäre es nichts gewesen."},
+  {w:"Kopf", t:"Nachlesen, was in den nächsten Wochen im Körper passiert. Es ist mehr, als man denkt."},
+  {w:"Kopf", t:"Die eigene Bestzeit ansehen. Du warst schon mal weiter, als du glaubst."},
+  {w:"Kopf", t:"Aufschreiben, was dich zum Rauchen bringt. Drei Situationen. Dann für jede einen Plan."},
+  {w:"Kopf", t:"Sich fragen, ob die letzte Zigarette wirklich gut war. Ehrlich."},
+  {w:"Kopf", t:"Aufschreiben, was besser geworden ist. Riechen, schmecken, Treppen, Geld."},
+  {w:"Kopf", t:"Einen Brief an dich selbst schreiben, für den Tag, an dem du aufgeben willst."},
+  {w:"Kopf", t:"Ausrechnen, wie viele Zigaretten du in deinem Leben geraucht hast. Es ernüchtert."},
+  {w:"Kopf", t:"Sich vornehmen, nur bis heute Abend durchzuhalten. Morgen ist ein anderes Problem."},
+  {w:"Kopf", t:"Sich erinnern, dass jedes Verlangen bisher von allein gegangen ist. Jedes einzelne."},
+  {w:"Kopf", t:"Aufschreiben, wem du es beweisen willst. Und dann streichen, bis nur du übrig bleibst."},
+  {w:"Kopf", t:"Die Tage zählen, die noch bis zum nächsten Ziel fehlen. Es sind weniger, als es sich anfühlt."},
+  {w:"Kopf", t:"Sich vorstellen, wie die erste Zigarette nach Monaten schmecken würde. Nicht gut."},
+  {w:"Kopf", t:"Nachdenken, was du mit der Zeit anfängst, die du gewinnst. Das ist keine Metapher, das sind echte Stunden."},
+  {w:"Kopf", t:"Aufschreiben, was du schon geschafft hast, das schwerer war als das hier."},
+  {w:"Kopf", t:"Sich klarmachen, dass es keinen halben Weg gibt. Eine ist der Anfang von allen."},
+  {w:"Kopf", t:"Fünf Minuten überlegen, was du dir zum nächsten Hunderter kaufst."},
+  {w:"Kopf", t:"Dir eine Belohnung für die nächste Woche aussuchen. Und sie dann auch nehmen."},
+  {w:"Kopf", t:"Nachsehen, wie weit die anderen Ziele noch weg sind. Die Liste ist länger als das Verlangen."},
+  {w:"Kopf", t:"Sich fragen, was du dir vor einem Jahr gewünscht hättest. Wahrscheinlich genau das hier."},
+  {w:"Kopf", t:"Die Sache nüchtern betrachten: Du hast heute nichts verloren. Du hast nur nichts gekauft."},
+];
 
 /* ====================================================================
    Krisenfenster — für den Moment, in dem es wirklich zählt
@@ -3017,6 +3653,11 @@ function faktZeigen(){
   while (i === letzterFakt && KRISE.length > 1);
   letzterFakt = i;
   $("krFakt").textContent = KRISE[i];
+
+  // Ein Grund allein sagt nur, warum nicht. Der Vorschlag sagt, was
+  // stattdessen — und das ist in dem Moment die nuetzlichere Haelfte.
+  const s = ausBeutel(stKrBeutel, akutNummern());
+  $("krStatt").innerHTML = "<b>Mach doch lieber:</b> " + esc(s.t);
 }
 
 function kriseAuf(){
@@ -3087,6 +3728,7 @@ $("bKriseWeg").onclick = () => {
   }
   kriseZu();
 };
+$("bStatt").onclick = stattZeichnen;
 $("bTon").onclick = tonUmschalten;
 
 $("bKriseNoch").onclick = faktZeigen;
