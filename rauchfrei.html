@@ -474,6 +474,153 @@
   }
   .trophaeen li.geholt .tr-name{ color:var(--brass); }
   .trophaeen li.dran .tr-name{ color:var(--air); }
+
+  /* ---------- Die ersten dreißig Tage ----------
+     Sieben Spalten, also eine Zeile je Woche. Dadurch liegen die Tage 7,
+     14, 21 und 28 von selbst in der letzten Spalte, und jede Zeile endet
+     mit einer großen Medaille. Die Zelle bleibt für alle gleich breit —
+     nur die Scheibe darin wächst, sonst würde das Raster ausfransen. */
+  .monat{
+    list-style:none; margin:0; padding:2px 0 0;
+    display:grid; grid-template-columns:repeat(7, 1fr);
+    gap:10px 6px;
+  }
+  .monat li{ text-align:center; min-width:0; }
+
+  .mt-scheibe{
+    position:relative;
+    display:grid; place-items:center;
+    width:34px; height:34px; margin:0 auto 5px;
+    border-radius:50%;
+    background:var(--surface-2);
+    border:1px solid var(--line);
+    font-size:12px; font-weight:600; line-height:1;
+    color:var(--faint); font-variant-numeric:tabular-nums;
+    transition:color .3s, background .3s, border-color .3s;
+  }
+
+  /* Geholter Tag: grün gefüllt, wie ein Segment der Fortschrittsleiste. */
+  .monat li.geholt .mt-scheibe{
+    background:linear-gradient(160deg, rgba(98,214,174,.30), rgba(98,214,174,.10));
+    border-color:rgba(98,214,174,.5);
+    color:var(--air);
+  }
+  /* Der laufende Tag: offener Ring, der sich über die 24 Stunden füllt. */
+  .monat li.dran .mt-scheibe{
+    color:var(--air);
+    border-color:rgba(98,214,174,.35);
+    box-shadow:0 0 10px var(--air-glow);
+  }
+  .monat li.dran .mt-scheibe::after{
+    content:""; position:absolute; inset:-3px; border-radius:50%;
+    background:conic-gradient(var(--air) calc(var(--fortschritt, 0) * 1%), transparent 0);
+    -webkit-mask:radial-gradient(closest-side, transparent 76%, #000 77%);
+            mask:radial-gradient(closest-side, transparent 76%, #000 77%);
+  }
+
+  /* Beschriftung. Bei sieben Spalten bleiben auf einem Handy knapp
+     43 Pixel je Zelle — da passt kein Name, sondern nur eine abgeschnittene
+     Andeutung, und die ist schlechter als gar nichts. Deshalb tragen die
+     normalen Tage eng nur ihre Zahl in der Scheibe; der Name steht in der
+     Zeile darunter und im title-Attribut. Ab 560 Pixel Breite ist Platz,
+     dann kommen die Namen zurück. */
+  .mt-name{
+    display:block; font-size:9.5px; letter-spacing:.05em;
+    color:var(--faint); line-height:1.25;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  .mt-name .lang{ display:none; }
+  .monat li:not(.woche):not(.finale) .mt-name{ min-height:1px; }
+  @media (min-width:560px){
+    .mt-name .kurz{ display:none; }
+    .mt-name .lang{ display:inline; }
+  }
+  .monat li.geholt .mt-name,
+  .monat li.dran   .mt-name{ color:var(--muted); }
+
+  /* ---- Die Wochenmedaillen ----
+     Messing statt Grün, größer, mit Strahlenkranz und umlaufendem Licht.
+     Sie sollen aus der Zeile herausstechen, ohne sie zu sprengen: die
+     Rasterzelle bleibt gleich, nur die Scheibe wächst. */
+  .monat li.woche .mt-scheibe{
+    width:46px; height:46px; font-size:15px;
+    background:radial-gradient(circle at 32% 28%, rgba(255,231,178,.30), rgba(217,169,79,.08) 70%);
+    border-color:rgba(217,169,79,.35);
+    color:var(--brass);
+  }
+  /* Strahlenkranz: zwölf Spitzen aus einem sich wiederholenden Kegel. */
+  .monat li.woche .mt-scheibe::before{
+    content:""; position:absolute; inset:-7px; border-radius:50%;
+    background:repeating-conic-gradient(rgba(217,169,79,.30) 0deg 3deg, transparent 3deg 30deg);
+    -webkit-mask:radial-gradient(closest-side, transparent 62%, #000 64%, #000 88%, transparent 90%);
+            mask:radial-gradient(closest-side, transparent 62%, #000 64%, #000 88%, transparent 90%);
+    opacity:.45;
+  }
+  .monat li.woche.geholt .mt-scheibe{
+    background:linear-gradient(160deg, rgba(217,169,79,.34), rgba(217,169,79,.10));
+    border-color:var(--brass);
+    color:#FFE7B2;
+    box-shadow:0 0 16px rgba(217,169,79,.22);
+  }
+  .monat li.woche.geholt .mt-scheibe::before{
+    opacity:1;
+    animation:kranzDreht 14s linear infinite;
+  }
+  /* Zusätzlich ein Lichtpunkt, der einmal je vier Sekunden herumläuft. */
+  .monat li.woche.geholt .mt-scheibe::after{
+    content:""; position:absolute; inset:-3px; border-radius:50%;
+    background:conic-gradient(transparent 0deg, rgba(255,231,178,.95) 30deg, transparent 78deg);
+    -webkit-mask:radial-gradient(closest-side, transparent 78%, #000 79%);
+            mask:radial-gradient(closest-side, transparent 78%, #000 79%);
+    animation:ringLauf 4s linear infinite;
+    animation-delay:var(--verzug, 0s);
+  }
+  @keyframes kranzDreht{ to{ transform:rotate(360deg); } }
+
+  .monat li.woche .mt-name{
+    font-size:10px; font-weight:600; letter-spacing:.08em; text-transform:uppercase;
+  }
+  .monat li.woche.geholt .mt-name{ color:var(--brass); }
+
+  /* Tag 30 schließt den Monat ab und bekommt beides: Messing und Grün. */
+  .monat li.finale .mt-scheibe{ width:46px; height:46px; font-size:15px; }
+  .monat li.finale.geholt .mt-scheibe{
+    background:
+      radial-gradient(circle at 30% 26%, rgba(255,231,178,.42), transparent 62%),
+      linear-gradient(160deg, rgba(98,214,174,.34), rgba(217,169,79,.20));
+    border-color:#FFE7B2;
+    color:#FFF3D6;
+    box-shadow:0 0 22px rgba(217,169,79,.30);
+  }
+
+  /* Frisch freigeschaltet: einmaliges Aufblitzen, wenn der Tag umschlägt
+     und die Seite gerade offen ist. */
+  @keyframes mtFrisch{
+    0%   { transform:scale(1);    box-shadow:0 0 0 0 rgba(98,214,174,.55); }
+    45%  { transform:scale(1.18); box-shadow:0 0 0 12px rgba(98,214,174,0); }
+    100% { transform:scale(1);    box-shadow:0 0 0 0 rgba(98,214,174,0); }
+  }
+  .monat li.frisch .mt-scheibe{ animation:mtFrisch 1.6s ease-out 2; }
+  .monat li.woche.frisch .mt-scheibe,
+  .monat li.finale.frisch .mt-scheibe{
+    animation:mtFrisch 1.8s ease-out 3;
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    .monat li.woche.geholt .mt-scheibe::before,
+    .monat li.woche.geholt .mt-scheibe::after,
+    .monat li.frisch .mt-scheibe{ animation:none; }
+  }
+
+  /* Sehr schmale Geräte: die Namen tragen sonst nicht mehr, dann bleiben
+     nur die Scheiben. Die Wochenmedaillen behalten ihr Wort. */
+  @media (max-width:360px){
+    .monat{ gap:9px 4px; }
+    .mt-scheibe{ width:30px; height:30px; font-size:11px; }
+    .monat li:not(.woche):not(.finale) .mt-name{ display:none; }
+    .monat li.woche .mt-scheibe,
+    .monat li.finale .mt-scheibe{ width:40px; height:40px; font-size:13px; }
+  }
   .tr-text{
     margin:14px 2px 0; font-size:13.5px; color:var(--muted);
     max-width:60ch;
@@ -928,6 +1075,10 @@
     <h2>Trophäen <span class="h2-zahl" id="trophaeenZahl"></span></h2>
     <ul class="trophaeen" id="trophaeen"></ul>
     <p class="tr-text" id="trophaeenText"></p>
+
+    <h2>Die ersten 30 Tage <span class="h2-zahl" id="monatZahl"></span></h2>
+    <ul class="monat" id="monat"></ul>
+    <p class="tr-text" id="monatText"></p>
 
     <h2>Standhaft <span class="h2-zahl" id="wellenZahl"></span></h2>
     <ul class="trophaeen wellen" id="wellen"></ul>
@@ -1962,6 +2113,55 @@ const TROPHAEEN = [
 ];
 
 /* ====================================================================
+   Die ersten dreißig Tage
+   --------------------------------------------------------------------
+   Die große Trophäenreihe spannt sich über zehn Jahre. Das ist richtig
+   für die Übersicht und nutzlos für die erste Woche: zwischen Tag 3 und
+   Tag 7 passiert dort vier Tage lang nichts.
+
+   Deshalb hier ein eigenes Brett für den Monat, in dem es entschieden
+   wird. Jeder Tag eine Marke, sieben Spalten je Zeile — dadurch liegen
+   die Wochenabschlüsse von selbst in der letzten Spalte, und jede Zeile
+   endet mit einer großen Medaille. Tag 30 bekommt noch einmal eine
+   eigene.
+
+   Die Zwischentage tragen bewusst kurze Namen. Sie sollen die Woche
+   füllen, nicht mit ihr konkurrieren.
+   ==================================================================== */
+const TAGESTROPHAEEN = [
+  { titel:"Der erste Tag",  was:"Der schwerste von allen. Wenn er um ist, hast du das Schlimmste hinter dir." },
+  { titel:"Der zweite",     was:"Heute wird der Körper am lautesten. Das ist ein gutes Zeichen, kein schlechtes." },
+  { titel:"Nikotin raus",   was:"Nach drei Tagen ist es aus dem Körper. Ab da ist es Kopfsache." },
+  { titel:"Der vierte",     was:"Danach hat der Entzug seinen Höhepunkt überschritten." },
+  { titel:"Eine Hand voll", was:"Fünf Tage. Geschmack und Geruch melden sich dann langsam zurück." },
+  { titel:"Der Vorabend",   was:"Danach ist die erste Woche nur noch einen Tag weg." },
+  { titel:"Erste Woche",    woche:1, was:"Sieben Tage. Dann liegt die Phase mit den meisten Rückfällen hinter dir." },
+  { titel:"Neuland",        was:"Weiter, als die meisten Versuche kommen." },
+  { titel:"Neun",           was:"Der Schlaf wird in diesen Tagen oft unruhig. Das gibt sich wieder." },
+  { titel:"Zweistellig",    was:"Zehn Tage. Die erste zweistellige Zahl." },
+  { titel:"Elf",            was:"Die Flimmerhärchen in den Atemwegen fangen wieder an zu arbeiten." },
+  { titel:"Ein Dutzend",    was:"Zwölf Tage. Das Zahnfleisch wird besser durchblutet." },
+  { titel:"Dreizehn",       was:"Die Zahl, an der sich niemand stört, der so weit kommt." },
+  { titel:"Zwei Wochen",    woche:2, was:"Vierzehn Tage. Dann legen Kreislauf und Lungenfunktion messbar zu." },
+  { titel:"Halbzeit",       was:"Fünfzehn Tage. Die Hälfte des Monats." },
+  { titel:"Sechzehn",       was:"Treppensteigen fällt dann spürbar leichter als am Anfang." },
+  { titel:"Siebzehn",       was:"Das Verlangen kommt seltener und geht schneller." },
+  { titel:"Achtzehn",       was:"Ab hier bemerken andere den Unterschied, nicht nur du." },
+  { titel:"Neunzehn",       was:"Der Geruchssinn ist dann deutlich besser als vor drei Wochen." },
+  { titel:"Zwanzig",        was:"Zwanzig Tage. So viele Zigaretten hast du früher an einem geraucht." },
+  { titel:"Drei Wochen",    woche:3, was:"Einundzwanzig Tage. Dann hat die alte Gewohnheit ihren Platz verloren." },
+  { titel:"Zweiundzwanzig", was:"Die Lunge räumt weiter auf. Husten in dieser Zeit ist Aufräumen, kein Rückschritt." },
+  { titel:"Dreiundzwanzig", was:"Der Ruhepuls ist dann dauerhaft niedriger." },
+  { titel:"Vierundzwanzig", was:"Für jede Stunde des ersten Tages einer. Der war lang." },
+  { titel:"Viertelhundert", was:"Fünfundzwanzig Tage. Ein Viertel von hundert." },
+  { titel:"Sechsundzwanzig",was:"Die Haut wird wieder besser durchblutet. Das sieht man." },
+  { titel:"Kurz vor vier",   was:"Danach sind vier Wochen nur noch einen Tag weg." },
+  { titel:"Vier Wochen",    woche:4, was:"Achtundzwanzig Tage. Vier volle Wochen, keine einzige Ausnahme." },
+  { titel:"Der Vorletzte",   was:"Danach ist nur noch einer offen." },
+  { titel:"Ein Monat",      finale:true, was:"Dreißig Tage. Dann ist der Entzug Geschichte und alles Weitere dein Normalzustand." }
+];
+
+/* ====================================================================
    Standhaft — Trophäen für überstandene Wellen
    --------------------------------------------------------------------
    Die Zeittrophäen oben belohnen etwas, das von allein vergeht. Diese
@@ -2276,9 +2476,18 @@ function zeichnen(){
     $("cdTag").textContent = "Tag " + (w.tage + 1);
     $("cdText").textContent = tagesText(w.tage + 1, profil, true);   // Ziel-Fassung
     trophaeenZeichnen(w.verstrichen);   // alle Trophäen liegen auf Tagesgrenzen
+    monatZeichnen(w.verstrichen, frisch);
     wellenZeichnen();
     letzterTag = w.tage;
   }
+
+  /* Der Ring am laufenden Tag füllt sich über volle 24 Stunden. Hier wird
+     nur die Variable nachgezogen und nicht neu gezeichnet — ein Neuaufbau
+     im Sekundentakt würde die Lichtläufe der Wochenmedaillen jedes Mal von
+     vorn starten lassen. */
+  const laufend = $("monat").querySelector("li.dran");
+  if (laufend)
+    laufend.style.setProperty("--fortschritt", (((w.verstrichen % TAG) / TAG) * 100).toFixed(1));
   naechstesZeichnen(w);
 
   const beste = Math.max(profil.beste || 0, w.verstrichen);
@@ -2494,6 +2703,54 @@ function tageZeichnen(fertig, p, frischNr){
 }
 
 /* ---------- Trophäen ---------- */
+/* Das Brett für den ersten Monat. `frischNr` ist der Tag, der gerade eben
+   umgeschlagen ist — nur der blitzt einmal auf. */
+function monatZeichnen(verstrichen, frischNr){
+  const fertig = Math.floor(verstrichen / TAG);          // vollständig abgeschlossene Tage
+  const laufend = fertig + 1;                            // der Tag, an dem gerade gearbeitet wird
+
+  $("monat").innerHTML = TAGESTROPHAEEN.map((t, i) => {
+    const nr   = i + 1;
+    const da   = fertig >= nr;
+    const dran = nr === laufend;
+
+    const klassen = [];
+    if (t.woche)  klassen.push("woche");
+    if (t.finale) klassen.push("finale");
+    klassen.push(da ? "geholt" : dran ? "dran" : "zu");
+    if (nr === frischNr) klassen.push("frisch");
+
+    // Beim laufenden Tag zeigt der Ring, wie weit die 24 Stunden sind.
+    let stil = "--verzug:" + (i * 0.12).toFixed(2) + "s";
+    if (dran){
+      const anteil = ((verstrichen - fertig * TAG) / TAG) * 100;
+      stil += ";--fortschritt:" + Math.max(0, Math.min(100, anteil)).toFixed(1);
+    }
+
+    // Auf der Scheibe steht die Tageszahl, bei den Wochen ein Stern.
+    const zeichen = t.woche || t.finale ? (da ? "★" : nr) : nr;
+    const kurz = t.woche ? "W" + t.woche : t.finale ? "Monat" : "";
+    const lang = t.woche ? "Woche " + t.woche : t.finale ? "1 Monat" : t.titel;
+
+    return `<li class="${klassen.join(" ")}" style="${stil}">
+        <span class="mt-scheibe">${zeichen}</span>
+        <span class="mt-name" title="${esc(t.titel)}"><span class="kurz">${esc(kurz)}</span><span class="lang">${esc(lang)}</span></span>
+      </li>`;
+  }).join("");
+
+  const geholt = Math.min(fertig, TAGESTROPHAEEN.length);
+  $("monatZahl").textContent = "· " + geholt + " von " + TAGESTROPHAEEN.length;
+
+  // Ab Tag 30 ist das Brett voll und der Satz darunter darf das sagen.
+  if (fertig >= TAGESTROPHAEEN.length){
+    $("monatText").textContent =
+      "Voll. Dreißig von dreißig — der Monat, in dem es entschieden wird, ist durch.";
+    return;
+  }
+  const t = TAGESTROPHAEEN[laufend - 1];
+  $("monatText").textContent = "Als Nächstes: Tag " + laufend + " — " + t.titel + ". " + t.was;
+}
+
 function trophaeenZeichnen(verstrichen){
   const naechste = TROPHAEEN.findIndex(t => t.ms > verstrichen);
 
