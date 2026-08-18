@@ -319,19 +319,11 @@ function zeichnen(){
     tageZeichnen(w.tage, profil, frisch);   // w.tage = abgeschlossene Tage
     $("cdTag").textContent = "Tag " + (w.tage + 1);
     $("cdText").textContent = tagesText(w.tage + 1, profil, true);   // Ziel-Fassung
-    trophaeenZeichnen(w.verstrichen);   // alle Trophäen liegen auf Tagesgrenzen
-    monatZeichnen(w.verstrichen, frisch);
+    erfolgeZeichnen(w.verstrichen, frisch);   // alle Marken liegen auf Tagesgrenzen
     wellenZeichnen();
     letzterTag = w.tage;
   }
 
-  /* Der Ring am laufenden Tag füllt sich über volle 24 Stunden. Hier wird
-     nur die Variable nachgezogen und nicht neu gezeichnet — ein Neuaufbau
-     im Sekundentakt würde die Lichtläufe der Wochenmedaillen jedes Mal von
-     vorn starten lassen. */
-  const laufend = $("monat").querySelector("li.dran");
-  if (laufend)
-    laufend.style.setProperty("--fortschritt", (((w.verstrichen % TAG) / TAG) * 100).toFixed(1));
   naechstesZeichnen(w);
 
   const beste = Math.max(profil.beste || 0, w.verstrichen);
@@ -546,86 +538,135 @@ function tageZeichnen(fertig, p, frischNr){
   $("anzahlFrei").textContent = fertig === 1 ? "· 1 Tag" : "· " + zahl(fertig) + " Tage";
 }
 
-/* ---------- Trophäen ---------- */
-/* Das Brett für den ersten Monat. `frischNr` ist der Tag, der gerade eben
-   umgeschlagen ist — nur der blitzt einmal auf. */
-function monatZeichnen(verstrichen, frischNr){
-  const fertig = Math.floor(verstrichen / TAG);          // vollständig abgeschlossene Tage
-  const laufend = fertig + 1;                            // der Tag, an dem gerade gearbeitet wird
+/* ---------------------------------------------------------------------
+   Erfolge — ein Block für den ersten Monat und die langen Marken
+   ---------------------------------------------------------------------
+   Vorher zwei Abschnitte: „Trophäen“ über zehn Jahre und „Die ersten 30
+   Tage“. Tag 1, Tag 3, eine Woche, zwei Wochen und ein Monat kamen darin
+   beide Male vor. Jetzt einer: die Bänder deckern den ersten Monat ab, die
+   Chips darunter alles, was danach kommt.
 
-  $("monat").innerHTML = TAGESTROPHAEEN.map((t, i) => {
-    const nr   = i + 1;
-    const da   = fertig >= nr;
-    const dran = nr === laufend;
+   Jedes Feld ist antippbar. Angezeigt wird dann, was am Ende dieses Tages
+   zusammengekommen ist — nicht geraucht und nicht ausgegeben, gerechnet mit
+   den eigenen Einstellungen. Zweites Antippen hebt die Auswahl auf.
+   --------------------------------------------------------------------- */
+let erfolgWahl = null;   // angetippter Tag, oder null für „nächstes Ziel“
 
-    const klassen = [];
-    if (t.woche)  klassen.push("woche");
-    if (t.finale) klassen.push("finale");
-    klassen.push(da ? "geholt" : dran ? "dran" : "zu");
-    if (nr === frischNr) klassen.push("frisch");
+const BAENDER = [
+  { kopf:"W1", von: 1, bis: 7 },
+  { kopf:"W2", von: 8, bis:14 },
+  { kopf:"W3", von:15, bis:21 },
+  { kopf:"W4", von:22, bis:28 },
+  { kopf:"M",  von:29, bis:30 }
+];
+const BAND_BREIT = 7;
 
-    // Beim laufenden Tag zeigt der Ring, wie weit die 24 Stunden sind.
-    let stil = "--verzug:" + (i * 0.12).toFixed(2) + "s";
-    if (dran){
-      const anteil = ((verstrichen - fertig * TAG) / TAG) * 100;
-      stil += ";--fortschritt:" + Math.max(0, Math.min(100, anteil)).toFixed(1);
-    }
+/* Nur die Marken jenseits des ersten Monats — alles darunter steckt schon in
+   den Bändern. Genau diese Dopplung war der Grund für den Umbau. */
+const ferne = () => TROPHAEEN.filter(t => t.ms > 30 * TAG);
 
-    // Auf der Scheibe steht die Tageszahl, bei den Wochen ein Stern.
-    const zeichen = t.woche || t.finale ? (da ? "★" : nr) : nr;
-    const kurz = t.woche ? "W" + t.woche : t.finale ? "Monat" : "";
-    const lang = t.woche ? "Woche " + t.woche : t.finale ? "1 Monat" : t.titel;
+/** Der Name, unter dem ein Tag oder eine Marke angesprochen wird. */
+function erfolgName(nr){
+  if (nr >= 1 && nr <= TAGESTROPHAEEN.length)
+    return "Tag " + nr + " · " + TAGESTROPHAEEN[nr - 1].titel;
+  const t = TROPHAEEN.find(x => Math.round(x.ms / TAG) === nr);
+  return t ? t.kurz : "Tag " + nr;
+}
 
-    return `<li class="${klassen.join(" ")}" style="${stil}">
-        <span class="mt-scheibe">${zeichen}</span>
-        <span class="mt-name" title="${esc(t.titel)}"><span class="kurz">${esc(kurz)}</span><span class="lang">${esc(lang)}</span></span>
-      </li>`;
-  }).join("");
+/* Was am Ende eines bestimmten Tages zusammengekommen ist. Drei Zeitformen,
+   weil derselbe Satz sonst für einen erreichten und einen offenen Tag
+   dasselbe behaupten würde — der Fehler, der mir in diesem Projekt schon
+   dreimal unterlaufen ist. Die Formulierungen vermeiden bewusst ein Verb
+   hinter dem Namen: „100 Tage steht noch aus“ wäre falsch, „100 Tage stehen“
+   für „Tag 7“ auch. */
+function erfolgSatz(nr, verstrichen){
+  const zig  = nr * profil.menge;
+  const geld = zig * (profil.preis / profil.proSchachtel);
+  const z = '<b class="zig">' + zahl(zig) + " Zigaretten</b>";
+  const g = '<b class="geld">' + euro(geld) + "</b>";
+  const name = "<b>" + esc(erfolgName(nr)) + "</b>";
+  const fertig = Math.floor(verstrichen / TAG);
 
-  const geholt = Math.min(fertig, TAGESTROPHAEEN.length);
-  $("monatZahl").textContent = "· " + geholt + " von " + TAGESTROPHAEEN.length;
+  if (nr <= fertig)
+    return name + " — erreicht.<br>Am Ende dieses Tages: " + z + " nicht geraucht, " + g + " nicht ausgegeben.";
+  if (nr === fertig + 1)
+    return name + " — läuft.<br>Heute Abend: " + z + " nicht geraucht, " + g + " nicht ausgegeben.";
+  return name + " — offen.<br>Wenn es soweit ist: " + z + " nicht geraucht, " + g + " nicht ausgegeben.";
+}
 
-  // Ab Tag 30 ist das Brett voll und der Satz darunter darf das sagen.
-  if (fertig >= TAGESTROPHAEEN.length){
-    $("monatText").textContent =
-      "Voll. Dreißig von dreißig — der Monat, in dem es entschieden wird, ist durch.";
+function erfolgAntwort(verstrichen){
+  const kasten = $("erfolgAntwort");
+  if (erfolgWahl !== null){
+    kasten.innerHTML = erfolgSatz(erfolgWahl, verstrichen)
+      + '<span class="tipp">Noch einmal tippen schließt das wieder.</span>';
     return;
   }
-  const t = TAGESTROPHAEEN[laufend - 1];
-  $("monatText").textContent = "Als Nächstes: Tag " + laufend + " — " + t.titel + ". " + t.was;
+  const fertig = Math.floor(verstrichen / TAG);
+  const hinweis = '<span class="tipp">Tipp auf ein Feld zeigt, was an dem Tag zusammenkommt.</span>';
+
+  if (fertig < TAGESTROPHAEEN.length){
+    const t = TAGESTROPHAEEN[fertig];      // der laufende Tag
+    kasten.innerHTML = "<b>Als Nächstes: Tag " + (fertig + 1) + " — " + esc(t.titel)
+      + ".</b><br>" + esc(t.was) + hinweis;
+    return;
+  }
+  const t = ferne().find(x => verstrichen < x.ms);
+  kasten.innerHTML = t
+    ? "<b>Als Nächstes: " + esc(t.kurz) + ".</b><br>" + esc(t.was) + hinweis
+    : "<b>Alles geholt.</b><br>Mehr Marken habe ich nicht vorgesehen." + hinweis;
 }
 
-function trophaeenZeichnen(verstrichen){
-  const naechste = TROPHAEEN.findIndex(t => t.ms > verstrichen);
+function erfolgeZeichnen(verstrichen, frischNr){
+  const fertig  = Math.floor(verstrichen / TAG);
+  const laufend = fertig + 1;
+  let h = "";
 
-  $("trophaeen").innerHTML = TROPHAEEN.map((t, i) => {
-    const da   = verstrichen >= t.ms;
-    const dran = i === naechste;
-
-    // Fortschritt seit der vorherigen Trophäe, nicht seit Tag null — sonst
-    // stünde der Ring bei den späten Marken jahrelang fast unbewegt.
-    let stil = "--verzug:" + (i * 0.18).toFixed(2) + "s";
-    if (dran){
-      const vorher = i > 0 ? TROPHAEEN[i - 1].ms : 0;
-      const anteil = ((verstrichen - vorher) / (t.ms - vorher)) * 100;
-      stil += ";--fortschritt:" + Math.max(0, Math.min(100, anteil)).toFixed(1);
+  BAENDER.forEach(b => {
+    const voll   = fertig >= b.bis;
+    const frisch = frischNr && frischNr === b.bis;
+    let segs = "";
+    for (let n = b.von; n <= b.bis; n++){
+      const zustand = fertig >= n ? "da" : n === laufend ? "jetzt" : "zu";
+      segs += '<button type="button" class="seg ' + zustand
+            + (erfolgWahl === n ? " gewaehlt" : "") + '" data-tag="' + n
+            + '" aria-label="Tag ' + n + '"><i></i></button>';
     }
+    for (let f = b.bis - b.von + 1; f < BAND_BREIT; f++)
+      segs += '<span class="seg leer"><i></i></span>';
 
-    return `<li class="${da ? "geholt" : dran ? "dran" : "zu"}" style="${stil}">
-        <span class="tr-scheibe">${da ? "★" : ""}</span>
-        <span class="tr-name">${esc(t.kurz)}</span>
-      </li>`;
-  }).join("");
+    h += '<div class="bz' + (voll ? " voll" : "") + (frisch ? " frisch" : "") + '">'
+       + '<span class="bz-kopf">' + b.kopf + "</span>"
+       + '<span class="bz-band">' + segs + "</span>"
+       + '<span class="bz-stern">' + (voll ? "★" : "·") + "</span></div>";
+  });
 
-  const geholt = TROPHAEEN.filter(t => verstrichen >= t.ms).length;
-  $("trophaeenZahl").textContent = "· " + geholt + " von " + TROPHAEEN.length;
+  h += '<div class="fern-kopf">Danach</div><div class="fern">';
+  ferne().forEach(t => {
+    const tage = Math.round(t.ms / TAG);
+    h += '<button type="button" class="' + (verstrichen >= t.ms ? "da" : "")
+       + (erfolgWahl === tage ? " gewaehlt" : "") + '" data-tag="' + tage
+       + '">' + esc(t.kurz) + "</button>";
+  });
+  h += "</div>";
 
-  const t = naechste === -1 ? null : TROPHAEEN[naechste];
-  $("trophaeenText").textContent = t
-    ? "Als Nächstes: " + t.kurz + " — " + t.was
-    : "Alle geholt. Mehr Trophäen habe ich nicht vorgesehen.";
+  $("erfolge").innerHTML = h;
+
+  const wochen = Math.min(Math.floor(fertig / 7), 4);
+  $("erfolgZahl").textContent = "· " + Math.min(fertig, 30) + " von 30 Tagen"
+    + (wochen ? " · " + wochen + (wochen === 1 ? " Woche" : " Wochen") : "");
+
+  erfolgAntwort(verstrichen);
 }
 
+/* Ein Zuhörer für alle Felder und Chips. Beim Neuzeichnen verschwinden die
+   Knöpfe, ein Zuhörer je Knopf wäre also jedes Mal neu zu setzen. */
+$("erfolge").addEventListener("click", e => {
+  const knopf = e.target.closest("[data-tag]");
+  if (!knopf) return;
+  const nr = parseInt(knopf.dataset.tag, 10);
+  erfolgWahl = (erfolgWahl === nr) ? null : nr;
+  erfolgeZeichnen(rechnen(profil).verstrichen, null);
+});
 
 /* ---------- Standhaft-Trophäen ---------- */
 function wellenZeichnen(){

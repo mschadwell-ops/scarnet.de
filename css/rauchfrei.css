@@ -472,152 +472,130 @@
   .trophaeen li.geholt .tr-name{ color:var(--brass); }
   .trophaeen li.dran .tr-name{ color:var(--air); }
 
-  /* ---------- Die ersten dreißig Tage ----------
-     Sieben Spalten, also eine Zeile je Woche. Dadurch liegen die Tage 7,
-     14, 21 und 28 von selbst in der letzten Spalte, und jede Zeile endet
-     mit einer großen Medaille. Die Zelle bleibt für alle gleich breit —
-     nur die Scheibe darin wächst, sonst würde das Raster ausfransen. */
-  .monat{
-    list-style:none; margin:0; padding:2px 0 0;
-    display:grid; grid-template-columns:repeat(7, 1fr);
-    gap:10px 6px;
-  }
-  .monat li{ text-align:center; min-width:0; }
+  /* ---------- Erfolge ----------
+     Ein Block für alles: die ersten dreißig Tage als Bänder, dahinter die
+     langen Marken. Vorher waren das zwei Abschnitte, in denen Tag 1, Tag 3,
+     eine Woche, zwei Wochen und ein Monat jeweils doppelt vorkamen — genau
+     das machte den Bereich unaufgeräumt.
 
-  .mt-scheibe{
-    position:relative;
-    display:grid; place-items:center;
-    width:34px; height:34px; margin:0 auto 5px;
-    border-radius:50%;
-    background:var(--surface-2);
-    border:1px solid var(--line);
-    font-size:12px; font-weight:600; line-height:1;
+     Je Woche ein Band aus sieben Segmenten. Ist die Woche voll, schlägt das
+     GANZE Band auf Messing um. Der Unterschied ist damit die Farbe einer
+     kompletten Zeile und nicht die Größe eines Feldes. Das war der Fehler
+     der ersten Fassung: in einem Raster liest das Auge zuerst „verrutscht“
+     und erst danach „wichtig“. Hier bleibt jedes Feld gleich groß. */
+  .bz{ display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+  .bz-kopf{
+    width:24px; flex:none;
+    font-size:10px; font-weight:700; letter-spacing:.05em;
     color:var(--faint); font-variant-numeric:tabular-nums;
-    transition:color .3s, background .3s, border-color .3s;
+  }
+  .bz.voll .bz-kopf{ color:var(--brass); }
+  .bz-band{ flex:1; display:flex; gap:3px; min-width:0; }
+
+  /* Der Knopf ist höher als der sichtbare Balken. Der Balken bleibt schmal,
+     weil genau das an dem Entwurf gefallen hat; der Daumen bekommt trotzdem
+     34 Pixel Fläche statt 20. */
+  .seg{
+    position:relative;
+    flex:1; min-width:0; height:34px; padding:0; margin:0;
+    background:none; border:none; border-radius:4px;
+    display:grid; place-items:center; cursor:pointer;
+  }
+  .seg > i{
+    display:block; width:100%; height:20px; border-radius:3px;
+    background:var(--line-soft); border:1px solid var(--line);
+    transition:background .25s, border-color .25s, box-shadow .25s;
+  }
+  /* Die letzte Zeile hat nur zwei Tage. Die fünf Blindfelder halten die
+     Segmentbreite über alle Zeilen gleich — ohne sie wären die zwei Tage
+     dreimal so breit wie alle anderen. */
+  .seg.leer{ visibility:hidden; pointer-events:none; }
+
+  .seg.da > i{
+    background:var(--air); border-color:var(--air);
+    box-shadow:0 0 6px rgba(98,214,174,.45);
+  }
+  .seg.jetzt > i{
+    background:rgba(98,214,174,.32); border-color:var(--air);
+    animation:segPuls 1.9s ease-in-out infinite;
+  }
+  @keyframes segPuls{ 50%{ background:var(--air); } }
+
+  .bz.voll .seg > i{
+    background:var(--brass); border-color:var(--brass);
+    box-shadow:0 0 7px rgba(217,169,79,.5);
   }
 
-  /* Geholter Tag: grün gefüllt, wie ein Segment der Fortschrittsleiste. */
-  .monat li.geholt .mt-scheibe{
-    background:linear-gradient(160deg, rgba(98,214,174,.30), rgba(98,214,174,.10));
-    border-color:rgba(98,214,174,.5);
-    color:var(--air);
+  /* Die Auswahl wird UNTER dem Balken markiert, nicht auf ihm. Ein Umriss
+     von 2 px bei 2 px Abstand belegt auf einem 38 px breiten Feld so viel
+     Fläche, dass er wie eine andere Füllung wirkt — nachgemessen. */
+  .seg.gewaehlt::after{
+    content:""; position:absolute; left:22%; right:22%; bottom:1px;
+    height:2px; border-radius:1px; background:var(--text);
   }
-  /* Der laufende Tag: offener Ring, der sich über die 24 Stunden füllt. */
-  .monat li.dran .mt-scheibe{
-    color:var(--air);
-    border-color:rgba(98,214,174,.35);
-    box-shadow:0 0 10px var(--air-glow);
-  }
-  .monat li.dran .mt-scheibe::after{
-    content:""; position:absolute; inset:-3px; border-radius:50%;
-    background:conic-gradient(var(--air) calc(var(--fortschritt, 0) * 1%), transparent 0);
-    -webkit-mask:radial-gradient(closest-side, transparent 76%, #000 77%);
-            mask:radial-gradient(closest-side, transparent 76%, #000 77%);
-  }
+  .seg:focus-visible{ outline:2px solid var(--air); outline-offset:1px; }
 
-  /* Beschriftung. Bei sieben Spalten bleiben auf einem Handy knapp
-     43 Pixel je Zelle — da passt kein Name, sondern nur eine abgeschnittene
-     Andeutung, und die ist schlechter als gar nichts. Deshalb tragen die
-     normalen Tage eng nur ihre Zahl in der Scheibe; der Name steht in der
-     Zeile darunter und im title-Attribut. Ab 560 Pixel Breite ist Platz,
-     dann kommen die Namen zurück. */
-  .mt-name{
-    display:block; font-size:9.5px; letter-spacing:.05em;
-    color:var(--faint); line-height:1.25;
-    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  .bz-stern{
+    width:13px; flex:none; text-align:center;
+    font-size:12px; color:var(--line); line-height:1;
   }
-  .mt-name .lang{ display:none; }
-  .monat li:not(.woche):not(.finale) .mt-name{ min-height:1px; }
-  @media (min-width:560px){
-    .mt-name .kurz{ display:none; }
-    .mt-name .lang{ display:inline; }
-  }
-  .monat li.geholt .mt-name,
-  .monat li.dran   .mt-name{ color:var(--muted); }
+  .bz.voll .bz-stern{ color:var(--brass); }
 
-  /* ---- Die Wochenmedaillen ----
-     Messing statt Grün, größer, mit Strahlenkranz und umlaufendem Licht.
-     Sie sollen aus der Zeile herausstechen, ohne sie zu sprengen: die
-     Rasterzelle bleibt gleich, nur die Scheibe wächst. */
-  .monat li.woche .mt-scheibe{
-    width:46px; height:46px; font-size:15px;
-    background:radial-gradient(circle at 32% 28%, rgba(255,231,178,.30), rgba(217,169,79,.08) 70%);
-    border-color:rgba(217,169,79,.35);
-    color:var(--brass);
+  /* Wird eine Woche gerade eben voll und die Seite ist offen, läuft einmal
+     Licht durch das Band. */
+  @keyframes bandLicht{
+    0%   { box-shadow:0 0 0 0 rgba(217,169,79,.6); }
+    100% { box-shadow:0 0 0 11px rgba(217,169,79,0); }
   }
-  /* Strahlenkranz: zwölf Spitzen aus einem sich wiederholenden Kegel. */
-  .monat li.woche .mt-scheibe::before{
-    content:""; position:absolute; inset:-7px; border-radius:50%;
-    background:repeating-conic-gradient(rgba(217,169,79,.30) 0deg 3deg, transparent 3deg 30deg);
-    -webkit-mask:radial-gradient(closest-side, transparent 62%, #000 64%, #000 88%, transparent 90%);
-            mask:radial-gradient(closest-side, transparent 62%, #000 64%, #000 88%, transparent 90%);
-    opacity:.45;
-  }
-  .monat li.woche.geholt .mt-scheibe{
-    background:linear-gradient(160deg, rgba(217,169,79,.34), rgba(217,169,79,.10));
-    border-color:var(--brass);
-    color:#FFE7B2;
-    box-shadow:0 0 16px rgba(217,169,79,.22);
-  }
-  .monat li.woche.geholt .mt-scheibe::before{
-    opacity:1;
-    animation:kranzDreht 14s linear infinite;
-  }
-  /* Zusätzlich ein Lichtpunkt, der einmal je vier Sekunden herumläuft. */
-  .monat li.woche.geholt .mt-scheibe::after{
-    content:""; position:absolute; inset:-3px; border-radius:50%;
-    background:conic-gradient(transparent 0deg, rgba(255,231,178,.95) 30deg, transparent 78deg);
-    -webkit-mask:radial-gradient(closest-side, transparent 78%, #000 79%);
-            mask:radial-gradient(closest-side, transparent 78%, #000 79%);
-    animation:ringLauf 4s linear infinite;
-    animation-delay:var(--verzug, 0s);
-  }
-  @keyframes kranzDreht{ to{ transform:rotate(360deg); } }
+  .bz.frisch .seg > i{ animation:bandLicht 1.5s ease-out 2; }
 
-  .monat li.woche .mt-name{
-    font-size:10px; font-weight:600; letter-spacing:.08em; text-transform:uppercase;
+  /* Die langen Marken. Gleiche Sprache, aber als Chips: sie liegen Monate
+     und Jahre auseinander und ergeben kein Raster. */
+  .fern-kopf{
+    margin:16px 2px 9px; padding-top:13px; border-top:1px dashed var(--line);
+    font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--faint);
   }
-  .monat li.woche.geholt .mt-name{ color:var(--brass); }
+  .fern{ display:flex; flex-wrap:wrap; gap:5px; }
+  .fern button{
+    min-height:34px; padding:7px 13px; border-radius:999px;
+    background:var(--surface-2); border:1px solid var(--line);
+    color:var(--faint); font-size:11px; letter-spacing:.04em;
+    font-variant-numeric:tabular-nums; cursor:pointer;
+  }
+  .fern button.da{
+    background:rgba(217,169,79,.16); border-color:rgba(217,169,79,.5); color:var(--brass);
+  }
+  .fern button.gewaehlt{ border-color:var(--text); color:var(--text); }
 
-  /* Tag 30 schließt den Monat ab und bekommt beides: Messing und Grün. */
-  .monat li.finale .mt-scheibe{ width:46px; height:46px; font-size:15px; }
-  .monat li.finale.geholt .mt-scheibe{
-    background:
-      radial-gradient(circle at 30% 26%, rgba(255,231,178,.42), transparent 62%),
-      linear-gradient(160deg, rgba(98,214,174,.34), rgba(217,169,79,.20));
-    border-color:#FFE7B2;
-    color:#FFF3D6;
-    box-shadow:0 0 22px rgba(217,169,79,.30);
+  /* Die Antwort auf einen Tipper. Der Kasten steht immer da: ohne Auswahl
+     zeigt er das nächste Ziel, nach einem Tipper den angetippten Tag. Ein
+     Kasten, der erst beim Tippen auftaucht, verschiebt sonst die halbe
+     Seite unter dem Finger weg. */
+  .erfolg-antwort{
+    margin:14px 0 0; padding:13px 15px; border-radius:10px;
+    background:var(--surface-2); border:1px solid var(--line);
+    font-size:13.5px; line-height:1.6; color:var(--muted);
   }
-
-  /* Frisch freigeschaltet: einmaliges Aufblitzen, wenn der Tag umschlägt
-     und die Seite gerade offen ist. */
-  @keyframes mtFrisch{
-    0%   { transform:scale(1);    box-shadow:0 0 0 0 rgba(98,214,174,.55); }
-    45%  { transform:scale(1.18); box-shadow:0 0 0 12px rgba(98,214,174,0); }
-    100% { transform:scale(1);    box-shadow:0 0 0 0 rgba(98,214,174,0); }
-  }
-  .monat li.frisch .mt-scheibe{ animation:mtFrisch 1.6s ease-out 2; }
-  .monat li.woche.frisch .mt-scheibe,
-  .monat li.finale.frisch .mt-scheibe{
-    animation:mtFrisch 1.8s ease-out 3;
+  .erfolg-antwort b{ color:var(--text); font-weight:600; }
+  .erfolg-antwort .geld{ color:var(--brass); }
+  .erfolg-antwort .zig{ color:var(--air); }
+  .erfolg-antwort .tipp{
+    display:block; margin-top:7px; font-size:11.5px; color:var(--faint);
   }
 
   @media (prefers-reduced-motion:reduce){
-    .monat li.woche.geholt .mt-scheibe::before,
-    .monat li.woche.geholt .mt-scheibe::after,
-    .monat li.frisch .mt-scheibe{ animation:none; }
+    .seg.jetzt > i,
+    .bz.frisch .seg > i{ animation:none; }
   }
 
-  /* Sehr schmale Geräte: die Namen tragen sonst nicht mehr, dann bleiben
-     nur die Scheiben. Die Wochenmedaillen behalten ihr Wort. */
+  /* Sehr schmale Geräte: die Segmente werden sonst zu Strichen. */
   @media (max-width:360px){
-    .monat{ gap:9px 4px; }
-    .mt-scheibe{ width:30px; height:30px; font-size:11px; }
-    .monat li:not(.woche):not(.finale) .mt-name{ display:none; }
-    .monat li.woche .mt-scheibe,
-    .monat li.finale .mt-scheibe{ width:40px; height:40px; font-size:13px; }
+    .bz{ gap:6px; }
+    .bz-band{ gap:2px; }
+    .seg{ height:32px; }
+    .seg > i{ height:18px; }
   }
+
   .tr-text{
     margin:14px 2px 0; font-size:13.5px; color:var(--muted);
     max-width:60ch;
