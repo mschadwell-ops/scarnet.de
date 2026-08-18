@@ -1608,7 +1608,7 @@ const PREISE = [
              w:"Für das große fehlen 50 Cent. Der Supermarkt will, dass du zunimmst." },
   { p:3.50,  e:"einmal ins Freibad Mollbeck",         v:"mal ins Freibad Mollbeck" },// belegt
   { p:3.80,  e:"ein Stück Kuchen im Café",            v:"Stücke Kuchen im Café" },
-  { p:3.99,  e:"ein großes Nutella, 750 Gramm",       v:"große Nutella-Gläser",     // belegt
+  { p:3.99,  e:"ein großes Nutella mit 750 Gramm",       v:"große Nutella-Gläser",     // belegt
              w:"Merkwürdigerweise kaum teurer als das kleine." },
   { p:3.99,  e:"eine Gustavo Gusto aus dem Tiefkühler", v:"Gustavo-Gusto-Pizzen",   // belegt
              w:"Steinofen, dreißig Zentimeter, und du musst nicht mal aus dem Haus." },
@@ -1625,19 +1625,19 @@ const PREISE = [
   { p:7.00,  e:"ein Döner",                           v:"Döner" },
   { p:7.00,  e:"eine Flasche Wein",                   v:"Flaschen Wein" },
   { p:8.00,  e:"eine Currywurst mit Pommes",          v:"Currywürste mit Pommes" },
-  { p:9.00,  e:"einmal ins Kino, Normalplatz",        v:"mal ins Kino, Normalplatz", // belegt
+  { p:9.00,  e:"einmal ins Kino auf dem Normalplatz",        v:"mal ins Kino auf dem Normalplatz", // belegt
              w:"Für den Premiumplatz reicht es noch nicht." },
-  { p:11.00, e:"einmal ins Kino, Premiumplatz",       v:"mal ins Kino, Premiumplatz" },// belegt
+  { p:11.00, e:"einmal ins Kino auf dem Premiumplatz",       v:"mal ins Kino auf dem Premiumplatz" },// belegt
   { p:11.00, e:"eine Pizza beim Italiener",           v:"Pizzen beim Italiener" },
   { p:12.00, e:"einmal Poetry Slam",                  v:"mal Poetry Slam" },
   { p:13.99, e:"ein Monat Netflix",                   v:"Monate Netflix" },
   { p:15.00, e:"ein Kasten Bier",                     v:"Kästen Bier" },
   { p:15.00, e:"zehn Minuten Kartbahn",               v:"mal zehn Minuten Kartbahn" },
   { p:18.00, e:"ein Hauptgericht im Restaurant",      v:"Hauptgerichte im Restaurant" },
-  { p:18.00, e:"einmal VfL Bochum, Stehplatz",        v:"mal VfL Bochum, Stehplatz",
+  { p:18.00, e:"einmal VfL Bochum auf dem Stehplatz",        v:"mal VfL Bochum auf dem Stehplatz",
              w:"Ob das eine Belohnung ist, musst du selbst entscheiden." },
   { p:21.50, e:"einmal ZOOM Erlebniswelt",            v:"mal ZOOM Erlebniswelt" },  // belegt
-  { p:22.00, e:"einmal Friseur, Herren",              v:"mal Friseur, Herren" },
+  { p:22.00, e:"einmal zum Herrenfriseur",              v:"mal zum Herrenfriseur" },
   { p:24.00, e:"ein Kabarettabend",                   v:"Kabarettabende" },
   { p:25.00, e:"eine Stunde Bowling",                 v:"Stunden Bowling" },
   { p:25.00, e:"ein Tag in der Therme",               v:"Tage in der Therme" },
@@ -1647,14 +1647,14 @@ const PREISE = [
   { p:35.00, e:"ein Klassikkonzert",                  v:"Klassikkonzerte" },
   { p:35.00, e:"ein Frühstück für zwei",              v:"Frühstücke für zwei" },
   { p:45.00, e:"einmal Movie Park Bottrop",           v:"mal Movie Park Bottrop" },
-  { p:45.00, e:"einmal Friseur, Damen",               v:"mal Friseur, Damen" },
+  { p:45.00, e:"einmal zum Damenfriseur",               v:"mal zum Damenfriseur" },
   { p:55.00, e:"ein Musical in Oberhausen",           v:"Musicals in Oberhausen" },
   { p:63.00, e:"eine Saisonkarte fürs Freibad Mollbeck", v:"Saisonkarten fürs Freibad Mollbeck", // belegt
              w:"Den ganzen Sommer, bezahlt vom Nichtrauchen." },
   { p:79.99, e:"EA FC 27 oder GTA 6",                 v:"mal EA FC 27 oder GTA 6",  // belegt
              w:"Aufs Komma derselbe Preis. Entscheiden musst du selbst, das nimmt dir kein Zähler ab." },
   { p:99.99, e:"GTA 6 in der Ultimate Edition",       v:"mal GTA 6 Ultimate" },     // belegt
-  { p:106.00,e:"einmal volltanken, fünfzig Liter",    v:"mal volltanken" },         // belegt
+  { p:106.00,e:"einmal volltanken mit fünfzig Litern",    v:"mal volltanken" },         // belegt
   { p:109.99,e:"EA FC 27 Ultimate",                   v:"mal EA FC 27 Ultimate" },  // belegt
   { p:120.00,e:"ein Bungee-Sprung",                   v:"Bungee-Sprünge" },
   { p:140.00,e:"ein Hubschrauber-Rundflug",           v:"Hubschrauber-Rundflüge" },
@@ -1671,7 +1671,109 @@ const PREISE = [
   { p:400.00,e:"ein Wochenende Amsterdam zu zweit",   v:"Wochenenden Amsterdam zu zweit" },
   { p:500.00,e:"eine Waschmaschine",                  v:"Waschmaschinen" },
   { p:700.00,e:"eine Woche Mallorca",                 v:"Wochen Mallorca" }
-].sort((a, b) => a.p - b.p);
+].concat([
+
+  /* ---- Supermarkt und Haushalt ---- */
+  { p:1.20,  e:"ein Liter Milch",                     v:"Liter Milch" },
+  { p:1.49,  e:"eine Rügenwalder Leberwurst",         v:"Rügenwalder Leberwürste" },   // belegt
+  { p:1.50,  e:"eine Tafel Ritter Sport",             v:"Tafeln Ritter Sport" },
+  { p:1.80,  e:"eine Dose Ravioli",                   v:"Dosen Ravioli" },
+  { p:2.40,  e:"ein Päckchen Butter",                 v:"Päckchen Butter" },
+  { p:3.00,  e:"ein Duftbaum fürs Auto",              v:"Duftbäume fürs Auto" },
+  { p:3.00,  e:"eine Gummiente",                      v:"Gummienten" },
+  { p:3.50,  e:"ein Kilo Waschpulver",                v:"Kilo Waschpulver" },
+  { p:3.50,  e:"ein Brot vom Bäcker",                 v:"Brote vom Bäcker" },
+  { p:3.50,  e:"eine Zahnbürste",                     v:"Zahnbürsten" },
+  { p:4.00,  e:"ein Kaktus",                          v:"Kakteen" },
+  { p:4.00,  e:"eine Klobürste",                      v:"Klobürsten" },
+  { p:4.50,  e:"zehn Rollen Klopapier",               v:"mal zehn Rollen Klopapier" },
+  { p:5.00,  e:"ein Paar Socken",                     v:"Paar Socken" },
+  { p:6.00,  e:"ein Skatspiel",                       v:"Skatspiele" },
+  { p:6.00,  e:"ein Sack Zement",                     v:"Säcke Zement" },
+  { p:6.50,  e:"ein halbes Pfund Kaffee",             v:"mal ein halbes Pfund Kaffee" },
+  { p:8.00,  e:"ein Sack Vogelfutter",                v:"Säcke Vogelfutter" },
+  { p:9.00,  e:"eine Wärmflasche",                    v:"Wärmflaschen" },
+  { p:13.00, e:"eine Flasche Jägermeister",           v:"Flaschen Jägermeister" },
+  { p:14.00, e:"ein Kasten Stauder",                  v:"Kästen Stauder" },
+  { p:14.00, e:"ein Puzzle mit tausend Teilen",       v:"Puzzles mit tausend Teilen" },
+  { p:14.99, e:"ein Kasten Cola",                     v:"Kästen Cola" },
+  { p:15.00, e:"ein Wackeldackel",                    v:"Wackeldackel" },
+  { p:15.00, e:"ein Blumenstrauß",                    v:"Blumensträuße" },
+  { p:20.00, e:"ein Rasensprenger",                   v:"Rasensprenger" },
+  { p:25.00, e:"ein Gartenzwerg",                     v:"Gartenzwerge" },
+  { p:25.00, e:"ein Vogelhaus",                       v:"Vogelhäuser" },
+  { p:25.00, e:"ein Meter Gartenzaun",                v:"Meter Gartenzaun" },
+  { p:30.00, e:"ein Waffeleisen",                     v:"Waffeleisen" },
+  { p:45.00, e:"eine Regentonne",                     v:"Regentonnen" },
+  { p:55.00, e:"eine Hängematte",                     v:"Hängematten" },
+  { p:55.00, e:"ein Raclette für acht Personen",      v:"Raclettes für acht Personen" },
+  { p:60.00, e:"eine Tonne Sand",                     v:"Tonnen Sand",
+             w:"Wofür auch immer. Sie liegt dann halt da." },
+  { p:70.00, e:"eine Bohrmaschine",                   v:"Bohrmaschinen" },
+  { p:80.00, e:"ein Bollerwagen",                     v:"Bollerwagen" },
+  { p:130.00,e:"ein Hochdruckreiniger",               v:"Hochdruckreiniger" },
+  { p:180.00,e:"eine Kettensäge",                     v:"Kettensägen" },
+  { p:220.00,e:"ein Trampolin für den Garten",        v:"Trampoline für den Garten" },
+
+  /* ---- Essen ---- */
+  { p:3.50,  e:"eine Bratwurst am Stand",             v:"Bratwürste am Stand" },
+  { p:4.50,  e:"ein Fischbrötchen",                   v:"Fischbrötchen" },
+  { p:6.00,  e:"eine Portion Reibekuchen",            v:"Portionen Reibekuchen" },
+  { p:6.50,  e:"ein halbes Hähnchen vom Grill",       v:"halbe Hähnchen vom Grill" },  // belegt
+  { p:8.00,  e:"ein Sack Grillkohle",                 v:"Säcke Grillkohle" },
+  { p:10.50, e:"ein Big-Mac-Menü",                    v:"Big-Mac-Menüs" },
+  { p:11.00, e:"ein ganzes Grillhähnchen",            v:"ganze Grillhähnchen" },
+  { p:12.95, e:"ein Kilo Spareribs beim Metzger",     v:"Kilo Spareribs beim Metzger" },// belegt
+  { p:180.00,e:"eine Palette Bier",                   v:"Paletten Bier",
+             w:"Das sind zwölf Kästen. Bitte nicht auf einmal." },
+
+  /* ---- Aktien. Kurse von August 2026, sie bewegen sich. ---- */
+  { p:3.18,  e:"eine Aktie von Borussia Dortmund",    v:"Aktien von Borussia Dortmund", // belegt
+             w:"Damit gehört dir ungefähr ein Grashalm im Stadion. Kurs von August 2026." },
+  { p:8.15,  e:"eine Lufthansa-Aktie",                v:"Lufthansa-Aktien" },           // belegt
+  { p:29.11, e:"eine Telekom-Aktie",                  v:"Telekom-Aktien" },             // belegt
+
+  /* ---- Alltag, Ämter, Ruhrgebiet ---- */
+  { p:2.00,  e:"eine Stunde Parkschein",              v:"Stunden Parkschein" },
+  { p:3.50,  e:"eine Fahrt mit der Schwebebahn in Wuppertal", v:"Fahrten mit der Schwebebahn in Wuppertal" },
+  { p:5.00,  e:"eine Tageskarte für den Westfalenpark", v:"Tageskarten für den Westfalenpark" },
+  { p:10.00, e:"eine Führung durchs Bergbaumuseum Bochum", v:"Führungen durchs Bergbaumuseum Bochum" },
+  { p:12.00, e:"ein Besuch im Gasometer Oberhausen",  v:"Besuche im Gasometer Oberhausen" },
+  { p:12.00, e:"eine Autowäsche",                     v:"Autowäschen" },
+  { p:18.36, e:"ein Monat Rundfunkbeitrag",           v:"Monate Rundfunkbeitrag",
+             w:"Ob das als Belohnung durchgeht, musst du selbst entscheiden." },
+  { p:37.00, e:"ein neuer Personalausweis",           v:"Personalausweise" },
+  { p:140.00,e:"eine Hauptuntersuchung beim TÜV",     v:"Hauptuntersuchungen beim TÜV" },
+  { p:150.00,e:"ein Kettcar",                         v:"Kettcars" },
+  { p:168.00,e:"ein Jahr Netflix",                    v:"Jahre Netflix" },
+
+  /* ---- Geräte, die niemand braucht ---- */
+  { p:35.00, e:"eine Popcornmaschine",                v:"Popcornmaschinen" },
+  { p:45.00, e:"eine Zuckerwattemaschine",            v:"Zuckerwattemaschinen",
+             w:"Du hast gerade aufgehört, dir etwas Ungesundes zuzuführen, und kaufst als Erstes eine Zuckerwattemaschine." },
+  { p:90.00, e:"eine Heißluftfritteuse",              v:"Heißluftfritteusen" },
+  { p:120.00,e:"eine Eismaschine",                    v:"Eismaschinen" },
+  { p:1400.00,e:"ein Thermomix",                      v:"Thermomixe",
+             w:"Damit bist du raus aus dem einen Club und drin in einem anderen." },
+
+  /* ---- Erlebnisse ---- */
+  { p:35.00, e:"ein Tag Kanu",                        v:"Tage Kanu" },
+  { p:40.00, e:"ein Stern mit deinem Namen", v:"Sterne mit deinem Namen",
+             w:"Rechtlich bedeutet das nichts, aber der Stern weiß das nicht." },
+  { p:45.00, e:"eine Alpaka-Wanderung",               v:"Alpaka-Wanderungen",
+             w:"Ein Tier, das nicht raucht, führt dich durch die Landschaft. Voneinander lernen." },
+  { p:50.00, e:"eine Segway-Tour",                    v:"Segway-Touren" },
+  { p:60.00, e:"eine Massage",                        v:"Massagen" },
+  { p:70.00, e:"ein Whisky-Tasting",                  v:"Whisky-Tastings" },
+  { p:85.00, e:"ein Kochkurs",                        v:"Kochkurse" },
+  { p:130.00,e:"eine Stunde Bagger fahren",           v:"Stunden Bagger fahren",
+             w:"Ohne Führerschein, ohne Grund, einfach Bagger." },
+  { p:150.00,e:"eine Mitfahrt im Rennwagen",          v:"Mitfahrten im Rennwagen" },
+  { p:150.00,e:"eine Hüpfburg für einen Tag",         v:"Hüpfburgen für einen Tag",
+             w:"Du bist erwachsen und darfst das." },
+  { p:250.00,e:"eine Fahrt im Panzer",                v:"Fahrten im Panzer" }
+
+]).sort((a, b) => a.p - b.p);
 
 /* ====================================================================
    Trophäen — die großen Etappen
