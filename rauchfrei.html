@@ -2180,16 +2180,47 @@ const KRISE = [
   "Rauchen macht nicht schlank, nicht ruhig und nicht erwachsen. Es macht nur den Mangel weg, den es selbst erzeugt hat. Und dieser Mangel wird gerade kleiner."
 ];
 
+/* Der Schlusssatz unter den eigenen Zahlen. Wechselt bei jedem Öffnen, damit
+   er sich nicht abnutzt — wer den Knopf oft braucht, soll nicht jedes Mal
+   denselben Satz lesen. Alle im selben Rahmen: wenn du jetzt eine rauchst. */
+const ABSCHLUSS = [
+  "Wenn du jetzt eine rauchst, fängst du morgen wieder bei Tag eins an.",
+  "Der Weg bis hierher war lang. Wenn du jetzt eine rauchst, fängt er noch mal von vorne an.",
+  "Wenn du jetzt eine rauchst, kommt das Nikotin zurück, das dein Körper gerade loswird.",
+  "Wenn du jetzt eine rauchst, bleibt dir alles davon. Nur weiter geht es dann nicht.",
+  "Wenn du jetzt eine rauchst, brauchst du für dieselbe Strecke noch einmal genauso lange.",
+  "Wenn du jetzt eine rauchst, ändert das nichts an dem, was du geschafft hast — nur daran, wie es weitergeht.",
+  "Wenn du jetzt eine rauchst, ist das Verlangen in fünf Minuten trotzdem wieder da. Nur stehst du dann schlechter."
+];
+let letzterAbschluss = -1;
+
+function abschlussSatz(){
+  let i;
+  do { i = Math.floor(Math.random() * ABSCHLUSS.length); }
+  while (i === letzterAbschluss && ABSCHLUSS.length > 1);
+  letzterAbschluss = i;
+  return ABSCHLUSS[i];
+}
+
 /** Der eigene Stand, in Zahlen, die genau jetzt zählen. */
 function krisenStand(){
   const w = rechnen(profil);
-  // Nach „seit“ steht der Dativ: seit einem Tag, seit drei Tagen.
+  // Nach „seit“ steht der Dativ: seit einem Tag, seit drei Tagen, seit einer
+  // Stunde. Und eine Einheit, die null ist, wird weggelassen — „seit 200
+  // Tagen und 0 Stunden“ liest sich wie eine Maschinenausgabe.
+  const tageT = w.tage    === 1 ? "einem Tag"   : zahl(w.tage) + " Tagen";
+  const stdT  = w.stunden === 1 ? "einer Stunde" : w.stunden + " Stunden";
+  const minT  = w.minuten === 1 ? "einer Minute" : w.minuten + " Minuten";
+
   const zeit = w.tage > 0
-    ? zahl(w.tage) + (w.tage === 1 ? " Tag" : " Tagen") + " und " + w.stunden + " Stunden"
-    : w.stunden + " Stunden und " + w.minuten + " Minuten";
+    ? tageT + (w.stunden ? " und " + stdT : "")
+    : w.stunden
+      ? stdT + (w.minuten ? " und " + minT : "")
+      : minT;
   return "Du bist seit <b>" + zeit + "</b> rauchfrei, hast <b>"
     + zahl(Math.floor(w.nichtGeraucht)) + "</b> Zigaretten nicht geraucht und <b>"
-    + euro(w.geld) + "</b> nicht ausgegeben.<br>Eine jetzt setzt den Zähler auf null.";
+    + euro(w.geld) + "</b> nicht ausgegeben."
+    + "<br>" + abschlussSatz();
 }
 
 let kriseUhr = null, kriseAtem = null, kriseEnde = 0, letzterFakt = -1;
