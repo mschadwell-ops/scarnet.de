@@ -219,29 +219,59 @@
   }
   .meilen li.da .wann{ color:var(--air); }
 
-  /* Der laufende Tag ist hervorgehoben, aber nicht abgehakt: offener Ring
-     statt gefülltem Punkt. Gefüllt wird erst, wenn die 24 Stunden um sind. */
-  .meilen li.laeuft{
-    background:var(--surface-2);
-    border-radius:8px;
-    padding-left:12px;
-    padding-right:12px;
-    margin:4px -12px;
-    border-bottom-color:transparent;
+  /* Frisch freigeschaltet: leuchtet einmal kurz auf, wenn der Tag umschlägt
+     und die Seite gerade offen ist. Das ist der Moment der Belohnung. */
+  @keyframes frischFrei{
+    0%   { background:var(--air-glow); }
+    100% { background:transparent; }
   }
-  .meilen li.laeuft .punkt{
-    background:none;
-    border:2px solid var(--air);
-    box-shadow:0 0 0 4px var(--air-glow);
-  }
-  .meilen li.laeuft .was{ color:var(--text); font-weight:500; }
-  .meilen li.laeuft .wann{ color:var(--air); }
-  .meilen li.kommt{ opacity:.45; }
-  .meilen li.kommt .was{ color:var(--muted); }
+  .meilen li.frisch{ animation:frischFrei 3s ease-out 1; border-radius:8px; }
+  @media (prefers-reduced-motion:reduce){ .meilen li.frisch{ animation:none; } }
+
   .davor{
     margin:12px 2px 0; font-size:12px; color:var(--faint);
     letter-spacing:.06em;
   }
+  .leerliste{
+    padding:16px 2px; font-size:14px; color:var(--faint);
+  }
+
+  /* ---------- Nächste Freischaltung ----------
+     Die Karte ist bewusst die auffälligste auf der Seite: Sie zeigt nicht,
+     was war, sondern was gleich kommt — mit laufendem Countdown und einem
+     Balken, der sich sichtbar füllt. */
+  .naechstes{
+    margin-top:26px;
+    padding:20px 22px 22px;
+    border-color:rgba(98,214,174,.42);
+    background:linear-gradient(180deg, rgba(98,214,174,.075), transparent 72%), var(--surface);
+  }
+  .nx-kopf{
+    font-size:10.5px; letter-spacing:.18em; text-transform:uppercase;
+    color:var(--air); font-weight:600;
+  }
+  .nx-zeit{
+    margin-top:11px; font-size:clamp(24px,5.4vw,31px); font-weight:600;
+    letter-spacing:-.02em; font-variant-numeric:tabular-nums; line-height:1.15;
+  }
+  .nx-zeit span{ color:var(--air); }
+  .nx-was{ margin-top:4px; font-size:14.5px; color:var(--muted); }
+  .nx-was b{ color:var(--text); font-weight:600; }
+  .nx-balken{
+    margin-top:17px; height:5px; border-radius:99px;
+    background:var(--surface-2); overflow:hidden;
+  }
+  .nx-balken i{
+    display:block; height:100%; width:0;
+    background:var(--air); border-radius:99px;
+  }
+  .nx-belohnung{
+    margin:17px 0 0; padding-left:15px;
+    border-left:2px solid var(--line);
+    font-size:15px; line-height:1.55; color:var(--muted);
+    text-wrap:balance;
+  }
+  .h2-zahl{ color:var(--air); letter-spacing:0; }
 
   /* ---------- Einstellungen ---------- */
   details.mehr{ margin-top:28px; }
@@ -352,6 +382,15 @@
       <div class="seit" id="zSeit"></div>
     </div>
 
+    <!-- Direkt hinter dem Zähler: erst wo du stehst, dann was als Nächstes kommt. -->
+    <div class="karte naechstes">
+      <div class="nx-kopf">Als Nächstes</div>
+      <div class="nx-zeit">In <span id="cdZeit">–</span></div>
+      <div class="nx-was">schaltest du <b id="cdTag">Tag 1</b> frei</div>
+      <div class="nx-balken"><i id="cdBalken"></i></div>
+      <blockquote class="nx-belohnung" id="cdText"></blockquote>
+    </div>
+
     <figure class="karte spruch" style="margin-top:24px">
       <div class="art" id="sArt"></div>
       <blockquote id="sText"></blockquote>
@@ -375,7 +414,7 @@
       </div>
     </div>
 
-    <h2>Jeden Tag ein Schritt</h2>
+    <h2>Freigeschaltet <span class="h2-zahl" id="anzahlFrei"></span></h2>
     <ul class="meilen" id="tage"></ul>
     <p class="davor" id="tageDavor"></p>
 
@@ -1273,9 +1312,15 @@ function zeichnen(){
   // Textmarkierung des Nutzers zerstören.
   if (w.tage !== letzterTag){
     spruchZeichnen(w.tage);
-    tageZeichnen(w.tage, profil);   // w.tage = vollständig abgeschlossene Tage
+    // Nur wenn der Tag gerade eben umgeschlagen ist, leuchtet der neue
+    // Eintrag kurz auf. Beim ersten Aufbau der Seite wäre das Effekthascherei.
+    const frisch = (letzterTag >= 0 && w.tage === letzterTag + 1) ? w.tage : null;
+    tageZeichnen(w.tage, profil, frisch);   // w.tage = abgeschlossene Tage
+    $("cdTag").textContent = "Tag " + (w.tage + 1);
+    $("cdText").textContent = tagesText(w.tage + 1, profil);
     letzterTag = w.tage;
   }
+  naechstesZeichnen(w);
 
   const beste = Math.max(profil.beste || 0, w.verstrichen);
   $("bestzeit").innerHTML = (profil.rueckfaelle > 0)
@@ -1286,7 +1331,7 @@ function zeichnen(){
 function spruchZeichnen(tage){
   const versatz = parseInt(meineId.slice(0, 6), 16) % SPRUECHE.length;
   const s = SPRUECHE[(tage + versatz) % SPRUECHE.length];
-  const namen = { fakt:"Fakt", mut:"Zuspruch", tipp:"Tipp", blick:"Perspektive" };
+  const namen = { fakt:"Fakt", mut:"Zuspruch", tipp:"Tipp", blick:"So gesehen" };
   $("sArt").textContent = namen[s.k] || "Gedanke";
   $("sText").textContent = s.t;
 }
@@ -1339,27 +1384,45 @@ function tagesText(nr, p){
     `fertig` ist die Zahl vollständig abgeschlossener Tage. Vorher wurde der
     laufende Tag als erledigt markiert; dadurch stand „Eine ganze Woche“
     schon nach sechs Tagen und 23 Stunden da, also bevor es stimmte. */
-function tageZeichnen(fertig, p){
-  const laeuft = fertig + 1;
+function tageZeichnen(fertig, p, frischNr){
+  const liste = $("tage");
 
-  const zeilen = [
-    { nr: laeuft + 1, zustand:"kommt",  wann:"morgen" },
-    { nr: laeuft,     zustand:"laeuft", wann:"Tag " + laeuft + " · läuft" }
-  ];
-  for (let n = fertig; n >= Math.max(1, fertig - 4); n--){
-    zeilen.push({ nr:n, zustand:"da", wann:"Tag " + n });
+  if (fertig < 1){
+    liste.innerHTML = `<li class="leerliste">Noch nichts freigeschaltet — der erste Tag ist unterwegs.</li>`;
+    $("tageDavor").textContent = "";
+    $("anzahlFrei").textContent = "";
+    return;
   }
 
-  $("tage").innerHTML = zeilen.map(z => `
-      <li class="${z.zustand}">
+  const zeilen = [];
+  for (let n = fertig; n >= Math.max(1, fertig - 5); n--) zeilen.push(n);
+
+  liste.innerHTML = zeilen.map(n => `
+      <li class="da${n === frischNr ? " frisch" : ""}">
         <span class="punkt"></span>
-        <span class="was">${esc(tagesText(z.nr, p))}</span>
-        <span class="wann">${z.wann}</span>
+        <span class="was">${esc(tagesText(n, p))}</span>
+        <span class="wann">Tag ${n}</span>
       </li>`).join("");
 
-  $("tageDavor").textContent = fertig > 5
-    ? "und " + zahl(fertig - 5) + " weitere davor"
+  $("tageDavor").textContent = fertig > 6
+    ? "und " + zahl(fertig - 6) + " weitere davor"
     : "";
+  $("anzahlFrei").textContent = fertig === 1 ? "· 1 Tag" : "· " + zahl(fertig) + " Tage";
+}
+
+/** Der Countdown auf die nächste Freischaltung. Läuft im Sekundentakt und
+    ist der einzige Ort, an dem etwas Zukünftiges steht — deshalb formuliert
+    als Versprechen, nicht als Zustand. */
+function naechstesZeichnen(w){
+  const restMs = TAG - (w.verstrichen % TAG);
+  const std = Math.floor(restMs / STD);
+  const min = Math.floor((restMs % STD) / MIN);
+  const sek = Math.floor((restMs % MIN) / 1000);
+
+  $("cdZeit").textContent = std > 0
+    ? `${std} Std. ${zz(min)} Min. ${zz(sek)} Sek.`
+    : `${min} Min. ${zz(sek)} Sek.`;
+  $("cdBalken").style.width = (100 - (restMs / TAG) * 100).toFixed(2) + "%";
 }
 
 /* ---------- Einstellungen ---------- */
