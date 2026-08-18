@@ -143,7 +143,7 @@ function zeigen(welche){
   ANSICHTEN.forEach(a => $(a).hidden = (a !== welche));
 }
 
-const standard = () => ({ start:Date.now(), menge:20, preis:10, proSchachtel:22, beste:0, rueckfaelle:0, wellen:0, wellenNacht:0, letzteWelle:0, ruheErreicht:false, ton:false });
+const standard = () => ({ start:Date.now(), menge:20, preis:10, proSchachtel:22, beste:0, rueckfaelle:0, wellen:0, wellenNacht:0, letzteWelle:0, ruheErreicht:false, ton:false, gesehenerTag:0 });
 
 /* Datum UND Uhrzeit, nicht nur das Datum. Wer mittags aufhört, soll nicht
    rückdatiert auf Mitternacht starten und sofort zwölf Stunden geschenkt
@@ -236,6 +236,10 @@ $("einrichtenForm").addEventListener("submit", e => {
 
   fehler.textContent = "";
   profil = Object.assign(standard(), { start, menge });
+  /* Wer beim Einrichten ein Datum von vor fünf Tagen einträgt, hat Tag 5 nicht
+     in der App erlebt — dafür gibt es kein Feuerwerk. Der Stand von jetzt gilt
+     als gesehen, gefeiert wird ab dem nächsten Tag. */
+  profil.gesehenerTag = Math.floor(rechnen(profil).verstrichen / TAG);
   sichern();
   starten();
 });
@@ -319,14 +323,28 @@ function zeichnen(){
   if (w.tage !== letzterTag){
     spruchZeichnen(w.tage);
     stattZeichnen();
-    // Nur wenn der Tag gerade eben umgeschlagen ist, leuchtet der neue
-    // Eintrag kurz auf. Beim ersten Aufbau der Seite wäre das Effekthascherei.
-    const frisch = (letzterTag >= 0 && w.tage === letzterTag + 1) ? w.tage : null;
+    /* Frisch ist ein Tag, den DIESE PERSON noch nicht gesehen hat — nicht
+       einer, dessen Umschlag die Seite zufällig miterlebt hat. Damit ist beides
+       abgedeckt: der Tag springt bei offener Seite um, ODER man meldet sich
+       erst danach wieder an.
+
+       Wer drei Tage nicht hereinsieht, bekommt genau eine Feier, und zwar für
+       den Tag, auf dem er jetzt steht — nicht drei nacheinander.
+
+       Gemerkt wird es im Profil und nicht in einer Variablen, sonst käme die
+       Belohnung bei jedem Neuladen wieder. Tag 0 zählt nicht: am
+       Einrichtungstag ist noch nichts erreicht. */
+    const gesehen = Number.isFinite(profil.gesehenerTag) ? profil.gesehenerTag : w.tage;
+    const frisch  = (w.tage > gesehen && w.tage >= 1) ? w.tage : null;
     tageZeichnen(w.tage, profil, frisch);   // w.tage = abgeschlossene Tage
     $("cdTag").textContent = "Tag " + (w.tage + 1);
     $("cdText").textContent = tagesText(w.tage + 1, profil, true);   // Ziel-Fassung
     erfolgeZeichnen(w.verstrichen, frisch);   // alle Marken liegen auf Tagesgrenzen
-    if (frisch) feuerwerk(w.tage);            // nur beim echten Umschlag, nicht beim Aufbau
+    if (frisch){
+      feuerwerk(w.tage);
+      profil.gesehenerTag = w.tage;
+      sichern();
+    }
     wellenZeichnen();
     letzterTag = w.tage;
   }
@@ -1362,6 +1380,7 @@ function rueckfallEintragen(){
   profil.beste = Math.max(profil.beste || 0, w.verstrichen);
   profil.rueckfaelle = (profil.rueckfaelle || 0) + 1;
   profil.start = Date.now();   // ab diesem Augenblick, nicht ab Mitternacht
+  profil.gesehenerTag = 0;     // sonst bliebe die Feier für Tag 1 bis zum alten Stand aus
   einstellungenFuellen();
   sichern();
   letzterTag = -1;
