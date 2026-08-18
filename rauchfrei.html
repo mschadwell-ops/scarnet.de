@@ -77,7 +77,8 @@
   .tabs a:hover{ color:#fff; background:rgba(255,255,255,.09); }
   .tabs a[aria-current="page"]{ color:#fff; background:rgba(255,255,255,.14); }
 
-  .wrap{ max-width:840px; margin:0 auto; padding:40px 20px 80px; }
+  /* Unten Platz lassen, damit der feste Krisenknopf nichts verdeckt. */
+  .wrap{ max-width:840px; margin:0 auto; padding:40px 20px 104px; }
 
   /* ---------- gemeinsame Bausteine ---------- */
   h2{
@@ -484,6 +485,99 @@
     margin-top:34px; font-size:12px; color:var(--faint); text-align:center; line-height:1.7;
   }
 
+  /* ---------- Krisenknopf ----------
+     Fest am unteren Rand, immer erreichbar. Rot, weil er ein Alarm ist —
+     der Inhalt dahinter ist bewusst das Gegenteil davon. */
+  .krisenknopf{
+    position:fixed; left:50%; bottom:16px;
+    transform:translateX(-50%);
+    z-index:20;
+    width:min(560px, calc(100vw - 32px));
+    padding:15px 18px; min-height:52px;
+    border-radius:12px;
+    border:1px solid rgba(217,119,92,.55);
+    background:linear-gradient(180deg, rgba(217,119,92,.22), rgba(217,119,92,.13));
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
+    color:#F0B7A6;
+    font-size:14px; font-weight:600; line-height:1.3;
+    box-shadow:0 6px 26px rgba(0,0,0,.45);
+  }
+  .krisenknopf:hover{
+    background:linear-gradient(180deg, rgba(217,119,92,.32), rgba(217,119,92,.2));
+    border-color:var(--warn);
+    color:#FFD2C4;
+  }
+  .krisenknopf:focus-visible{ outline:2px solid var(--warn); outline-offset:3px; }
+
+  /* ---------- Krisenfenster ---------- */
+  .krise{
+    position:fixed; inset:0; z-index:30;
+    background:linear-gradient(180deg, #1B0F0C, #0A1411 62%);
+    overflow-y:auto;
+    display:grid; place-items:center;
+    padding:26px 20px 34px;
+  }
+  .krise[hidden]{ display:none; }
+  .krise-inhalt{ width:100%; max-width:520px; text-align:center; }
+
+  .kr-kopf{
+    font-size:10.5px; letter-spacing:.2em; text-transform:uppercase;
+    color:var(--warn); font-weight:600;
+  }
+  .kr-titel{
+    margin:12px 0 0; font-size:clamp(22px,5.4vw,29px); font-weight:600;
+    letter-spacing:-.02em; line-height:1.2; color:var(--text);
+    text-wrap:balance;
+    border:none; padding:0; text-transform:none;
+  }
+
+  /* Atemkreis: vier Sekunden ein, sechs Sekunden aus. */
+  .kr-atem{ margin:30px 0 4px; display:grid; place-items:center; gap:14px; }
+  .kr-kreis{
+    width:150px; height:150px; border-radius:50%;
+    display:grid; place-items:center;
+    border:1.5px solid rgba(98,214,174,.4);
+    background:radial-gradient(circle, var(--air-glow), transparent 70%);
+    color:var(--air); font-size:13px; letter-spacing:.14em; text-transform:uppercase;
+    animation:atemzug 10s ease-in-out infinite;
+  }
+  @keyframes atemzug{
+    0%,100%{ transform:scale(.78); }
+    40%    { transform:scale(1); }
+  }
+  .kr-uhr{
+    font-size:26px; font-weight:300; color:var(--muted);
+    font-variant-numeric:tabular-nums; letter-spacing:.02em;
+  }
+  @media (prefers-reduced-motion:reduce){ .kr-kreis{ animation:none; } }
+
+  .kr-stand{
+    margin-top:22px; padding:15px 18px;
+    border-radius:12px; background:rgba(98,214,174,.08);
+    border:1px solid rgba(98,214,174,.22);
+    font-size:15px; line-height:1.6; color:var(--text);
+  }
+  .kr-stand b{ color:var(--air); }
+
+  .kr-fakt{
+    margin:20px auto 0; max-width:46ch;
+    font-size:15.5px; line-height:1.6; color:var(--muted);
+  }
+
+  .kr-knoepfe{
+    margin-top:26px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;
+  }
+  .kr-knoepfe button{ flex:1 1 200px; }
+
+  .kr-ehrlich{
+    margin-top:22px; width:100%;
+    background:none; border:none; padding:10px;
+    color:var(--faint); font-size:13px; text-decoration:underline;
+    text-underline-offset:3px;
+  }
+  .kr-ehrlich:hover{ color:var(--warn); }
+
   /* ---------- Handy ----------
      Zwei Dinge, die am Schreibtisch nicht auffallen: Antippflächen brauchen
      mindestens 44 Pixel Höhe, sonst trifft man mit dem Daumen daneben, und die
@@ -678,7 +772,40 @@
     </details>
 
     <p class="fuss" id="speicherWarnung" hidden></p>
+
+    <!-- Liegt fest am unteren Rand, damit er im entscheidenden Moment nicht
+         gesucht werden muss. -->
+    <button type="button" class="krisenknopf" id="bKrise">
+      Ich bin grad schwach und würde mir gerne eine rauchen
+    </button>
   </section>
+
+  <!-- ============ Krisenfenster ============ -->
+  <div class="krise" id="krise" hidden>
+    <div class="krise-inhalt">
+
+      <div class="kr-kopf">Warte kurz</div>
+      <h2 class="kr-titel" id="krTitel">Drei Minuten. Mehr will ich nicht.</h2>
+
+      <div class="kr-atem" id="krAtem">
+        <div class="kr-kreis"><span id="krAtemWort">Einatmen</span></div>
+        <div class="kr-uhr" id="krUhr">3:00</div>
+      </div>
+
+      <div class="kr-stand" id="krStand"></div>
+
+      <blockquote class="kr-fakt" id="krFakt"></blockquote>
+
+      <div class="kr-knoepfe">
+        <button type="button" class="haupt" id="bKriseWeg">Es ist vorbei</button>
+        <button type="button" class="leise" id="bKriseNoch">Noch einen Grund</button>
+      </div>
+
+      <button type="button" class="kr-ehrlich" id="bKriseGeraucht">
+        Ich habe trotzdem geraucht
+      </button>
+    </div>
+  </div>
 
 </div>
 
@@ -2004,6 +2131,118 @@ $("bWofuer").onclick = () => {
   schritt();
 };
 
+/* ====================================================================
+   Krisenfenster — für den Moment, in dem es wirklich zählt
+   --------------------------------------------------------------------
+   Andere Sprache als die Tagessprüche: kürzer, direkter, ohne Zuspruch,
+   der von oben herab klingt. Wer gerade schwach ist, braucht keine
+   Standpauke, sondern einen Grund und jemanden, der mitwartet.
+   ==================================================================== */
+const KRISE = [
+  "Ein Verlangen dauert drei bis fünf Minuten. Danach ist es weg — ob du rauchst oder nicht. Der Unterschied ist nur, was danach übrig bleibt.",
+  "Nach drei Tagen ist das Nikotin aus deinem Körper. Eine einzige Zigarette bringt es zurück und startet den Entzug von vorn. Das ist der ganze Trick daran.",
+  "„Nur diese eine“ ist der Satz, mit dem jeder Rückfall anfängt. Noch keiner hat es bei einer belassen, weil es körperlich nicht funktioniert.",
+  "Die Zigarette wird dich nicht beruhigen. Nikotin erhöht Puls und Blutdruck. Was sich wie Ruhe anfühlt, ist nur das Ende des Entzugs, den sie selbst erzeugt.",
+  "Du hast dieses Verlangen schon oft gehabt und überstanden. Jedes Mal ist es von allein gegangen. Dieses geht auch.",
+  "Wenn du jetzt rauchst, wirst du in zehn Minuten nicht glücklicher sein. Du wirst nur wieder am Anfang stehen.",
+  "Das Verlangen ist nicht dein Wille. Es ist ein Restsignal aus einer alten Verdrahtung, die gerade abgebaut wird. Du musst ihm nicht gehorchen.",
+  "Frag dich, was du wirklich brauchst. Meistens ist es Pause, Luft, Ruhe oder Essen. Nichts davon steckt in einer Zigarette.",
+  "Rauchen ist der wichtigste vermeidbare Risikofaktor für Herz und Kreislauf. Vermeidbar heißt: Du entscheidest das gerade, in diesem Moment.",
+  "Etwa jeder zweite langjährige Raucher stirbt an einer Folge des Rauchens. Du bist gerade dabei, aus dieser Statistik auszusteigen.",
+  "Tabakrauch enthält rund 7.000 Verbindungen, etwa 70 davon gelten als krebserzeugend. Nichts davon musst du heute einatmen.",
+  "Nikotin erreicht dein Gehirn in sieben Sekunden. Deshalb fühlt es sich so dringend an. Dringlichkeit ist keine Notwendigkeit.",
+  "Steh auf. Geh ans Fenster. Trink ein großes Glas Wasser, langsam. Drei Minuten sind schneller vorbei, wenn du dich bewegst.",
+  "Putz dir die Zähne. Der Geschmack passt zu keiner Zigarette, und die zwei Minuten sind fast die ganze Welle.",
+  "Atme viermal langsam ein und sechsmal langsam aus. Das verlängerte Ausatmen beruhigt das Nervensystem — genau die Wirkung, die du der Zigarette zugeschrieben hast.",
+  "Wenn du jetzt durchhältst, wird dieses Verlangen das nächste schwächer machen. Wenn du rauchst, wird es das nächste stärker machen. So einfach ist die Rechnung.",
+  "Du bist nicht dabei zu scheitern. Du bist gerade mittendrin in dem Teil, der schwer ist. Genau der zählt.",
+  "In einer Stunde wirst du froh sein, dass du es nicht getan hast. In einer Stunde bereust du es, wenn du es tust. Beides weißt du schon.",
+  "Die Zigarette hat dir nie geholfen. Sie hat nur aufgehört, dich zu quälen. Das ist etwas völlig anderes.",
+  "Es gibt keinen Tag, an dem eine Zigarette dich weiterbringt. Nicht bei Stress, nicht zur Feier, nicht heute.",
+  "Rauchen verdoppelt das Herzinfarktrisiko. Diese Zahl sinkt vom ersten rauchfreien Tag an — und steigt vom ersten Rückfall an wieder.",
+  "Du musst nicht für immer widerstehen. Nur die nächsten drei Minuten. Danach reden wir weiter.",
+  "Niemand sieht, was du gerade durchziehst. Deshalb sag es dir selbst: Das hier ist die eigentliche Arbeit.",
+  "Nach zwei bis drei Wochen bilden sich die Nikotinrezeptoren im Gehirn zurück. Jede Zigarette baut sie neu auf. Du bist mitten im Abbau.",
+  "Iss etwas. Hunger und Verlangen fühlen sich im Kopf fast gleich an, und eines von beiden lässt sich ehrlich stillen.",
+  "Wenn du gleich noch daran denkst, komm wieder hierher. Dafür ist dieser Knopf da, und du darfst ihn so oft drücken, wie du willst.",
+  "Was du in den letzten Wochen aufgebaut hast, ist echt und messbar. Eine Zigarette macht es nicht kaputt, weil sie so stark wäre, sondern weil sie die Uhr zurückstellt.",
+  "Die schlimmsten Momente sind kurz. Sie fühlen sich nur lang an, weil man ihnen zusieht.",
+  "Ruf jemanden an. Zwei Minuten reden, über irgendwas. Das Verlangen hält keinem Gespräch stand.",
+  "Rauchen macht nicht schlank, nicht ruhig und nicht erwachsen. Es macht nur den Mangel weg, den es selbst erzeugt hat. Und dieser Mangel wird gerade kleiner."
+];
+
+/** Der eigene Stand, in Zahlen, die genau jetzt zählen. */
+function krisenStand(){
+  const w = rechnen(profil);
+  // Nach „seit“ steht der Dativ: seit einem Tag, seit drei Tagen.
+  const zeit = w.tage > 0
+    ? zahl(w.tage) + (w.tage === 1 ? " Tag" : " Tagen") + " und " + w.stunden + " Stunden"
+    : w.stunden + " Stunden und " + w.minuten + " Minuten";
+  return "Du bist seit <b>" + zeit + "</b> rauchfrei, hast <b>"
+    + zahl(Math.floor(w.nichtGeraucht)) + "</b> Zigaretten nicht geraucht und <b>"
+    + euro(w.geld) + "</b> nicht ausgegeben.<br>Eine jetzt setzt den Zähler auf null.";
+}
+
+let kriseUhr = null, kriseAtem = null, kriseEnde = 0, letzterFakt = -1;
+
+function faktZeigen(){
+  let i;
+  do { i = Math.floor(Math.random() * KRISE.length); }
+  while (i === letzterFakt && KRISE.length > 1);
+  letzterFakt = i;
+  $("krFakt").textContent = KRISE[i];
+}
+
+function kriseAuf(){
+  $("krise").hidden = false;
+  $("krStand").innerHTML = krisenStand();
+  $("krTitel").textContent = "Drei Minuten. Mehr will ich nicht.";
+  faktZeigen();
+
+  kriseEnde = Date.now() + 3 * MIN;
+  const atemStart = Date.now();
+
+  clearInterval(kriseUhr);
+  kriseUhr = setInterval(() => {
+    const rest = kriseEnde - Date.now();
+    if (rest <= 0){
+      $("krUhr").textContent = "vorbei";
+      $("krTitel").textContent = "Geschafft. Die Welle ist durch.";
+      clearInterval(kriseUhr);
+      return;
+    }
+    const m = Math.floor(rest / MIN), s = Math.floor((rest % MIN) / 1000);
+    $("krUhr").textContent = m + ":" + zz(s);
+  }, 250);
+
+  clearInterval(kriseAtem);
+  kriseAtem = setInterval(() => {
+    // vier Sekunden ein, sechs aus — dieselbe Kurve wie die Animation
+    $("krAtemWort").textContent =
+      ((Date.now() - atemStart) % 10000) < 4000 ? "Einatmen" : "Ausatmen";
+  }, 200);
+}
+
+function kriseZu(){
+  $("krise").hidden = true;
+  clearInterval(kriseUhr);
+  clearInterval(kriseAtem);
+}
+
+$("bKrise").onclick     = kriseAuf;
+$("bKriseWeg").onclick  = kriseZu;
+$("bKriseNoch").onclick = faktZeigen;
+
+$("bKriseGeraucht").onclick = () => {
+  if (!confirm("Rückfall eintragen? Der Zähler beginnt neu, deine längste rauchfreie Zeit bleibt gespeichert.")) return;
+  rueckfallEintragen();
+  kriseZu();
+};
+
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && !$("krise").hidden) kriseZu();
+});
+
 /** Der Countdown auf die nächste Freischaltung. Läuft im Sekundentakt und
     ist der einzige Ort, an dem etwas Zukünftiges steht — deshalb formuliert
     als Versprechen, nicht als Zustand. */
@@ -2071,16 +2310,24 @@ $("bSpeichern").onclick = () => {
   setTimeout(() => { fehler.textContent = ""; }, 2500);
 };
 
-$("bRueckfall").onclick = () => {
+/* Wird von zwei Stellen gerufen: aus den Einstellungen und aus dem
+   Krisenfenster. Deshalb ohne eigene Rückfrage — die stellt der Aufrufer. */
+function rueckfallEintragen(){
   const w = rechnen(profil);
-  if (!confirm("Zähler ab jetzt neu starten? Deine längste rauchfreie Zeit von "
-      + Math.floor(w.verstrichen / TAG) + " Tagen bleibt gespeichert.")) return;
   profil.beste = Math.max(profil.beste || 0, w.verstrichen);
   profil.rueckfaelle = (profil.rueckfaelle || 0) + 1;
   profil.start = Date.now();   // ab diesem Augenblick, nicht ab Mitternacht
   einstellungenFuellen();
   sichern();
+  letzterTag = -1;
   zeichnen();
+}
+
+$("bRueckfall").onclick = () => {
+  const w = rechnen(profil);
+  if (!confirm("Zähler ab jetzt neu starten? Deine längste rauchfreie Zeit von "
+      + Math.floor(w.verstrichen / TAG) + " Tagen bleibt gespeichert.")) return;
+  rueckfallEintragen();
 };
 
 /* ---------- Daten mitnehmen ---------- */
