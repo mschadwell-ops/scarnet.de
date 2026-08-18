@@ -509,7 +509,15 @@
   .seg > i{
     display:block; width:100%; height:20px; border-radius:3px;
     background:var(--line-soft); border:1px solid var(--line);
+    transition:background .25s, border-color .25s, box-shadow .25s, filter .15s, transform .15s;
   }
+
+  /* Anklickbarkeit sichtbar machen. Vorher sah ein Feld aus wie eine Anzeige
+     und nicht wie ein Knopf. Beim Zeigen hebt sich der Balken jetzt leicht an
+     und wird heller; auf dem Handy, wo es kein Zeigen gibt, sagt es die Zeile
+     unter dem Block. */
+  .seg:hover > i{ filter:brightness(1.35); transform:translateY(-1px); }
+  .seg:active > i{ transform:translateY(0); filter:brightness(1.1); }
   /* Die letzte Zeile hat nur zwei Tage. Die fünf Blindfelder halten die
      Segmentbreite über alle Zeilen gleich — ohne sie wären die zwei Tage
      dreimal so breit wie alle anderen. */
