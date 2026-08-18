@@ -32,6 +32,52 @@ const KONTEN = [
   { hash:"0997d134dac77615f607b8269294354ab173e19b613096b72028fa5d5a30f7d5" }
 ];
 
+/* ---------------------------------------------------------------------
+   Passt das Markup zu diesem Skript?
+   ---------------------------------------------------------------------
+   Am 18.08.2026 gemeldet: auf dem Handy stand in der Countdown-Karte nur
+   noch „In –“. Nachgestellt und bestätigt — die Ursache war ein Browser,
+   der noch die HTML-Fassung von VOR der Versionierung im Zwischenspeicher
+   hatte. Die verweist auf js/rauchfrei.js ohne ?v=, und diese Adresse
+   liefert die aktuelle Datei aus: neues Skript, altes Markup. Das Skript
+   suchte einen Kasten, den es dort nicht mehr gibt, warf einen TypeError,
+   und zeichnen() brach ab, bevor der Countdown geschrieben wurde.
+
+   Gegen genau diesen Fall hilft ?v= nicht — es wirkt erst ab der Fassung,
+   die es eingeführt hat. Deshalb prüft das Skript hier selbst nach. Das
+   funktioniert in beide Richtungen und dauerhaft, auch wenn irgendwann
+   wieder ein Kasten umbenannt wird.
+
+   Ein throw an dieser Stelle beendet die Ausführung der ganzen Datei. Das
+   ist gewollt: was danach käme, würde ohnehin nur weitere Fehler werfen.
+   --------------------------------------------------------------------- */
+(function markupPruefen(){
+  const noetig = ["anmeldeForm", "einrichtenForm", "ansichtApp", "zTage", "cdZeit",
+                  "erfolge", "erfolgAntwort", "tagfenster", "tfZu", "muenze", "krise"];
+  const fehlt = noetig.filter(id => !document.getElementById(id));
+  if (!fehlt.length) return;
+
+  document.body.innerHTML =
+    '<div style="max-width:34rem;margin:20vh auto;padding:0 1.5rem;' +
+    'font:400 1rem/1.6 ui-sans-serif,system-ui,sans-serif;color:#E9F2EE">' +
+    '<p style="font-size:1.3rem;font-weight:600;margin:0 0 .6rem">' +
+    'Es liegt noch eine alte Fassung im Zwischenspeicher.</p>' +
+    '<p style="color:#8CA8A0;margin:0 0 1.4rem">Der Knopf lädt die Seite unter ' +
+    'Umgehung des Zwischenspeichers neu. Danach ist es weg.</p>' +
+    '<button id="frischLaden" style="font:inherit;cursor:pointer;padding:.7rem 1.2rem;' +
+    'border-radius:.5rem;border:1px solid #62D6AE;background:#62D6AE;color:#062018;' +
+    'font-weight:650">Neu laden</button></div>';
+
+  document.getElementById("frischLaden").onclick = function(){
+    // Ein einfaches reload() holt womöglich wieder aus dem Zwischenspeicher.
+    // Eine Adresse, die es dort noch nicht gibt, kann das nicht.
+    location.replace(location.pathname + "?frisch=" + Date.now());
+  };
+
+  throw new Error("Markup passt nicht zu diesem Skript, es fehlen: " + fehlt.join(", "));
+})();
+
+
 /* ====================================================================
    5. Speicher — läuft auch weiter, wenn er gesperrt ist
    ==================================================================== */
@@ -334,8 +380,15 @@ function zeichnen(){
        Gemerkt wird es im Profil und nicht in einer Variablen, sonst käme die
        Belohnung bei jedem Neuladen wieder. Tag 0 zählt nicht: am
        Einrichtungstag ist noch nichts erreicht. */
-    const gesehen = Number.isFinite(profil.gesehenerTag) ? profil.gesehenerTag : w.tage;
-    const frisch  = (w.tage > gesehen && w.tage >= 1) ? w.tage : null;
+    /* Profile, die vor dieser Aenderung angelegt wurden, haben das Feld noch
+       nicht. Einmal auf den jetzigen Stand setzen und sichern — ohne das
+       fiele die Pruefung jedes Mal auf w.tage zurueck, frisch waere immer
+       null, und es gaebe fuer diese Person nie eine Feier. */
+    if (!Number.isFinite(profil.gesehenerTag)){
+      profil.gesehenerTag = w.tage;
+      sichern();
+    }
+    const frisch = (w.tage > profil.gesehenerTag && w.tage >= 1) ? w.tage : null;
     tageZeichnen(w.tage, profil, frisch);   // w.tage = abgeschlossene Tage
     $("cdTag").textContent = "Tag " + (w.tage + 1);
     $("cdText").textContent = tagesText(w.tage + 1, profil, true);   // Ziel-Fassung
