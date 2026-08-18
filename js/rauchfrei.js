@@ -1509,15 +1509,6 @@ $("fImport").onchange = e => {
   e.target.value = "";
 };
 
-/* ---------- Start ---------- */
-(function los(){
-  const gemerkt = merkenLesen();
-  if (gemerkt && KONTEN.some(k => k.hash === gemerkt)){
-    anmelden(gemerkt);
-  } else {
-    zeigen("ansichtAnmeldung");
-  }
-})();
 /* ---------------------------------------------------------------------
    Tagesfenster
    ---------------------------------------------------------------------
@@ -1656,3 +1647,33 @@ function feuerwerk(tage){
   setTimeout(() => { feld.remove(); karte.classList.remove("knall"); }, 3400);
   setTimeout(() => gw.remove(), 4000);
 }
+
+/* ---------------------------------------------------------------------
+   Start — und zwar als ALLERLETZTES in dieser Datei
+   ---------------------------------------------------------------------
+   Dieser Block stand frueher in der Mitte. Wer „Angemeldet bleiben“ gesetzt
+   hat, wird hier ohne Formular angemeldet, und das ruft ueber starten()
+   sofort zeichnen() auf — mitten im Laden der Datei. Alles, was weiter
+   unten mit const oder let angelegt wird, existiert zu diesem Zeitpunkt
+   noch nicht.
+
+   Am 18.08.2026 genau daran gescheitert: das Feuerwerk beim Tageswechsel
+   griff auf seine Salvenliste zu, die vierzig Zeilen spaeter steht. Der
+   Fehler war „Cannot access SALVEN before initialization“, zeichnen() brach
+   ab, und in der Countdown-Karte blieb der Platzhalter „In –“ stehen.
+
+   Warum es beim Testen nie auffiel: ich habe mich immer ueber das Formular
+   angemeldet, also erst nachdem die Datei fertig durchgelaufen war. Nur der
+   gemerkte Zugang laeuft mitten im Laden — und den benutzen die Leute.
+
+   Am Ende der Datei kann das nicht mehr passieren, egal was spaeter noch
+   dazukommt.
+   --------------------------------------------------------------------- */
+(function los(){
+  const gemerkt = merkenLesen();
+  if (gemerkt && KONTEN.some(k => k.hash === gemerkt)){
+    anmelden(gemerkt);
+  } else {
+    zeigen("ansichtAnmeldung");
+  }
+})();
