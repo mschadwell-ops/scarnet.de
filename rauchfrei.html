@@ -1981,17 +1981,21 @@ function euro(betrag){
     { style:"currency", currency:"EUR", minimumFractionDigits:2, maximumFractionDigits:2 });
 }
 
-/** Minuten in eine lesbare Angabe: „3 Tage 4 Std.“ oder „12 Std. 30 Min.“ */
+/** Minuten in eine lesbare Angabe: „3 Tage 4 Std.“ oder „12 Std. 30 Min.“
+ *  Zwei Regeln, die vorher fehlten. Bei genau eins die Einzahl — sonst stand
+ *  dort „1 Jahr 1 Tage“. Und keine Einheit mit einer Null davor: „1 Jahr
+ *  0 Tage“ ist keine Angabe, das ist ein Rechenrest. */
 function dauerAusMinuten(minuten){
   const t = Math.floor(minuten / 1440);
   const s = Math.floor((minuten % 1440) / 60);
   const m = Math.floor(minuten % 60);
   if (t >= 365){
-    const j = Math.floor(t / 365);
-    return j + (j === 1 ? " Jahr " : " Jahre ") + (t % 365) + " Tage";
+    const j = Math.floor(t / 365), rest = t % 365;
+    return j + (j === 1 ? " Jahr" : " Jahre")
+         + (rest ? " " + rest + (rest === 1 ? " Tag" : " Tage") : "");
   }
-  if (t > 0) return t + (t === 1 ? " Tag " : " Tage ") + s + " Std.";
-  if (s > 0) return s + " Std. " + m + " Min.";
+  if (t > 0) return t + (t === 1 ? " Tag" : " Tage") + (s ? " " + s + " Std." : "");
+  if (s > 0) return s + " Std." + (m ? " " + m + " Min." : "");
   return m + " Min.";
 }
 
@@ -2149,8 +2153,27 @@ $("bAbmelden").onclick = () => {
 function zeichnen(){
   const w = rechnen(profil);
 
-  $("zTage").textContent = zahl(w.tage);
-  $("zTageWort").textContent = w.tage === 1 ? "Tag rauchfrei" : "Tage rauchfrei";
+  /* Am ersten Tag stand hier eine nackte Null, und zwar vierundzwanzig
+     Stunden lang. Genau dann, wenn es am schwersten ist, sah die große
+     Zahl aus, als wäre nichts passiert.
+
+     Deshalb zählt der erste Tag in Hundertsteln: 0,01 — 0,02 — bis 0,99,
+     und beim Übergang lösen sie sich in eine glatte 1 auf. Hundert
+     Schritte bis zum ersten Tag, einer alle 14 Minuten.
+
+     Abgeschnitten, nicht gerundet: sonst stünde die letzten sieben Minuten
+     vor Mitternacht schon eine 1,00 da, obwohl der Tag noch nicht voll ist.
+     Genau derselbe Fehler wie damals in der Tagesliste.
+
+     Ab Tag eins wieder ganze Tage — „3,42 Tage rauchfrei“ sagt niemand. */
+  if (w.tage < 1){
+    const anteil = Math.floor((w.verstrichen / TAG) * 100) / 100;
+    $("zTage").textContent = anteil.toFixed(2).replace(".", ",");
+    $("zTageWort").textContent = "Tage rauchfrei";
+  } else {
+    $("zTage").textContent = zahl(w.tage);
+    $("zTageWort").textContent = w.tage === 1 ? "Tag rauchfrei" : "Tage rauchfrei";
+  }
   $("zUhr").textContent =
     `${w.stunden} Std. ${String(w.minuten).padStart(2,"0")} Min. ${String(w.sekunden).padStart(2,"0")} Sek.`;
   $("zSeit").textContent = "seit " + datumLang(profil.start);
@@ -2258,9 +2281,13 @@ function tagesText(nr, p, alsZiel){
   const zig  = p.menge * nr;
   const geld = zig * (p.preis / p.proSchachtel);
 
-  if (nr % 365 === 0) return alsZiel
-    ? (nr / 365) + " Jahre werden voll sein — " + zahl(zig) + " Zigaretten, die es nie gegeben hat."
-    : (nr / 365) + " Jahre rauchfrei. " + zahl(zig) + " Zigaretten, die es nie gegeben hat.";
+  if (nr % 365 === 0){
+    // Am ersten Jahrestag stand hier "1 Jahre".
+    const j = (nr / 365) + (nr === 365 ? " Jahr" : " Jahre");
+    return alsZiel
+      ? j + " werden voll sein — " + zahl(zig) + " Zigaretten, die es nie gegeben hat."
+      : j + " rauchfrei. " + zahl(zig) + " Zigaretten, die es nie gegeben hat.";
+  }
   if (nr % 30 === 0) return alsZiel
     ? Math.round(nr / 30) + " Monate werden voll sein — bis dahin " + euro(geld) + " nicht ausgegeben."
     : Math.round(nr / 30) + " Monate rauchfrei — bis hierher " + euro(geld) + " nicht ausgegeben.";
