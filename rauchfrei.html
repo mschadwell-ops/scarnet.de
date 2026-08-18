@@ -293,9 +293,11 @@
     margin:12px 2px 0; font-size:12px; color:var(--faint);
     letter-spacing:.06em;
   }
-  .leerliste{
-    padding:16px 2px; font-size:14px; color:var(--faint);
-  }
+  /* Ein Abschnitt ohne Inhalt wird ganz ausgeblendet, statt eine leere
+     Überschrift mit Trennstrich stehen zu lassen. Deshalb hier eine Regel,
+     die das hidden-Attribut auch dann durchsetzt, wenn ein Element sonst
+     eine eigene Anzeigeart hätte. */
+  [hidden]{ display:none !important; }
 
   /* ---------- Nächste Freischaltung ----------
      Die Karte ist bewusst die auffälligste auf der Seite: Sie zeigt nicht,
@@ -852,7 +854,7 @@
     <ul class="trophaeen wellen" id="wellen"></ul>
     <p class="tr-text" id="wellenText"></p>
 
-    <h2>Freigeschaltet <span class="h2-zahl" id="anzahlFrei"></span></h2>
+    <h2 id="titelFrei">Freigeschaltet <span class="h2-zahl" id="anzahlFrei"></span></h2>
     <ul class="meilen" id="tage"></ul>
     <p class="davor" id="tageDavor"></p>
 
@@ -2282,8 +2284,19 @@ function tagesText(nr, p, alsZiel){
 function tageZeichnen(fertig, p, frischNr){
   const liste = $("tage");
 
-  if (fertig < 1){
-    liste.innerHTML = `<li class="leerliste">Noch nichts freigeschaltet — der erste Tag ist unterwegs.</li>`;
+  /* Solange nichts freigeschaltet ist, verschwindet der ganze Abschnitt —
+     Überschrift, Trennstrich und Liste. Vorher stand hier eine leere
+     Kategorie mit einem einzelnen Hinweissatz darunter, und der Satz lag
+     als Listeneintrag im Raster von .meilen, also in der 20-Pixel-Spalte
+     für den Punkt: ein Wort je Zeile. Was der Tag bringt, steht ohnehin
+     schon in der Karte „Als Nächstes“ weiter oben. */
+  const zeigen = fertig >= 1;
+  $("titelFrei").hidden = !zeigen;
+  liste.hidden           = !zeigen;
+  $("tageDavor").hidden  = !zeigen;
+
+  if (!zeigen){
+    liste.innerHTML = "";
     $("tageDavor").textContent = "";
     $("anzahlFrei").textContent = "";
     return;
