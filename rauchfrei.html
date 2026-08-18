@@ -406,8 +406,43 @@
 
   /* Die Antwort sitzt in derselben Karte, direkt unter dem Knopf. */
   .wofuer{
+    position:relative; overflow:hidden;
     margin-top:16px; padding-top:16px;
     border-top:1px solid rgba(217,169,79,.28);
+  }
+
+  /* Lichtwisch quer über die Karte, wenn gezogen wird. */
+  .wofuer.zieht::before{
+    content:"";
+    position:absolute; top:0; bottom:0; left:0; width:60%;
+    background:linear-gradient(105deg, transparent, rgba(255,231,178,.20) 45%, transparent);
+    animation:wisch 1.5s cubic-bezier(.3,0,.2,1) 1;
+    pointer-events:none;
+  }
+  @keyframes wisch{
+    from{ transform:translateX(-110%); }
+    to  { transform:translateX(280%); }
+  }
+
+  /* Während der Ziehung blass und leicht unruhig, beim Treffer rastet es ein. */
+  .wf-haupt.flackert{
+    color:var(--faint);
+    opacity:.75;
+    transform:scale(.985);
+  }
+  .wf-haupt.treffer{
+    animation:treffer .5s cubic-bezier(.2,1.5,.4,1) 1;
+    text-shadow:0 0 18px rgba(217,169,79,.35);
+  }
+  @keyframes treffer{
+    0%  { transform:scale(.86); opacity:0; filter:blur(4px); }
+    55% { transform:scale(1.045); opacity:1; filter:blur(0); }
+    100%{ transform:scale(1); }
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    .wofuer.zieht::before{ animation:none; display:none; }
+    .wf-haupt.treffer{ animation:none; }
   }
   .wf-kopf{
     font-size:10.5px; letter-spacing:.18em; text-transform:uppercase;
@@ -1857,7 +1892,7 @@ function trophaeenZeichnen(verstrichen){
 /* ---------- Was das gesparte Geld wert ist ---------- */
 const grossErst = s => s.charAt(0).toUpperCase() + s.slice(1);
 
-function kaufkraft(geld){
+function kaufkraft(geld, ausser){
   const drin = PREISE.filter(x => x.p <= geld);
 
   // „bis ein Brötchen“ wäre falscher Kasus. Mit „dann ist … drin“ passt die
@@ -1875,22 +1910,36 @@ function kaufkraft(geld){
     };
   }
 
-  // Unter mehreren Dingen zum selben Preis zufällig wählen — dann lohnt sich
-  // ein zweiter Klick, und der Knopf sagt nicht jedes Mal dasselbe.
-  const hoechster  = drin[drin.length - 1].p;
-  const kandidaten = drin.filter(x => x.p === hoechster);
-  const bestes     = kandidaten[Math.floor(Math.random() * kandidaten.length)];
-  const anzahl     = Math.floor(geld / bestes.p);
+  // Nicht stur das teuerste Ding nehmen — dann käme bei 8,66 € immer die
+  // Currywurst. Stattdessen alles, was mindestens halb so teuer ist wie das
+  // teuerste Bezahlbare, und daraus ziehen. Sind es zu wenige, nehmen wir die
+  // sechs teuersten dazu.
+  const hoechster = drin[drin.length - 1].p;
+  let kandidaten  = drin.filter(x => x.p >= hoechster * 0.5);
+  if (kandidaten.length < 4) kandidaten = drin.slice(-6);
+
+  // Nicht zweimal hintereinander dasselbe, sofern es eine Alternative gibt.
+  const auswahl = kandidaten.filter(x => x !== ausser);
+  const topf    = auswahl.length ? auswahl : kandidaten;
+  const bestes  = topf[Math.floor(Math.random() * topf.length)];
+  const anzahl  = Math.floor(geld / bestes.p);
 
   // Für die Oder-Zeile eine der billigsten Sachen, aber nicht immer dieselbe.
-  const billige  = PREISE.slice(0, 5).filter(x => x !== bestes);
-  const billig   = billige[Math.floor(Math.random() * billige.length)];
-  const wieViele = Math.floor(geld / billig.p);
-  const oder = wieViele >= 8 ? "Oder " + zahl(wieViele) + " " + billig.v + "." : "";
+  // Erst prüfen, bei welchen die Menge überhaupt absurd wird, dann ziehen —
+  // sonst fällt die Zeile aus, nur weil zufällig das teuerste Kleinding kam.
+  const billige = PREISE.slice(0, 6)
+    .filter(x => x !== bestes && Math.floor(geld / x.p) >= 8);
+  let oder = "";
+  if (billige.length){
+    const billig = billige[Math.floor(Math.random() * billige.length)];
+    oder = "Oder " + zahl(Math.floor(geld / billig.p)) + " " + billig.v + ".";
+  }
 
   const naechstes = PREISE.find(x => x.p > geld);
 
   return {
+    gewaehlt:   bestes,
+    kandidaten: kandidaten,
     reicht: anzahl === 1 ? grossErst(bestes.e) : zahl(anzahl) + " " + bestes.v,
     witz:   bestes.w || oder,
     oder:   bestes.w ? oder : "",
@@ -1900,16 +1949,59 @@ function kaufkraft(geld){
   };
 }
 
+/* Die Ziehung. Statt das Ergebnis einfach hinzuschreiben, flackert es erst
+   durch die Kandidaten und wird dabei langsamer — wie beim Öffnen eines
+   Päckchens. Der Treffer rastet mit einem Lichtwisch ein. */
+let zieht = false;
+let letzteWahl = null;
+
 $("bWofuer").onclick = () => {
-  const k = kaufkraft(rechnen(profil).geld);
+  if (zieht) return;
+
+  const k = kaufkraft(rechnen(profil).geld, letzteWahl);
+  letzteWahl = k.gewaehlt || null;
+
   const kasten = $("wofuer");
   kasten.hidden = false;
   kasten.innerHTML = `
     <div class="wf-kopf">Dafür reicht es</div>
-    <div class="wf-haupt">${esc(k.reicht)}</div>
-    ${k.witz ? `<p class="wf-witz">${esc(k.witz)}</p>` : ""}
-    ${k.oder ? `<p class="wf-oder">${esc(k.oder)}</p>` : ""}
-    <p class="wf-fehlt">${esc(k.fehlt)}</p>`;
+    <div class="wf-haupt" id="wfHaupt"></div>
+    <div id="wfRest"></div>`;
+  $("bWofuer").textContent = "Was kriege ich sonst noch dafür?";
+
+  const aufdecken = () => {
+    const h = $("wfHaupt");
+    h.className = "wf-haupt treffer";
+    h.textContent = k.reicht;
+    $("wfRest").innerHTML =
+      (k.witz ? `<p class="wf-witz">${esc(k.witz)}</p>` : "") +
+      (k.oder ? `<p class="wf-oder">${esc(k.oder)}</p>` : "") +
+      `<p class="wf-fehlt">${esc(k.fehlt)}</p>`;
+    zieht = false;
+  };
+
+  const ruhig = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (ruhig || !k.kandidaten || k.kandidaten.length < 2){
+    aufdecken();
+    return;
+  }
+
+  zieht = true;
+  kasten.classList.remove("zieht");
+  void kasten.offsetWidth;          // erzwingt den Neustart der Animation
+  kasten.classList.add("zieht");
+
+  const h = $("wfHaupt");
+  h.className = "wf-haupt flackert";
+  let i = 0;
+  const schritt = () => {
+    const kand = k.kandidaten[Math.floor(Math.random() * k.kandidaten.length)];
+    h.textContent = grossErst(kand.e);
+    i++;
+    if (i < 13) setTimeout(schritt, 40 + i * i * 1.6);   // wird spürbar langsamer
+    else aufdecken();
+  };
+  schritt();
 };
 
 /** Der Countdown auf die nächste Freischaltung. Läuft im Sekundentakt und
