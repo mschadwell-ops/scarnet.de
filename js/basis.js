@@ -13,6 +13,23 @@
    Funktion auf, und die Frage kann sich nicht mehr stellen.
    ===================================================================== */
 
+/* Fassungsnummer. Muss mit der Zahl hinter ?v= in rauchfrei.html und
+   setup.html uebereinstimmen. Bei JEDER Aenderung an CSS oder JS beide
+   hochzaehlen.
+
+   Warum das noetig ist: GitHub Pages liefert jede Datei mit
+   Cache-Control max-age=600 aus, also zehn Minuten, und zwar einzeln. Wer
+   die Seite offen hatte und neu laedt, bekam dadurch neues HTML mit altem
+   JavaScript. Am 18.08.2026 genau so passiert: das alte Skript griff auf
+   einen Kasten zu, den es im neuen Markup nicht mehr gab, warf dort einen
+   Fehler, und zeichnen() brach ab, bevor der Countdown aktualisiert wurde.
+   Sichtbar war das als leerer Erfolgsbereich und ein "In -" in der Karte.
+
+   Mit ?v= kann das nicht mehr vorkommen: neues HTML verweist auf neue
+   Adressen, die im Zwischenspeicher gar nicht liegen. Als Netz prueft die
+   Seite die Zahl zusaetzlich gegen. */
+const FASSUNG = 4;
+
 /* Zeit. Steht hier, weil TROPHAEEN in inhalte.js damit rechnet und diese
    Datei zuerst geladen wird. */
 const MIN = 60000, STD = 60 * MIN, TAG = 24 * STD;

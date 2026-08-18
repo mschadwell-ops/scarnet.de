@@ -9,7 +9,7 @@
 
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230A1411'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='%2362D6AE' stroke-width='2.5'/%3E%3C/svg%3E">
 
-<link rel="stylesheet" href="css/rauchfrei.css">
+<link rel="stylesheet" href="css/rauchfrei.css?v=4">
 </head>
 
 <body>
@@ -288,31 +288,52 @@
               print "</script>"; d = 1 } next }
             { print }' rauchfrei.html > _pruef.html
 -->
-<script src="js/basis.js"></script>
-<script src="js/inhalte.js"></script>
-<script src="js/rauchfrei.js"></script>
+<script src="js/basis.js?v=4"></script>
+<script src="js/inhalte.js?v=4"></script>
+<script src="js/rauchfrei.js?v=4"></script>
 
-<!-- Faellt eine der drei Dateien aus, waere die Seite sonst leer und niemand
-     wuesste, warum. Die Pruefung liegt selbst in einem try, weil typeof auf
-     eine Konstante in der zeitlichen Totzone eine Ausnahme wirft — dann
-     wuerde die Rueckfallmeldung mit demselben Fehler untergehen, den sie
-     melden soll. -->
+<!-- Zwei Dinge koennen schiefgehen, und beide sehen fuer den Nutzer gleich aus:
+     eine der Dateien laedt nicht, oder sie laedt in einer anderen Fassung als
+     dieses HTML. Der zweite Fall ist am 18.08.2026 aufgetreten und war der
+     unangenehmere, weil die Seite halb funktionierte: der Erfolgsbereich blieb
+     leer und im Countdown stand ein Bindestrich.
+
+     Die Pruefung liegt selbst in einem try, weil typeof auf eine Konstante in
+     der zeitlichen Totzone eine Ausnahme wirft — die Meldung wuerde sonst mit
+     genau dem Fehler untergehen, den sie melden soll. -->
 <script>
 (function(){
-  var fehlt = false;
+  var ERWARTET = 4, grund = "";
   try {
-    fehlt = (typeof kennung !== "function")
-         || (typeof SPRUECHE === "undefined")
-         || (typeof zeichnen !== "function");
-  } catch (e) { fehlt = true; }
-  if (!fehlt) return;
+    if (typeof kennung !== "function" || typeof SPRUECHE === "undefined"
+        || typeof zeichnen !== "function")
+      grund = "teil";
+    else if (typeof FASSUNG === "undefined" || FASSUNG !== ERWARTET)
+      grund = "fassung";
+  } catch (e) { grund = "teil"; }
+  if (!grund) return;
+
+  var titel = grund === "fassung"
+    ? "Es liegt noch eine alte Fassung im Zwischenspeicher."
+    : "Die Seite ist nicht vollständig geladen.";
+  var satz = grund === "fassung"
+    ? "Ein Neuladen unter Umgehung des Zwischenspeichers räumt das auf."
+    : "Einer der Skriptteile fehlt. Einmal neu laden hilft meistens; wenn nicht, liegt es an der Verbindung und nicht an dir.";
+
   document.body.innerHTML =
-    '<div style="max-width:34rem;margin:22vh auto;padding:0 1.5rem;' +
+    '<div style="max-width:34rem;margin:20vh auto;padding:0 1.5rem;' +
     'font:400 1rem/1.6 ui-sans-serif,system-ui,sans-serif;color:#E9F2EE">' +
-    '<p style="font-size:1.3rem;font-weight:600;margin:0 0 .6rem">' +
-    'Die Seite ist nicht vollst&auml;ndig geladen.</p>' +
-    '<p style="color:#8CA8A0;margin:0">Einer der drei Skriptteile fehlt. Einmal neu ' +
-    'laden hilft meistens; wenn nicht, liegt es an der Verbindung und nicht an dir.</p></div>';
+    '<p style="font-size:1.3rem;font-weight:600;margin:0 0 .6rem">' + titel + '</p>' +
+    '<p style="color:#8CA8A0;margin:0 0 1.4rem">' + satz + '</p>' +
+    '<button id="frischLaden" style="font:inherit;cursor:pointer;padding:.7rem 1.2rem;' +
+    'border-radius:.5rem;border:1px solid #62D6AE;background:#62D6AE;color:#062018;' +
+    'font-weight:650">Neu laden</button></div>';
+
+  document.getElementById("frischLaden").onclick = function(){
+    // Ein einfaches reload() holt womoeglich wieder aus dem Zwischenspeicher.
+    // Eine Adresse, die es dort noch nicht gibt, kann das nicht.
+    location.replace(location.pathname + "?frisch=" + Date.now());
+  };
 })();
 </script>
 </body>
