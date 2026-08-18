@@ -156,7 +156,35 @@
   @media (prefers-reduced-motion:reduce){
     .atem{ animation:none; }
   }
-  .zaehler > *:not(.atem){ position:relative; }
+  .zaehler > *:not(.atem):not(.rauch){ position:relative; }
+
+  /* ---------- Rauch am ersten Tag ----------
+     Kein Bild, nur weichgezeichnete Farbverläufe, die aufsteigen. Die Stärke
+     kommt aus dem Skript und nimmt über die ersten 24 Stunden auf null ab —
+     der Rauch zieht ab, er wird nicht angezündet. */
+  .rauch{
+    position:absolute; inset:0;
+    overflow:hidden; pointer-events:none;
+    opacity:var(--rauch, 0);
+    transition:opacity 2s linear;
+  }
+  .rauch i{
+    position:absolute; bottom:-32%;
+    border-radius:50%;
+    background:radial-gradient(circle, rgba(206,214,210,.42), rgba(206,214,210,0) 68%);
+    filter:blur(15px);
+    animation-name:schwaden;
+    animation-timing-function:linear;
+    animation-iteration-count:infinite;
+  }
+  @keyframes schwaden{
+    0%  { transform:translate(0, 20%) scale(.85); opacity:0; }
+    20% { opacity:.9; }
+    100%{ transform:translate(var(--drift, 12px), -160%) scale(1.55); opacity:0; }
+  }
+  @media (prefers-reduced-motion:reduce){
+    .rauch i{ animation:none; opacity:.7; bottom:5%; }
+  }
   .tage{
     font-size:clamp(66px,19vw,124px); font-weight:200; line-height:1;
     letter-spacing:-.045em; font-variant-numeric:tabular-nums; color:var(--text);
@@ -667,6 +695,17 @@
 
     <div class="karte zaehler">
       <div class="atem" aria-hidden="true"></div>
+
+      <!-- Rauch, der abzieht. Nur am ersten Tag, und er wird mit jeder
+           Stunde dünner. Die Schwaden steigen auf und verschwinden oben. -->
+      <div class="rauch" id="rauch" aria-hidden="true">
+        <i style="left:6%;  width:130px; height:130px; animation-duration:14s; animation-delay:0s;   --drift:26px"></i>
+        <i style="left:24%; width:170px; height:170px; animation-duration:18s; animation-delay:-5s;  --drift:-20px"></i>
+        <i style="left:44%; width:110px; height:110px; animation-duration:11s; animation-delay:-9s;  --drift:34px"></i>
+        <i style="left:60%; width:160px; height:160px; animation-duration:20s; animation-delay:-3s;  --drift:-30px"></i>
+        <i style="left:78%; width:140px; height:140px; animation-duration:16s; animation-delay:-12s; --drift:18px"></i>
+        <i style="left:34%; width:200px; height:200px; animation-duration:24s; animation-delay:-7s;  --drift:10px"></i>
+      </div>
       <div class="tage" id="zTage">0</div>
       <div class="tage-wort" id="zTageWort">Tage rauchfrei</div>
       <div class="uhr" id="zUhr"></div>
@@ -1848,6 +1887,13 @@ function zeichnen(){
   $("zUhr").textContent =
     `${w.stunden} Std. ${String(w.minuten).padStart(2,"0")} Min. ${String(w.sekunden).padStart(2,"0")} Sek.`;
   $("zSeit").textContent = "seit " + datumLang(profil.start);
+
+  // Der Rauch der ersten 24 Stunden. Voll beim Start, gleichmäßig dünner,
+  // und genau dann verschwunden, wenn Tag 1 freigeschaltet wird. Bewusst
+  // linear: eine gekrümmte Kurve war nach der Hälfte schon fast unsichtbar,
+  // obwohl da noch ein halber Tag vor einem liegt.
+  const rest = Math.max(0, 1 - w.verstrichen / TAG);
+  $("rauch").style.setProperty("--rauch", (rest * 0.85).toFixed(3));
 
   $("kGeld").textContent = euro(w.geld);
   const schachteln = Math.floor(w.schachteln);
