@@ -1162,7 +1162,7 @@ const SPRUECHE = [
   {k:"blick",t:"Der Husten in den ersten Wochen ist kein Rückschritt. Es ist die Lunge, die aufräumt — sie konnte es vorher nicht."},
   {k:"fakt", t:"Nach einem rauchfreien Jahr ist das Risiko für eine koronare Herzkrankheit etwa halbiert."},
   {k:"mut",  t:"Niemand hat es je bedauert, aufgehört zu haben. Diesen Satz hört man nie umgekehrt."},
-  {k:"fakt", t:"Rauchen erhöht den Ruhepuls um etwa zehn bis zwanzig Schläge pro Minute. Dein Herz macht jetzt jeden Tag mehrere tausend Schläge weniger."},
+  {k:"fakt", t:"Rauchen erhöht den Ruhepuls um etwa zehn Schläge pro Minute. Dein Herz macht jetzt jeden Tag rund vierzehntausend Schläge weniger."},
   {k:"tipp", t:"Bewegung hilft doppelt: Sie überbrückt das Verlangen und macht die verbesserte Lungenfunktion sofort spürbar."},
   {k:"blick",t:"Du warst kein schwacher Mensch, als du geraucht hast. Nikotin gehört zu den am stärksten abhängig machenden Stoffen überhaupt. Umso mehr sagt es, dass du es lässt."},
   {k:"fakt", t:"Nach fünf Jahren nähert sich das Schlaganfallrisiko dem eines Menschen, der nie geraucht hat."},
@@ -1402,7 +1402,7 @@ const SPRUECHE = [
   {k:"tipp", t:"Mach die erste Stunde des Tages zur rauchfreien Zone im Kopf. Wer die erste Stunde übersteht, hat die schwierigste Schwelle des Tages hinter sich."},
   {k:"mut",  t:"Du hast nichts verloren. Du hast etwas abgestellt, das dich bestohlen hat."},
   {k:"blick",t:"Rauchen war eine Verabredung mit sich selbst, zwanzigmal am Tag, die man nie absagen durfte. Du hast alle abgesagt."},
-  {k:"fakt", t:"Der Teergehalt einer Zigarette lagert sich in den Atemwegen ab. Bei zwanzig Zigaretten täglich kommen im Jahr mehrere hundert Gramm zusammen."},
+  {k:"fakt", t:"Der Teergehalt einer Zigarette ist in der EU auf zehn Milligramm begrenzt. Bei zwanzig Stück am Tag sind das über siebzig Gramm im Jahr, die in die Atemwege gehen."},
   {k:"tipp", t:"Wenn du vor dem Fernseher geraucht hast, setz dich für eine Weile auf einen anderen Platz. Der Sessel selbst war ein Auslöser."},
   {k:"mut",  t:"Heute ist wieder ein Tag, an dem du dich nicht rechtfertigen musst. Nicht vor anderen und nicht vor dir."},
   {k:"blick",t:"Zwanzig Zigaretten am Tag sind hundert Minuten. In einem Jahr sind das mehr als 600 Stunden — fünfzehn Arbeitswochen, die du zurückbekommst."},
@@ -1414,7 +1414,7 @@ const SPRUECHE = [
   {k:"tipp", t:"Hab keine Angst vor einem starken Verlangen nach Wochen. Es kommt manchmal aus dem Nichts und bedeutet nichts. Es ist ein Nachhall, keine Rückkehr."},
   {k:"mut",  t:"Der Körper braucht Jahre, um alles zu reparieren, und fängt in den ersten Minuten an. Beides ist wahr, und beides spricht für heute."},
   {k:"blick",t:"Rauchen macht nicht erwachsen. Es hat nur mal so gewirkt, als man vierzehn war und wissen wollte, wie das geht."},
-  {k:"fakt", t:"Beim Rauchen entstehen über tausend Grad Celsius an der Glut. Was dabei entsteht, hat mit der Tabakpflanze wenig zu tun."},
+  {k:"fakt", t:"Beim Ziehen erreicht die Glut acht- bis neunhundert Grad. Was bei dieser Hitze entsteht, hat mit der Tabakpflanze wenig zu tun."},
   {k:"tipp", t:"Wenn du dich beim Rauchen konzentriert hast, brauchst du eine neue Startgeste für Arbeit. Ein Glas Wasser hinstellen reicht schon, wenn es immer dasselbe ist."},
   {k:"mut",  t:"Du bist nicht dabei, etwas zu schaffen. Du schaffst es gerade, in diesem Moment, während du das liest."},
   {k:"blick",t:"Es gab keinen guten Zeitpunkt zum Aufhören. Es gab nur irgendwann einen Tag, an dem du es trotzdem gemacht hast."},
@@ -1496,7 +1496,7 @@ const SPRUECHE = [
   {k:"blick",t:"In der Zeit, die du früher mit Rauchen verbracht hast, hättest du eine Sprache lernen können. Diese Zeit ist wieder verfügbar."},
   {k:"fakt", t:"Wer vor dem vierzigsten Lebensjahr aufhört, vermeidet den Großteil des zusätzlichen Sterberisikos durch Rauchen. Aber auch später lohnt es sich in jedem Alter."},
   {k:"mut",  t:"Ein Jahr rauchfrei besteht aus 365 Tagen, an denen jemand einfach nicht geraucht hat. Genau so, wie du es heute gemacht hast."},
-  {k:"fakt", t:"Der Herzschlag eines Rauchers macht im Ruhezustand täglich mehrere tausend Schläge mehr als nötig. Dein Herz arbeitet jetzt in seinem eigenen Takt."},
+  {k:"fakt", t:"Der Ruhepuls sinkt schon innerhalb des ersten rauchfreien Tages messbar. Über ein Jahr gerechnet spart sich dein Herz dadurch mehrere Millionen Schläge."},
   {k:"mut",  t:"Es gibt keinen Grund, heute eine Ausnahme zu machen. Ausnahmen sind der einzige Weg zurück, und den brauchst du nicht."},
   {k:"tipp", t:"Wenn du unterwegs bist und das Verlangen kommt: Kau etwas mit starkem Geschmack, Ingwer oder Pfefferminz. Ein intensiver Reiz ist der schnellste Ausweg."},
   {k:"blick",t:"Du hast über Jahre gelernt, dass eine Zigarette hilft. Du lernst gerade, dass es ohne auch geht. Das zweite Lernen ist schneller."},
@@ -1900,6 +1900,19 @@ const PREISE = [
   { p:140.00,e:"eine Hauptuntersuchung beim TÜV",     v:"Hauptuntersuchungen beim TÜV" },
   { p:150.00,e:"ein Kettcar",                         v:"Kettcars" },
   { p:168.00,e:"ein Jahr Netflix",                    v:"Jahre Netflix" },
+
+  /* ---- Die Lücke zwischen 270 und 400 Euro. Alle fünf Preise nachgeschlagen,
+         Stand August 2026. ---- */
+  { p:299.00,e:"ein Jahr Fitnessstudio",              v:"Jahre Fitnessstudio",          // belegt
+             w:"Und diesmal schaffst du auch die Treppe zur Umkleide." },
+  { p:305.00,e:"eine BVB-Dauerkarte auf der Südtribüne", v:"BVB-Dauerkarten auf der Südtribüne", // belegt
+             w:"Die Fassung mit Champions League. Auf der Tribüne wird ohnehin nicht geraucht — du hättest da nie etwas vermisst." },
+  { p:320.00,e:"ein Satz Winterreifen mit Montage",   v:"Sätze Winterreifen mit Montage", // belegt
+             w:"Der unromantischste Kauf, den man mit gespartem Geld machen kann." },
+  { p:350.00,e:"ein Jahr Schrebergarten",             v:"Jahre Schrebergarten",         // belegt
+             w:"Pacht, Vereinsbeitrag, Wasser und Versicherung zusammen. Die Laube ist ein ausgezeichneter Ort, um nichts zu tun." },
+  { p:378.00,e:"ein halbes Jahr Deutschlandticket",   v:"halbe Jahre Deutschlandticket", // belegt
+             w:"Sechsmal dreiundsechzig Euro. Damit kommst du überall hin, wo du früher nur vor der Tür gestanden hast." },
 
   /* ---- Geräte, die niemand braucht ---- */
   { p:35.00, e:"eine Popcornmaschine",                v:"Popcornmaschinen" },
