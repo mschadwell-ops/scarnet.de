@@ -40,7 +40,7 @@ weil man sie selbst nie geht.
 | Nr. | Prüfung | Der Fehler dahinter |
 |-----|---------|---------------------|
 | 1 | Jede angesprochene Kennung existiert im Markup | Das Skript griff auf einen Kasten zu, den das Markup nicht mehr hatte. `zeichnen()` brach ab, im Countdown blieb „In –“ stehen. |
-| 2 | Der Startblock steht hinter allen Konstanten | Der gemerkte Zugang meldet mitten im Laden an und ruft `zeichnen()` auf. Alles, was danach mit `const` kommt, ist in der zeitlichen Totzone. Daran ist das Feuerwerk gescheitert. |
+| 2 | Der Startblock steht hinter allen Konstanten; `FASSUNG`, `ERWARTET` und `FASSUNG_DATUM` passen zusammen | Der gemerkte Zugang meldet mitten im Laden an und ruft `zeichnen()` auf. Alles, was danach mit `const` kommt, ist in der zeitlichen Totzone. Daran ist das Feuerwerk gescheitert. |
 | 3 | Alle vier Einstiegswege | Beim Bauen meldet man sich über das Formular an. Der gemerkte Zugang ist der Weg, den die Leute nehmen — und der lief nie durch. |
 | 4 | Zeitliche Randzustände von Tag 0 bis 4000 | Ein Bereich war an Tag 0 leer, weil immer mit siebzehn Tagen getestet wurde. |
 | 5 | Der Moment des Centwechsels | Betrag und Münze waren in jedem Zustand richtig, nur im Übergang nicht. |

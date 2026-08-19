@@ -267,6 +267,12 @@ function starten(){
     $("speicherWarnung").textContent =
       "Dieser Browser lässt kein Speichern zu — die Angaben gelten nur, solange die Seite offen ist.";
   }
+
+  /* Ganz unten in den Einstellungen: welcher Stand hier gerade laeuft.
+     Wenn etwas gemeldet wird, steht damit sofort fest, ob es die aktuelle
+     Fassung war oder eine aus dem Zwischenspeicher. */
+  $("fassungZeile").textContent =
+    "Fassung " + FASSUNG + " · " + FASSUNG_DATUM + " · by scaR";
   wellenZeichnen();
 
   zeichnen();

@@ -81,6 +81,16 @@ function pruefung(){
     "Startblock steht hinter der letzten Konstanten"
     + (startAb > letzteDekl ? "" : " — der gemerkte Zugang läuft sonst in die Totzone"));
 
+  /* Fassungsnummer an drei Stellen: die Konstante in basis.js, die
+     Erwartung im Waechter oben im Markup, und das Datum daneben. Wer eine
+     davon anfasst und die andere vergisst, sperrt sich die Seite selbst
+     aus oder zeigt unten einen Stand an, den es nie gab. */
+  const erw = /var ERWARTET = (\d+)/.exec(document.documentElement.innerHTML);
+  pruef(erw && Number(erw[1]) === FASSUNG,
+    "FASSUNG " + FASSUNG + " und ERWARTET " + (erw ? erw[1] : "?") + " stimmen ueberein");
+  pruef(/^\d\d\.\d\d\.\d{4}$/.test(FASSUNG_DATUM),
+    "FASSUNG_DATUM ist ein Datum (" + FASSUNG_DATUM + ")");
+
   /* -------------------------------------------------------------------
      3. Die vier Einstiegswege. Ich melde mich beim Bauen immer über das
      Formular an — der gemerkte Zugang ist der, den die Leute nehmen, und
