@@ -178,9 +178,6 @@ function dauerAusMinuten(minuten){
 
 /* Mit Uhrzeit, weil die jetzt in die Rechnung eingeht — so lässt sich auch
    nachsehen, was tatsächlich eingetragen wurde. */
-const datumLang = ts => new Date(ts).toLocaleString("de-DE",
-  { weekday:"long", day:"numeric", month:"long", year:"numeric",
-    hour:"2-digit", minute:"2-digit" }) + " Uhr";
 
 /** Alle abgeleiteten Werte an einem Ort — so bleibt das Rendern dumm. */
 function rechnen(profil, jetzt = Date.now()){
@@ -355,14 +352,6 @@ function zeichnen(){
     $("zTage").textContent = zahl(w.tage);
     $("zTageWort").textContent = w.tage === 1 ? " Tag" : " Tage";
   }
-  /* Die Einheiten stehen kleiner und blasser als die Zahlen — sonst liest sich
-     die Zeile als Fließtext statt als Uhr. Deshalb hier innerHTML statt
-     textContent; eingesetzt werden nur eigene Zahlen, kein fremder Text. */
-  $("zUhr").innerHTML =
-      w.stunden + "<small> Std.</small> "
-    + String(w.minuten).padStart(2,"0") + "<small> Min.</small> "
-    + String(w.sekunden).padStart(2,"0") + "<small> Sek.</small>";
-  $("zSeit").textContent = "seit " + datumLang(profil.start);
 
   // Der Rauch der ersten 24 Stunden. Voll beim Start, gleichmäßig dünner,
   // und genau dann verschwunden, wenn Tag 1 freigeschaltet wird. Bewusst
@@ -1605,7 +1594,11 @@ function feuerwerk(tage){
   if (!karte) return;
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-  karte.querySelectorAll(".funken, .glueckwunsch").forEach(e => e.remove());
+  /* Nur die Funken wegraeumen. Frueher stand hier auch .glueckwunsch —
+     seit der Glueckwunsch aber die Ueberschrift SELBST ist, haette der
+     zweite Tageswechsel sie geloescht. Beim Testen genau so passiert: nach
+     dem zweiten Feuerwerk war die Karte nur noch Zahl. */
+  karte.querySelectorAll(".funken").forEach(e => e.remove());
 
   const feld = document.createElement("div");
   feld.className = "funken";
@@ -1649,15 +1642,27 @@ function feuerwerk(tage){
   void karte.offsetWidth;
   karte.classList.add("knall");
 
-  const gw = document.createElement("div");
-  gw.className = "glueckwunsch";
-  gw.textContent = tage === 1
-    ? "Herzlichen Glückwunsch — der erste Tag!"
-    : "Herzlichen Glückwunsch — Tag " + tage + "!";
-  karte.appendChild(gw);
+  /* Der Glückwunsch ersetzt den Text der Überschrift, statt als eigener
+     Kasten darüber zu liegen. In der schlanken Karte lagen sonst beide
+     übereinander — nachgemessen 24 bis 42 gegen 35 bis 52 Pixel. */
+  const kopf = karte.querySelector(".zaehler-kopf");
+  if (kopf){
+    const alt = kopf.dataset.alt || kopf.textContent;
+    kopf.dataset.alt = alt;
+    kopf.textContent = tage === 1
+      ? "Herzlichen Glückwunsch — der erste Tag!"
+      : "Herzlichen Glückwunsch — Tag " + tage + "!";
+    kopf.classList.remove("zurueck");
+    kopf.classList.add("glueckwunsch");
+    setTimeout(() => {
+      kopf.textContent = alt;
+      kopf.classList.remove("glueckwunsch");
+      kopf.classList.add("zurueck");
+      setTimeout(() => kopf.classList.remove("zurueck"), 600);
+    }, 4000);
+  }
 
   setTimeout(() => { feld.remove(); karte.classList.remove("knall"); }, 3400);
-  setTimeout(() => gw.remove(), 4000);
 }
 
 /* ---------------------------------------------------------------------

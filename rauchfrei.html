@@ -9,7 +9,7 @@
 
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230A1411'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='%2362D6AE' stroke-width='2.5'/%3E%3C/svg%3E">
 
-<link rel="stylesheet" href="css/rauchfrei.css?v=14">
+<link rel="stylesheet" href="css/rauchfrei.css?v=16">
 </head>
 
 <body>
@@ -91,12 +91,13 @@
         <i style="left:78%; width:140px; height:140px; animation-duration:16s; animation-delay:-12s; --drift:18px"></i>
         <i style="left:34%; width:200px; height:200px; animation-duration:24s; animation-delay:-7s;  --drift:10px"></i>
       </div>
-      <!-- Ueberschrift, Tageszahl, Uhr. Das Wort stand frueher ZWISCHEN den
-           beiden Zahlen und zerschnitt damit eine einzige Zeitangabe. -->
+      <!-- Nur die Ueberschrift und die Tageszahl. Stunden, Minuten und
+           Sekunden standen hier auch, aber die Karte darunter zeigt sie
+           ohnehin — im oberen Feld waren es dieselben Zahlen ein zweites
+           Mal, und zusammen wurde es zu viel. Das Startdatum steht unter
+           Einstellungen und Daten. -->
       <div class="zaehler-kopf">Rauchfrei seit</div>
       <div class="tage"><span id="zTage">0</span><small id="zTageWort"> Tage</small></div>
-      <div class="uhr" id="zUhr"></div>
-      <div class="seit" id="zSeit"></div>
     </div>
 
     <!-- Direkt hinter dem Zähler: erst wo du stehst, dann was als Nächstes kommt. -->
@@ -306,9 +307,9 @@
               print "</script>"; d = 1 } next }
             { print }' rauchfrei.html > _pruef.html
 -->
-<script src="js/basis.js?v=14"></script>
-<script src="js/inhalte.js?v=14"></script>
-<script src="js/rauchfrei.js?v=14"></script>
+<script src="js/basis.js?v=16"></script>
+<script src="js/inhalte.js?v=16"></script>
+<script src="js/rauchfrei.js?v=16"></script>
 
 <!-- Zwei Dinge koennen schiefgehen, und beide sehen fuer den Nutzer gleich aus:
      eine der Dateien laedt nicht, oder sie laedt in einer anderen Fassung als
@@ -321,7 +322,7 @@
      genau dem Fehler untergehen, den sie melden soll. -->
 <script>
 (function(){
-  var ERWARTET = 14, grund = "";
+  var ERWARTET = 16, grund = "";
   try {
     if (typeof kennung !== "function" || typeof SPRUECHE === "undefined"
         || typeof zeichnen !== "function")

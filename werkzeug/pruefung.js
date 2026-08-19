@@ -121,7 +121,7 @@ function pruefung(){
     .forEach(([t, s]) => {
       const e = stand(t, s);
       if (e) return bad("Tag " + t + ", " + s + " Uhr — wirft " + e.message);
-      const leer = ["zTage","zUhr","erfolgZahl","kGeld","cdZeit","cdTag"]
+      const leer = ["zTage","erfolgZahl","kGeld","cdZeit","cdTag"]
         .filter(id => !document.getElementById(id).textContent.trim());
       const platzhalter = document.getElementById("cdZeit").textContent.indexOf("–") >= 0;
       if (leer.length)      return bad("Tag " + t + " — leer: " + leer.join(", "));
@@ -226,7 +226,14 @@ function pruefung(){
      ------------------------------------------------------------------- */
   kopf("10. Feuerwerk");
   const karte = document.querySelector(".zaehler");
-  const sauber = () => karte.querySelectorAll(".funken,.glueckwunsch").forEach(e => e.remove());
+  /* Der Glueckwunsch steht jetzt IN der Ueberschrift, nicht mehr als eigener
+     Kasten — also auch die Klasse und den Text zuruecksetzen. */
+  const sauber = () => {
+    karte.querySelectorAll(".funken").forEach(e => e.remove());
+    const kf = karte.querySelector(".zaehler-kopf");
+    if (kf){ if (kf.dataset.alt) kf.textContent = kf.dataset.alt;
+            kf.classList.remove("glueckwunsch", "zurueck"); }
+  };
   sauber(); profil.gesehenerTag = 1; profil.start = Date.now() - 49*3600000;
   letzterTag = -1; zeichnen();
   pruef(!!karte.querySelector(".funken"), "läuft beim neuen Tag");
@@ -236,6 +243,31 @@ function pruefung(){
   sauber(); profil.gesehenerTag = 1; profil.start = Date.now() - 9*86400000;
   letzterTag = -1; zeichnen();
   pruef(karte.querySelectorAll(".funken").length === 1, "nach drei Tagen Abwesenheit nur eine Feier");
+  sauber();
+
+
+  /* -------------------------------------------------------------------
+     11. Zweimal feiern hintereinander. Der Glueckwunsch ersetzt den Text
+     der Ueberschrift und traegt dazu deren Klasse. Solange das Aufraeumen
+     nach ".glueckwunsch" suchte, loeschte der zweite Tageswechsel die
+     Ueberschrift dauerhaft — die Karte bestand danach nur noch aus der
+     Zahl. Kein Markup-Fehler, sondern erst zur Laufzeit sichtbar.
+     ------------------------------------------------------------------- */
+  kopf("11. Zweimal feiern");
+  const kf0 = karte.querySelector(".zaehler-kopf");
+  const urText = kf0 ? (kf0.dataset.alt || kf0.textContent) : null;
+  for (let n = 0; n < 2; n++){
+    sauber();
+    profil.gesehenerTag = 1 + n; profil.start = Date.now() - (49 + n*24)*3600000;
+    letzterTag = -1; zeichnen();
+  }
+  const kf1 = karte.querySelector(".zaehler-kopf");
+  pruef(!!kf1, "Überschrift ist nach zwei Feiern noch da");
+  if (kf1){
+    kf1.textContent = urText; kf1.classList.remove("glueckwunsch","zurueck");
+    pruef(karte.children.length >= 3, "Karte hat noch alle Bausteine ("
+      + [...karte.children].map(e => e.className.split(" ")[0]).join(", ") + ")");
+  }
   sauber();
 
   zeilen.unshift(fehler === 0
