@@ -716,7 +716,6 @@ const PREISE = [
 
   /* ---- Supermarkt und Haushalt ---- */
   { p:1.20,  e:"ein Liter Milch",                     v:"Liter Milch" },
-  { p:1.49,  e:"eine Rügenwalder Leberwurst",         v:"Rügenwalder Leberwürste" },   // belegt
   { p:1.50,  e:"eine Tafel Ritter Sport",             v:"Tafeln Ritter Sport" },
   { p:1.80,  e:"eine Dose Ravioli",                   v:"Dosen Ravioli" },
   { p:2.40,  e:"ein Päckchen Butter",                 v:"Päckchen Butter" },
@@ -737,7 +736,7 @@ const PREISE = [
   { p:13.00, e:"eine Flasche Jägermeister",           v:"Flaschen Jägermeister" },
   { p:14.00, e:"ein Kasten Stauder",                  v:"Kästen Stauder" },
   { p:14.00, e:"ein Puzzle mit tausend Teilen",       v:"Puzzles mit tausend Teilen" },
-  { p:14.99, e:"ein Kasten Cola",                     v:"Kästen Cola" },
+  { p:14.99, e:"ein Kasten Cola Zero",                v:"Kästen Cola Zero" },
   { p:15.00, e:"ein Wackeldackel",                    v:"Wackeldackel" },
   { p:15.00, e:"ein Blumenstrauß",                    v:"Blumensträuße" },
   { p:20.00, e:"ein Rasensprenger",                   v:"Rasensprenger" },
@@ -757,7 +756,6 @@ const PREISE = [
   { p:220.00,e:"ein Trampolin für den Garten",        v:"Trampoline für den Garten" },
 
   /* ---- Essen ---- */
-  { p:3.50,  e:"eine Bratwurst am Stand",             v:"Bratwürste am Stand" },
   { p:4.50,  e:"ein Fischbrötchen",                   v:"Fischbrötchen" },
   { p:6.00,  e:"eine Portion Reibekuchen",            v:"Portionen Reibekuchen" },
   { p:6.50,  e:"ein halbes Hähnchen vom Grill",       v:"halbe Hähnchen vom Grill" },  // belegt
