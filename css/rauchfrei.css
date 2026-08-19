@@ -480,18 +480,25 @@
   .h2-zahl{ color:var(--air); letter-spacing:0; }
 
   /* ---------- Trophäen ----------
-     Bewusst wenige und bewusst rund: Eine Reihe Medaillen, die man von links
-     nach rechts abarbeitet. Geholte leuchten, die nächste wartet mit offenem
-     Ring, der Rest liegt dunkel. */
+     Bewusst wenige und bewusst rund: Medaillen, die man der Reihe nach
+     abarbeitet. Geholte leuchten, die nächste wartet mit offenem Ring, der
+     Rest liegt dunkel.
+
+     Vorher stand die Reihe in einer waagerechten Rolle. Acht Scheiben
+     brauchen 690 Pixel, die Karte hat 299 — auf dem Handy war ab der
+     vierten Schluss, und zwar mitten in der Scheibe. Das sah nicht nach
+     „wisch mich“ aus, sondern nach abgeschnitten, und genau so wurde es
+     auch gemeldet.
+
+     Jetzt ein Raster, das sich selbst aufteilt: auf dem Handy vier und
+     vier, auf breiten Fenstern alle acht in einer Reihe. Nichts liegt mehr
+     ausserhalb des Bildes, und es gibt nichts zu wischen. */
   .trophaeen{
     list-style:none; margin:0; padding:4px 2px 2px;
-    display:flex; gap:14px;
-    overflow-x:auto; scrollbar-width:none;
+    display:grid; grid-template-columns:repeat(auto-fit, minmax(60px, 1fr));
+    gap:15px 8px;
   }
-  .trophaeen::-webkit-scrollbar{ display:none; }
-  .trophaeen li{
-    flex:none; width:74px; text-align:center;
-  }
+  .trophaeen li{ text-align:center; min-width:0; }
 
   /* Die Scheibe selbst ist nur der Kern. Der Ring aussen herum ist die
      eigentliche Anzeige: beim nächsten Ziel füllt er sich anteilig, bei
