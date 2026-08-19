@@ -9,7 +9,7 @@
 
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230A1411'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='%2362D6AE' stroke-width='2.5'/%3E%3C/svg%3E">
 
-<link rel="stylesheet" href="css/rauchfrei.css?v=16">
+<link rel="stylesheet" href="css/rauchfrei.css?v=17">
 </head>
 
 <body>
@@ -110,17 +110,6 @@
       <blockquote class="nx-belohnung" id="cdText"></blockquote>
     </div>
 
-    <figure class="karte spruch" style="margin-top:24px">
-      <div class="art" id="sArt"></div>
-      <blockquote id="sText"></blockquote>
-    </figure>
-
-    <figure class="karte spruch stattdessen" id="stattKarte">
-      <div class="art">Mach doch lieber <span class="wo" id="stWo"></span></div>
-      <blockquote id="stText"></blockquote>
-      <button type="button" class="st-knopf" id="bStatt">Noch eine Idee</button>
-    </figure>
-
     <!-- Das Geld steht allein, damit die Antwort auf „Was kriege ich dafür“
          direkt darunter erscheint und nicht hinter den anderen Kacheln. -->
     <div class="karte geldkarte">
@@ -154,17 +143,34 @@
 
     <!-- Ein Block statt zweier. Die Baender decken den ersten Monat ab,
          die Chips darunter alles Weitere; jedes Feld ist antippbar. -->
-    <h2>Erfolge <span class="h2-zahl" id="erfolgZahl"></span></h2>
-    <div id="erfolge"></div>
-    <div class="erfolg-antwort" id="erfolgAntwort"></div>
+    <div class="karte block">
+      <h2>Erfolge <span class="h2-zahl" id="erfolgZahl"></span></h2>
+      <div id="erfolge"></div>
+      <div class="erfolg-antwort" id="erfolgAntwort"></div>
+    </div>
 
-    <h2>Standhaft <span class="h2-zahl" id="wellenZahl"></span></h2>
-    <ul class="trophaeen wellen" id="wellen"></ul>
-    <p class="tr-text" id="wellenText"></p>
+    <div class="karte block">
+      <h2>Standhaft <span class="h2-zahl" id="wellenZahl"></span></h2>
+      <ul class="trophaeen wellen" id="wellen"></ul>
+      <p class="tr-text" id="wellenText"></p>
+    </div>
 
-    <h2 id="titelFrei">Freigeschaltet <span class="h2-zahl" id="anzahlFrei"></span></h2>
-    <ul class="meilen" id="tage"></ul>
-    <p class="davor" id="tageDavor"></p>
+    <div class="karte block" id="blockFrei">
+      <h2 id="titelFrei">Freigeschaltet <span class="h2-zahl" id="anzahlFrei"></span></h2>
+      <ul class="meilen" id="tage"></ul>
+      <p class="davor" id="tageDavor"></p>
+    </div>
+
+    <figure class="karte spruch">
+      <div class="art" id="sArt"></div>
+      <blockquote id="sText"></blockquote>
+    </figure>
+
+    <figure class="karte spruch stattdessen" id="stattKarte">
+      <div class="art">Mach doch lieber <span class="wo" id="stWo"></span></div>
+      <blockquote id="stText"></blockquote>
+      <button type="button" class="st-knopf" id="bStatt">Noch eine Idee</button>
+    </figure>
 
     <details class="mehr">
       <summary>Einstellungen und Daten</summary>
@@ -307,9 +313,9 @@
               print "</script>"; d = 1 } next }
             { print }' rauchfrei.html > _pruef.html
 -->
-<script src="js/basis.js?v=16"></script>
-<script src="js/inhalte.js?v=16"></script>
-<script src="js/rauchfrei.js?v=16"></script>
+<script src="js/basis.js?v=17"></script>
+<script src="js/inhalte.js?v=17"></script>
+<script src="js/rauchfrei.js?v=17"></script>
 
 <!-- Zwei Dinge koennen schiefgehen, und beide sehen fuer den Nutzer gleich aus:
      eine der Dateien laedt nicht, oder sie laedt in einer anderen Fassung als
@@ -322,7 +328,7 @@
      genau dem Fehler untergehen, den sie melden soll. -->
 <script>
 (function(){
-  var ERWARTET = 16, grund = "";
+  var ERWARTET = 17, grund = "";
   try {
     if (typeof kennung !== "function" || typeof SPRUECHE === "undefined"
         || typeof zeichnen !== "function")

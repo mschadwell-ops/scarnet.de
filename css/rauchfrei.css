@@ -83,7 +83,32 @@
     color:var(--muted); font-weight:600; margin:38px 0 14px;
     padding-bottom:9px; border-bottom:1px solid var(--line);
   }
-  .karte{ background:var(--surface); border:1px solid var(--line); border-radius:12px; }
+  /* ---------- Ein Kartenstandard für alles ----------
+     Vorher hatte fast jeder Block eigene Werte: drei verschiedene Abstände
+     (24, 26 und 38 Pixel), vier verschiedene Polsterungen, drei
+     verschiedene Randfarben — und die Abschnitte Erfolge, Standhaft und
+     Freigeschaltet gar keinen Rahmen, sondern nur eine Überschrift mit
+     Unterstrich. Das sah nach Zufall aus, weil es Zufall war: jeder Block
+     ist zu seiner Zeit entstanden und hat mitgebracht, was gerade passte.
+
+     Jetzt gilt für jede Karte dasselbe. Betonung tragen die Inhalte —
+     die grüne Überschrift bei „Als Nächstes“, die Messingzahl bei
+     „Gespart“ — nicht mehr der Rahmen. Wer einen Block heraushebt, indem
+     er den Rahmen einfärbt, hat nach dem fünften Block keine Farbe mehr
+     übrig. */
+  .karte{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:20px 18px;
+    margin:0 0 16px;
+  }
+
+  /* Überschriften sitzen jetzt IN den Karten. Der große obere Abstand von
+     38 Pixeln stammt aus der Zeit, als sie freistehend waren und Luft nach
+     oben brauchten — in einer Karte gibt die Polsterung sie bereits. */
+  .karte h2{ margin:0 0 14px; }
+
 
   button{
     font:inherit; cursor:pointer; border-radius:8px;
@@ -138,7 +163,9 @@
   .anmelde-box form{ padding:24px; }
 
   /* ---------- Zähler ---------- */
-  .zaehler{ position:relative; text-align:center; padding:34px 16px 26px; overflow:hidden; }
+  /* Nur was der Zaehler wirklich braucht: mehr Hoehe, Mitte, und einen
+     Rahmen fuer Rauch und Funken. */
+  .zaehler{ position:relative; text-align:center; padding:32px 16px 28px; overflow:hidden; }
   .atem{
     position:absolute; left:50%; top:44%; width:340px; height:340px;
     transform:translate(-50%,-50%);
@@ -246,7 +273,6 @@
   }
 
   /* ---------- Spruch ---------- */
-  .spruch{ margin:0 0 24px; padding:20px 22px; }
   .spruch .art{
     font-size:10.5px; letter-spacing:.18em; text-transform:uppercase;
     color:var(--air); font-weight:600; margin-bottom:9px;
@@ -298,8 +324,8 @@
   .kacheln{
     display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
     gap:1px; background:var(--line-soft);
-    border:1px solid var(--line); border-radius:12px; overflow:hidden;
-    margin-bottom:24px;
+    border:1px solid var(--line); border-radius:14px; overflow:hidden;
+    margin:0 0 16px;
   }
   .kachel{ background:var(--surface); padding:18px 20px; }
   .kachel .k{
@@ -357,12 +383,6 @@
      Die Karte ist bewusst die auffälligste auf der Seite: Sie zeigt nicht,
      was war, sondern was gleich kommt — mit laufendem Countdown und einem
      Balken, der sich sichtbar füllt. */
-  .naechstes{
-    margin-top:26px;
-    padding:20px 22px 22px;
-    border-color:rgba(98,214,174,.42);
-    background:linear-gradient(180deg, rgba(98,214,174,.075), transparent 72%), var(--surface);
-  }
   .nx-kopf{
     font-size:10.5px; letter-spacing:.18em; text-transform:uppercase;
     color:var(--air); font-weight:600;
@@ -809,13 +829,6 @@
   }
 
   /* ---------- Geldkarte mit Knopf und Antwort ---------- */
-  .geldkarte{
-    /* Oben UND unten. Vorher stand hier nur margin-top, dadurch klebte die
-       Karte am unteren Rand an der Kachelgruppe darunter. */
-    margin:24px 0;
-    padding:18px 20px 20px;
-    border-color:rgba(217,169,79,.3);
-  }
   .geldkarte .k{
     font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--faint);
   }
@@ -960,7 +973,7 @@
     color:var(--muted); cursor:pointer; font-weight:600; padding:8px 0;
   }
   details.mehr summary:hover{ color:var(--text); }
-  .mehr-inhalt{ padding:18px 20px; margin-top:10px; }
+  .mehr-inhalt{ margin-top:10px; }
   .knopf-zeile{ display:flex; flex-wrap:wrap; gap:9px; margin-top:6px; }
   .trenner{ height:1px; background:var(--line); margin:22px 0; }
   .abschnitt-titel{

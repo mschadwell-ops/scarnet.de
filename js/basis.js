@@ -28,7 +28,7 @@
    Mit ?v= kann das nicht mehr vorkommen: neues HTML verweist auf neue
    Adressen, die im Zwischenspeicher gar nicht liegen. Als Netz prueft die
    Seite die Zahl zusaetzlich gegen. */
-const FASSUNG = 16;
+const FASSUNG = 17;
 
 /* Zeit. Steht hier, weil TROPHAEEN in inhalte.js damit rechnet und diese
    Datei zuerst geladen wird. */
