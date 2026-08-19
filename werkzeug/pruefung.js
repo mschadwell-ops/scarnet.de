@@ -12,7 +12,19 @@
 
    Aufruf im Browser:  pruefung()
    ===================================================================== */
-function pruefung(){
+function pruefung(kennwort){
+  /* Das Kennwort kommt als Argument herein und steht NICHT in dieser Datei.
+     Es stand hier einmal im Klartext — in einem oeffentlichen Repository und
+     damit ueber raw.githubusercontent.com fuer jeden abrufbar. Ein
+     Pruefwerkzeug, das die Zugaenge verraet, die es pruefen soll, ist
+     schlimmer als gar keins.
+
+     Aufruf:  pruefung("kennwort")   oder  pruefung()  und dann eintippen. */
+  const pass = kennwort || (typeof prompt === "function"
+    ? prompt("Kennwort fuer den Pruefzugang (steht bewusst nicht im Repository)")
+    : "");
+  if (!pass) return "Abgebrochen: ohne Kennwort laesst sich die Anmeldung nicht pruefen.";
+
   const zeilen = [];
   let fehler = 0;
   const ok   = (t)    => zeilen.push("  ok    " + t);
@@ -24,7 +36,7 @@ function pruefung(){
   const ab   = id     => { const e = document.getElementById(id);
                            if (e) e.dispatchEvent(new Event("submit",{cancelable:true,bubbles:true})); };
   const anmeldenAlsMarie = () => {
-    setz("fName","Marie"); setz("fPass","NichtMehr2026Rauchen!"); ab("anmeldeForm");
+    setz("fName","Marie"); setz("fPass", pass); ab("anmeldeForm");
   };
   const einrichten = (msHer, menge) => {
     setz("fStart", inFeld(Date.now() - msHer)); setz("fMenge", String(menge || 20));

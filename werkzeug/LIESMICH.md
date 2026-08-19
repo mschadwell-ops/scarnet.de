@@ -22,11 +22,17 @@ awk '/^<link rel="stylesheet"/ { print "<style>";
      { print }' rauchfrei.html > _pruef.html
 ```
 
-Dann `_pruef.html` im Browser öffnen und in der Konsole aufrufen:
+Dann `_pruef.html` im Browser öffnen und in der Konsole aufrufen — das
+Kennwort des Prüfzugangs kommt als Argument herein und steht bewusst
+**nicht** im Repository:
 
 ```
-pruefung()
+pruefung("kennwort")
 ```
+
+Ohne Argument fragt der Lauf danach. Es stand einmal im Klartext in
+`werkzeug/pruefung.js` — in einem oeffentlichen Repository. Wer ein
+Kennwort in ein Pruefwerkzeug schreibt, veroeffentlicht es.
 
 `_pruef*.html` ist über `.gitignore` ausgeschlossen und wird nie ausgeliefert.
 
