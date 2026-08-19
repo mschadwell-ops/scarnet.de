@@ -350,13 +350,18 @@ function zeichnen(){
   if (w.tage < 1){
     const anteil = Math.floor((w.verstrichen / TAG) * 100) / 100;
     $("zTage").textContent = anteil.toFixed(2).replace(".", ",");
-    $("zTageWort").textContent = "Tage rauchfrei";
+    $("zTageWort").textContent = " Tage";
   } else {
     $("zTage").textContent = zahl(w.tage);
-    $("zTageWort").textContent = w.tage === 1 ? "Tag rauchfrei" : "Tage rauchfrei";
+    $("zTageWort").textContent = w.tage === 1 ? " Tag" : " Tage";
   }
-  $("zUhr").textContent =
-    `${w.stunden} Std. ${String(w.minuten).padStart(2,"0")} Min. ${String(w.sekunden).padStart(2,"0")} Sek.`;
+  /* Die Einheiten stehen kleiner und blasser als die Zahlen — sonst liest sich
+     die Zeile als Fließtext statt als Uhr. Deshalb hier innerHTML statt
+     textContent; eingesetzt werden nur eigene Zahlen, kein fremder Text. */
+  $("zUhr").innerHTML =
+      w.stunden + "<small> Std.</small> "
+    + String(w.minuten).padStart(2,"0") + "<small> Min.</small> "
+    + String(w.sekunden).padStart(2,"0") + "<small> Sek.</small>";
   $("zSeit").textContent = "seit " + datumLang(profil.start);
 
   // Der Rauch der ersten 24 Stunden. Voll beim Start, gleichmäßig dünner,

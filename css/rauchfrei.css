@@ -219,18 +219,37 @@
     .rauch i{ animation:none; opacity:.7; bottom:5%; }
     .rauch::before, .rauch::after{ animation:none; }
   }
-  .tage{
-    font-size:clamp(66px,19vw,124px); font-weight:200; line-height:1;
-    letter-spacing:-.045em; font-variant-numeric:tabular-nums; color:var(--text);
-  }
-  .tage-wort{
-    margin-top:6px; font-size:12px; letter-spacing:.2em; text-transform:uppercase;
+  /* Aufbau: Überschrift, Tageszahl, direkt darunter die Uhr.
+
+     Vorher stand das Wort „Tage rauchfrei“ ZWISCHEN den beiden Zahlen und
+     zerschnitt damit eine einzige Zeitangabe in zwei scheinbar unabhängige
+     Anzeigen — die Uhr sah aus wie ein zweiter Zähler. Dazu war sie grau
+     gesetzt wie eine Fußnote, obwohl sie zur Hauptangabe gehört. Vom Nutzer
+     gemeldet, und er hatte recht.
+
+     Jetzt trägt die Überschrift das Wort, die Einheit hängt klein an der
+     Zahl, und die Uhr steht als zweite Zeile derselben Angabe direkt
+     darunter — heller und größer als zuvor. */
+  .zaehler-kopf{
+    font-size:10.5px; letter-spacing:.2em; text-transform:uppercase;
     color:var(--air); font-weight:600;
   }
-  .uhr{
-    margin-top:14px; font-size:15px; color:var(--muted); font-variant-numeric:tabular-nums;
+  .tage{
+    margin-top:8px;
+    font-size:clamp(60px,17vw,96px); font-weight:200; line-height:1;
+    letter-spacing:-.045em; font-variant-numeric:tabular-nums; color:var(--text);
   }
-  .seit{ margin-top:6px; font-size:12.5px; color:var(--faint); }
+  /* Die Einheit sitzt an der Zahl statt in einer eigenen Zeile. Kleiner und
+     ruhiger, damit die Zahl der Held bleibt. */
+  .tage small{
+    font-size:.32em; font-weight:400; letter-spacing:.02em; color:var(--muted);
+  }
+  .uhr{
+    margin-top:2px; font-size:20px; font-weight:300; color:var(--text);
+    font-variant-numeric:tabular-nums; letter-spacing:.01em;
+  }
+  .uhr small{ font-size:.62em; color:var(--faint); font-weight:400; }
+  .seit{ margin-top:10px; font-size:12.5px; color:var(--faint); }
 
   /* ---------- Spruch ---------- */
   .spruch{ margin:0 0 24px; padding:20px 22px; }
