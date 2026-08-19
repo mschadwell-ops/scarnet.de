@@ -862,7 +862,14 @@ $("bWofuer").onclick = () => {
     $("wfRest").innerHTML =
       (k.witz ? `<p class="wf-witz">${esc(k.witz)}</p>` : "") +
       (k.oder ? `<p class="wf-oder">${esc(k.oder)}</p>` : "") +
-      `<p class="wf-fehlt">${esc(k.fehlt)}</p>`;
+      /* Den Betrag hervorheben. Die Ersetzung läuft auf dem bereits
+         entschärften Text — Ziffern, Komma und das Eurozeichen bleiben davon
+         unberührt, es lässt sich darüber also nichts einschleusen. */
+      `<p class="wf-fehlt">${esc(k.fehlt).replace(/(\d[\d.,]*\s*€)/, "<b>$1</b>")}</p>`;
+
+    /* Klasse wieder abnehmen. Der Wisch blendet zwar selbst aus, aber ohne
+       das Abnehmen ließe er sich beim nächsten Zug nicht neu starten. */
+    kasten.classList.remove("zieht");
     zieht = false;
   };
 

@@ -864,17 +864,28 @@
     border-top:1px solid rgba(217,169,79,.28);
   }
 
-  /* Lichtwisch quer über die Karte, wenn gezogen wird. */
+  /* Lichtwisch quer über die Karte, wenn gezogen wird.
+
+     Er stand vorher ohne forwards da. Nach dem Ablauf faellt eine Animation
+     auf den Ausgangszustand zurueck — der Streifen parkte also am linken
+     Rand und blieb dort als helles Rechteck ueber die volle Hoehe stehen,
+     mitten im Text. Bei kurzen Antworten fiel das nicht auf, bei langen
+     schnitt es quer durch.
+
+     Jetzt beginnt er ausserhalb der Karte, endet ausserhalb, und blendet
+     dabei aus. top:0/bottom:0 heisst: er ueberstreicht immer die ganze
+     Antwort, egal wie lang der Text ist. */
   .wofuer.zieht::before{
     content:"";
-    position:absolute; top:0; bottom:0; left:0; width:60%;
-    background:linear-gradient(105deg, transparent, rgba(255,231,178,.20) 45%, transparent);
-    animation:wisch 1.5s cubic-bezier(.3,0,.2,1) 1;
+    position:absolute; top:0; bottom:0; left:-65%; width:65%;
+    background:linear-gradient(105deg, transparent, rgba(255,231,178,.22) 45%, transparent);
+    animation:wisch 1.5s cubic-bezier(.3,0,.2,1) 1 forwards;
     pointer-events:none;
   }
   @keyframes wisch{
-    from{ transform:translateX(-110%); }
-    to  { transform:translateX(280%); }
+    from{ transform:translateX(0);    opacity:1; }
+    85%  { opacity:1; }
+    to  { transform:translateX(300%); opacity:0; }
   }
 
   /* Während der Ziehung blass und leicht unruhig, beim Treffer rastet es ein. */
@@ -910,11 +921,18 @@
     color:var(--muted); max-width:58ch;
   }
   .wf-oder{ color:var(--faint); }
+  /* „Noch 1,02 €, dann ist ein Kabarettabend drin.“ war als Fussnote
+     gesetzt — die blasseste Zeile im Kasten, obwohl sie die motivierendste
+     Angabe traegt. Jetzt ein eigener kleiner Block, und der Betrag steht in
+     Messing. */
   .wf-fehlt{
-    margin:16px 0 0; padding-top:13px;
-    border-top:1px solid var(--line);
-    font-size:13.5px; color:var(--faint);
+    margin:16px 0 0; padding:12px 14px;
+    border-radius:9px;
+    background:rgba(217,169,79,.07);
+    border:1px solid rgba(217,169,79,.22);
+    font-size:14px; line-height:1.5; color:var(--muted);
   }
+  .wf-fehlt b{ color:var(--brass); font-weight:600; }
 
   /* ---------- Einstellungen ---------- */
   details.mehr{ margin-top:28px; }
