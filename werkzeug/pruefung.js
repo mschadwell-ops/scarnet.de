@@ -121,7 +121,7 @@ function pruefung(){
     .forEach(([t, s]) => {
       const e = stand(t, s);
       if (e) return bad("Tag " + t + ", " + s + " Uhr — wirft " + e.message);
-      const leer = ["zTage","erfolgZahl","kGeld","cdZeit","cdTag"]
+      const leer = ["zTage","kGeld","cdZeit","cdTag"]
         .filter(id => !document.getElementById(id).textContent.trim());
       const platzhalter = document.getElementById("cdZeit").textContent.indexOf("–") >= 0;
       if (leer.length)      return bad("Tag " + t + " — leer: " + leer.join(", "));
@@ -198,6 +198,36 @@ function pruefung(){
   pruef(nullEinh.length === 0, "keine Einheit mit Null davor" + (nullEinh.length ? ": " + nullEinh[0] : ""));
 
   /* -------------------------------------------------------------------
+     8b. Leere Bereiche verschwinden — und mit ihnen ihre Überschrift.
+     Ein Abschnittstitel mit nichts darunter war das Erste, was der Nutzer
+     an dieser Seite gemeldet hat. Beim zweiten Bereich ist mir derselbe
+     Fehler noch einmal durchgegangen, weil ich nie mit null Wellen
+     getestet habe. Jetzt prüft das hier.
+     ------------------------------------------------------------------- */
+  kopf("8b. Leere Bereiche");
+  anmeldenAlsMarie();
+  profil.wellen = 0; profil.wellenNacht = 0; profil.ruheErreicht = false;
+  const sicht = id => { const e = document.getElementById(id); return !!e && !e.hidden; };
+
+  stand(0, 6);
+  pruef(!sicht("blockFrei"),      "Tag 0 — Freigeschaltet ist weg");
+  pruef(!sicht("blockStand"),     "ohne Welle — Standhaft ist weg");
+  pruef(!sicht("titelGeschafft"), "ohne Inhalt — Überschrift „Geschafft“ ist weg");
+
+  stand(3, 6);
+  pruef(sicht("blockFrei"),       "Tag 3 — Freigeschaltet ist da");
+  pruef(sicht("titelGeschafft"),  "Tag 3 — Überschrift „Geschafft“ ist da");
+
+  /* Kurz, lang, wieder kurz. */
+  stand(9, 6);
+  const tagzeilen = () => document.querySelectorAll("#tage li.da").length;
+  pruef(tagzeilen() === 3, "eingeklappt drei Tage" + (tagzeilen() === 3 ? "" : ", sondern " + tagzeilen()));
+  document.getElementById("bMehrTage").click();
+  pruef(tagzeilen() === 9, "aufgeklappt neun Tage" + (tagzeilen() === 9 ? "" : ", sondern " + tagzeilen()));
+  document.getElementById("bMehrTage").click();
+  pruef(tagzeilen() === 3, "wieder eingeklappt" + (tagzeilen() === 3 ? "" : ", sondern " + tagzeilen() + " Zeilen"));
+
+  /* -------------------------------------------------------------------
      9. Nichts wirft. Der Reihe nach alles anfassen, was Knöpfe haben.
      ------------------------------------------------------------------- */
   kopf("9. Bedienelemente");
@@ -208,8 +238,8 @@ function pruefung(){
     try { e.click(); ok(was); } catch (err){ bad(was + " — wirft " + err.message); }
   };
   knopf("bWofuer", "Was kriege ich dafür");
-  const feld = document.querySelector('#erfolge [data-tag="7"]');
-  if (!feld) bad("Tagesfeld im Erfolgsbereich");
+  const feld = document.querySelector("#tage [data-tag]");
+  if (!feld) bad("Tageszeile in Freigeschaltet");
   else { feld.click();
          pruef(!document.getElementById("tagfenster").hidden
                && document.getElementById("tfZig").textContent.length > 0,

@@ -341,12 +341,11 @@
 
   /* ---------- Meilensteine ---------- */
   .meilen{ list-style:none; margin:0; padding:0; }
-  .meilen li{
-    display:grid; grid-template-columns:20px 1fr auto; gap:12px;
-    align-items:baseline; padding:11px 2px;
-    border-bottom:1px dashed var(--line);
-  }
+  .meilen li{ border-bottom:1px dashed var(--line); }
   .meilen li:last-child{ border-bottom:none; }
+  .meilen li.rest{
+    padding:11px 2px; font-size:12px; color:var(--faint); letter-spacing:.06em;
+  }
   .meilen .punkt{
     width:11px; height:11px; border-radius:50%; align-self:center;
     border:1.5px solid var(--line); background:none;
@@ -369,10 +368,51 @@
   .meilen li.frisch{ animation:frischFrei 3s ease-out 1; border-radius:8px; }
   @media (prefers-reduced-motion:reduce){ .meilen li.frisch{ animation:none; } }
 
-  .davor{
-    margin:12px 2px 0; font-size:12px; color:var(--faint);
-    letter-spacing:.06em;
+  /* Jede Zeile ist ein Knopf. Angetippt zeigt sie im Tagesfenster, was an
+     genau diesem Tag zusammengekommen ist. Vorher hingen diese Fenster an
+     den Feldern im Block „Erfolge“; der ist weg, die Funktion bleibt.
+     Das Raster sitzt deshalb am Knopf und nicht mehr am Listeneintrag —
+     sonst wäre die Trefferfläche der schmale Streifen um den Text. */
+  .meilen .mz{
+    width:100%; margin:0;
+    display:grid; grid-template-columns:18px 1fr auto; gap:10px;
+    align-items:baseline; padding:11px 2px;
+    background:none; border:none; border-radius:8px;
+    text-align:left; font:inherit; color:inherit; cursor:pointer;
   }
+  /* Der Pfeil haengt am Tagesetikett und steht nicht in einer eigenen
+     Spalte. Als eigene Spalte war er ein blasser Strich am Kartenrand, weit
+     weg vom Text und ohne erkennbaren Bezug; hier liest sich „TAG 9 ›“ als
+     eine Marke, die man antippt. */
+  .meilen .pfeil{
+    font-style:normal; margin-left:5px; font-size:14px; color:var(--air);
+    display:inline-block; transition:transform .15s;
+  }
+  .meilen .mz:hover .pfeil{ color:var(--air); transform:translateX(2px); }
+  .meilen .mz:hover .was{ color:var(--text); }
+  .meilen .mz:focus-visible{ outline:2px solid var(--air); outline-offset:1px; }
+
+  /* Der Rest der Tage. Sechs Einträge waren der größte Block der ganzen
+     Seite — ein Viertel ihrer Höhe für eine Liste, die nur zurückblickt.
+     Jetzt stehen drei da, der Rest kommt auf Wunsch. */
+  .mehr-tage{
+    display:block; width:100%; margin:13px 0 0; padding:10px;
+    background:none; border:1px dashed var(--line); border-radius:9px;
+    color:var(--faint); font-size:12px; letter-spacing:.06em;
+    font-family:inherit; cursor:pointer;
+  }
+  .mehr-tage:hover{ color:var(--air); border-color:var(--air); }
+
+  /* ---------- Zwischenüberschriften ----------
+     Kein Rahmen, keine Fläche, keine eigene Farbe: sie sollen gliedern und
+     nicht mitkonkurrieren. Der Abstand nach oben ist größer als der nach
+     unten, damit die Zeile zu dem gehört, was ihr folgt. */
+  .gruppe-titel{
+    margin:28px 4px 11px;
+    font-size:10px; letter-spacing:.18em; text-transform:uppercase;
+    color:var(--faint); font-weight:600;
+  }
+  .gruppe-titel:first-child{ margin-top:0; }
   /* Ein Abschnitt ohne Inhalt wird ganz ausgeblendet, statt eine leere
      Überschrift mit Trennstrich stehen zu lassen. Deshalb hier eine Regel,
      die das hidden-Attribut auch dann durchsetzt, wenn ein Element sonst
@@ -510,128 +550,6 @@
   .trophaeen li.geholt .tr-name{ color:var(--brass); }
   .trophaeen li.dran .tr-name{ color:var(--air); }
 
-  /* ---------- Erfolge ----------
-     Ein Block für alles: die ersten dreißig Tage als Bänder, dahinter die
-     langen Marken. Vorher waren das zwei Abschnitte, in denen Tag 1, Tag 3,
-     eine Woche, zwei Wochen und ein Monat jeweils doppelt vorkamen — genau
-     das machte den Bereich unaufgeräumt.
-
-     Je Woche ein Band aus sieben Segmenten. Ist die Woche voll, schlägt das
-     GANZE Band auf Messing um. Der Unterschied ist damit die Farbe einer
-     kompletten Zeile und nicht die Größe eines Feldes. Das war der Fehler
-     der ersten Fassung: in einem Raster liest das Auge zuerst „verrutscht“
-     und erst danach „wichtig“. Hier bleibt jedes Feld gleich groß. */
-  .bz{ display:flex; align-items:center; gap:8px; margin-bottom:6px; }
-  .bz-kopf{
-    width:24px; flex:none;
-    font-size:10px; font-weight:700; letter-spacing:.05em;
-    color:var(--faint); font-variant-numeric:tabular-nums;
-  }
-  .bz.voll .bz-kopf{ color:var(--brass); }
-  .bz-band{ flex:1; display:flex; gap:3px; min-width:0; }
-
-  /* Der Knopf ist höher als der sichtbare Balken. Der Balken bleibt schmal,
-     weil genau das an dem Entwurf gefallen hat; der Daumen bekommt trotzdem
-     34 Pixel Fläche statt 20. */
-  .seg{
-    position:relative;
-    flex:1; min-width:0; height:34px; padding:0; margin:0;
-    background:none; border:none; border-radius:4px;
-    display:grid; place-items:center; cursor:pointer;
-  }
-  .seg > i{
-    display:block; width:100%; height:20px; border-radius:3px;
-    background:var(--line-soft); border:1px solid var(--line);
-    transition:background .25s, border-color .25s, box-shadow .25s, filter .15s, transform .15s;
-  }
-
-  /* Anklickbarkeit sichtbar machen. Vorher sah ein Feld aus wie eine Anzeige
-     und nicht wie ein Knopf. Beim Zeigen hebt sich der Balken jetzt leicht an
-     und wird heller; auf dem Handy, wo es kein Zeigen gibt, sagt es die Zeile
-     unter dem Block. */
-  .seg:hover > i{ filter:brightness(1.35); transform:translateY(-1px); }
-  .seg:active > i{ transform:translateY(0); filter:brightness(1.1); }
-  /* Die letzte Zeile hat nur zwei Tage. Die fünf Blindfelder halten die
-     Segmentbreite über alle Zeilen gleich — ohne sie wären die zwei Tage
-     dreimal so breit wie alle anderen. */
-  .seg.leer{ visibility:hidden; pointer-events:none; }
-
-  .seg.da > i{
-    background:var(--air); border-color:var(--air);
-    box-shadow:0 0 6px rgba(98,214,174,.45);
-  }
-  .seg.jetzt > i{
-    background:rgba(98,214,174,.32); border-color:var(--air);
-    animation:segPuls 1.9s ease-in-out infinite;
-  }
-  @keyframes segPuls{ 50%{ background:var(--air); } }
-
-  .bz.voll .seg > i{
-    background:var(--brass); border-color:var(--brass);
-    box-shadow:0 0 7px rgba(217,169,79,.5);
-  }
-
-  .seg:focus-visible{ outline:2px solid var(--air); outline-offset:1px; }
-
-  .bz-stern{
-    width:13px; flex:none; text-align:center;
-    font-size:12px; color:var(--line); line-height:1;
-  }
-  .bz.voll .bz-stern{ color:var(--brass); }
-
-  /* Wird eine Woche gerade eben voll und die Seite ist offen, läuft einmal
-     Licht durch das Band. */
-  @keyframes bandLicht{
-    0%   { box-shadow:0 0 0 0 rgba(217,169,79,.6); }
-    100% { box-shadow:0 0 0 11px rgba(217,169,79,0); }
-  }
-  .bz.frisch .seg > i{ animation:bandLicht 1.5s ease-out 2; }
-
-  /* Die langen Marken. Gleiche Sprache, aber als Chips: sie liegen Monate
-     und Jahre auseinander und ergeben kein Raster. */
-  .fern-kopf{
-    margin:16px 2px 9px; padding-top:13px; border-top:1px dashed var(--line);
-    font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--faint);
-  }
-  .fern{ display:flex; flex-wrap:wrap; gap:5px; }
-  .fern button{
-    min-height:34px; padding:7px 13px; border-radius:999px;
-    background:var(--surface-2); border:1px solid var(--line);
-    color:var(--faint); font-size:11px; letter-spacing:.04em;
-    font-variant-numeric:tabular-nums; cursor:pointer;
-  }
-  .fern button.da{
-    background:rgba(217,169,79,.16); border-color:rgba(217,169,79,.5); color:var(--brass);
-  }
-
-  /* Die Antwort auf einen Tipper. Der Kasten steht immer da: ohne Auswahl
-     zeigt er das nächste Ziel, nach einem Tipper den angetippten Tag. Ein
-     Kasten, der erst beim Tippen auftaucht, verschiebt sonst die halbe
-     Seite unter dem Finger weg. */
-  .erfolg-antwort{
-    margin:14px 0 0; padding:13px 15px; border-radius:10px;
-    background:var(--surface-2); border:1px solid var(--line);
-    font-size:13.5px; line-height:1.6; color:var(--muted);
-  }
-  .erfolg-antwort b{ color:var(--text); font-weight:600; }
-  .erfolg-antwort .geld{ color:var(--brass); }
-  .erfolg-antwort .zig{ color:var(--air); }
-  .erfolg-antwort .tipp{
-    display:block; margin-top:7px; font-size:11.5px; color:var(--faint);
-  }
-
-  @media (prefers-reduced-motion:reduce){
-    .seg.jetzt > i,
-    .bz.frisch .seg > i{ animation:none; }
-  }
-
-  /* Sehr schmale Geräte: die Segmente werden sonst zu Strichen. */
-  @media (max-width:360px){
-    .bz{ gap:6px; }
-    .bz-band{ gap:2px; }
-    .seg{ height:32px; }
-    .seg > i{ height:18px; }
-  }
 
   .tr-text{
     margin:14px 2px 0; font-size:13.5px; color:var(--muted);

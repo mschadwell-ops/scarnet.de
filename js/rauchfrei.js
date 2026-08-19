@@ -53,7 +53,7 @@ const KONTEN = [
    --------------------------------------------------------------------- */
 (function markupPruefen(){
   const noetig = ["anmeldeForm", "einrichtenForm", "ansichtApp", "zTage", "cdZeit",
-                  "erfolge", "erfolgAntwort", "tagfenster", "tfZu", "muenze", "krise"];
+                  "tagfenster", "tfZu", "muenze", "krise"];
   const fehlt = noetig.filter(id => !document.getElementById(id));
 
   if (!fehlt.length){
@@ -411,7 +411,7 @@ function zeichnen(){
     tageZeichnen(w.tage, profil, frisch);   // w.tage = abgeschlossene Tage
     $("cdTag").textContent = "Tag " + (w.tage + 1);
     $("cdText").textContent = tagesText(w.tage + 1, profil, true);   // Ziel-Fassung
-    erfolgeZeichnen(w.verstrichen, frisch);   // alle Marken liegen auf Tagesgrenzen
+
     if (frisch){
       feuerwerk(w.tage);
       profil.gesehenerTag = w.tage;
@@ -598,144 +598,94 @@ function tagesText(nr, p, alsZiel){
     `fertig` ist die Zahl vollständig abgeschlossener Tage. Vorher wurde der
     laufende Tag als erledigt markiert; dadurch stand „Eine ganze Woche“
     schon nach sechs Tagen und 23 Stunden da, also bevor es stimmte. */
+/* Wie viele Zeilen ohne Aufklappen dastehen. Vorher sechs. Damit war dieser
+   Block mit siebenhundert Pixeln der höchste der ganzen Seite — ein Viertel
+   ihrer Gesamthöhe für eine Liste, in der man nichts tut und die
+   ausschließlich zurückblickt. Drei zeigen dasselbe, der Rest kommt auf
+   Wunsch. */
+const FREI_KURZ = 3;
+const FREI_LANG = 30;    // beim Aufklappen; darüber wird nur noch gezählt
+let freiOffen = false;
+
 function tageZeichnen(fertig, p, frischNr){
   const liste = $("tage");
+  const mehr  = $("bMehrTage");
 
-  /* Solange nichts freigeschaltet ist, verschwindet der ganze Abschnitt —
-     Überschrift, Trennstrich und Liste. Vorher stand hier eine leere
-     Kategorie mit einem einzelnen Hinweissatz darunter, und der Satz lag
-     als Listeneintrag im Raster von .meilen, also in der 20-Pixel-Spalte
-     für den Punkt: ein Wort je Zeile. Was der Tag bringt, steht ohnehin
-     schon in der Karte „Als Nächstes“ weiter oben. */
+  /* Solange nichts freigeschaltet ist, verschwindet die ganze Karte. Vorher
+     stand hier eine leere Kategorie mit einem einzelnen Hinweissatz darunter,
+     und der Satz lag als Listeneintrag im Raster von .meilen, also in der
+     20-Pixel-Spalte für den Punkt: ein Wort je Zeile. Was der Tag bringt,
+     steht ohnehin schon in der Karte „Als Nächstes“ weiter oben. */
   const zeigen = fertig >= 1;
-  $("titelFrei").hidden = !zeigen;
-  liste.hidden           = !zeigen;
-  $("tageDavor").hidden  = !zeigen;
+  $("blockFrei").hidden = !zeigen;
+  mehr.hidden = true;
 
   if (!zeigen){
     liste.innerHTML = "";
-    $("tageDavor").textContent = "";
     $("anzahlFrei").textContent = "";
+    gruppenTitel();
     return;
   }
 
+  const wieviele = freiOffen ? FREI_LANG : FREI_KURZ;
+  const bis = Math.max(1, fertig - (wieviele - 1));
   const zeilen = [];
-  for (let n = fertig; n >= Math.max(1, fertig - 5); n--) zeilen.push(n);
+  for (let n = fertig; n >= bis; n--) zeilen.push(n);
 
   liste.innerHTML = zeilen.map(n => `
       <li class="da${n === frischNr ? " frisch" : ""}">
-        <span class="punkt"></span>
-        <span class="was">${esc(tagesText(n, p))}</span>
-        <span class="wann">Tag ${n}</span>
+        <button type="button" class="mz" data-tag="${n}">
+          <span class="punkt"></span>
+          <span class="was">${esc(tagesText(n, p))}</span>
+          <span class="wann">Tag ${n}<i class="pfeil" aria-hidden="true">›</i></span>
+        </button>
       </li>`).join("");
 
-  $("tageDavor").textContent = fertig > 6
-    ? "und " + zahl(fertig - 6) + " weitere davor"
-    : "";
-  $("anzahlFrei").textContent = fertig === 1 ? "· 1 Tag" : "· " + zahl(fertig) + " Tage";
-}
+  const rest = fertig - zeilen.length;
 
-/* ---------------------------------------------------------------------
-   Erfolge — ein Block für den ersten Monat und die langen Marken
-   ---------------------------------------------------------------------
-   Vorher zwei Abschnitte: „Trophäen“ über zehn Jahre und „Die ersten 30
-   Tage“. Tag 1, Tag 3, eine Woche, zwei Wochen und ein Monat kamen darin
-   beide Male vor. Jetzt einer: die Bänder deckern den ersten Monat ab, die
-   Chips darunter alles, was danach kommt.
+  /* Aufgeklappt zeigt die Liste höchstens dreißig Tage. Wer im zweiten Jahr
+     ist, bekäme sonst vierhundert Zeilen auf einmal, und keine davon liest
+     jemand. Was darüber liegt, wird gezählt. */
+  if (freiOffen && rest > 0)
+    liste.insertAdjacentHTML("beforeend",
+      '<li class="rest">und ' + zahl(rest) + " weitere davor</li>");
 
-   Jedes Feld ist antippbar. Angezeigt wird dann, was am Ende dieses Tages
-   zusammengekommen ist — nicht geraucht und nicht ausgegeben, gerechnet mit
-   den eigenen Einstellungen. Zweites Antippen hebt die Auswahl auf.
-   --------------------------------------------------------------------- */
-
-const BAENDER = [
-  { kopf:"W1", von: 1, bis: 7 },
-  { kopf:"W2", von: 8, bis:14 },
-  { kopf:"W3", von:15, bis:21 },
-  { kopf:"W4", von:22, bis:28 },
-  { kopf:"M",  von:29, bis:30 }
-];
-const BAND_BREIT = 7;
-
-/* Nur die Marken jenseits des ersten Monats — alles darunter steckt schon in
-   den Bändern. Genau diese Dopplung war der Grund für den Umbau. */
-const ferne = () => TROPHAEEN.filter(t => t.ms > 30 * TAG);
-
-/** Der Name, unter dem ein Tag oder eine Marke angesprochen wird. */
-function erfolgName(nr){
-  if (nr >= 1 && nr <= TAGESTROPHAEEN.length)
-    return "Tag " + nr + " · " + TAGESTROPHAEEN[nr - 1].titel;
-  const t = TROPHAEEN.find(x => Math.round(x.ms / TAG) === nr);
-  return t ? t.kurz : "Tag " + nr;
-}
-
-
-function erfolgAntwort(verstrichen){
-  const kasten = $("erfolgAntwort");
-  const fertig = Math.floor(verstrichen / TAG);
-  const hinweis = '<span class="tipp">Tipp auf ein Feld — dann steht da, was an dem Tag zusammengekommen ist.</span>';
-
-  if (fertig < TAGESTROPHAEEN.length){
-    const t = TAGESTROPHAEEN[fertig];      // der laufende Tag
-    kasten.innerHTML = "<b>Als Nächstes: Tag " + (fertig + 1) + " — " + esc(t.titel)
-      + ".</b><br>" + esc(t.was) + hinweis;
-    return;
+  if (freiOffen){
+    mehr.hidden = false;
+    mehr.textContent = "Weniger anzeigen";
+  } else if (rest > 0){
+    mehr.hidden = false;
+    mehr.textContent = rest === 1
+      ? "Einen weiteren Tag anzeigen"
+      : zahl(rest) + " weitere Tage anzeigen";
   }
-  const t = ferne().find(x => verstrichen < x.ms);
-  kasten.innerHTML = t
-    ? "<b>Als Nächstes: " + esc(t.kurz) + ".</b><br>" + esc(t.was) + hinweis
-    : "<b>Alles geholt.</b><br>Mehr Marken habe ich nicht vorgesehen." + hinweis;
+
+  $("anzahlFrei").textContent = fertig === 1 ? "· 1 Tag" : "· " + zahl(fertig) + " Tage";
+  gruppenTitel();
 }
 
-function erfolgeZeichnen(verstrichen, frischNr){
-  const fertig  = Math.floor(verstrichen / TAG);
-  const laufend = fertig + 1;
-  let h = "";
-
-  BAENDER.forEach(b => {
-    const voll   = fertig >= b.bis;
-    const frisch = frischNr && frischNr === b.bis;
-    let segs = "";
-    for (let n = b.von; n <= b.bis; n++){
-      const zustand = fertig >= n ? "da" : n === laufend ? "jetzt" : "zu";
-      segs += '<button type="button" class="seg ' + zustand
-            + '" data-tag="' + n
-            + '" aria-label="Tag ' + n + '"><i></i></button>';
-    }
-    for (let f = b.bis - b.von + 1; f < BAND_BREIT; f++)
-      segs += '<span class="seg leer"><i></i></span>';
-
-    h += '<div class="bz' + (voll ? " voll" : "") + (frisch ? " frisch" : "") + '">'
-       + '<span class="bz-kopf">' + b.kopf + "</span>"
-       + '<span class="bz-band">' + segs + "</span>"
-       + '<span class="bz-stern">' + (voll ? "★" : "·") + "</span></div>";
-  });
-
-  h += '<div class="fern-kopf">Danach</div><div class="fern">';
-  ferne().forEach(t => {
-    const tage = Math.round(t.ms / TAG);
-    h += '<button type="button" class="' + (verstrichen >= t.ms ? "da" : "")
-       + '" data-tag="' + tage
-       + '">' + esc(t.kurz) + "</button>";
-  });
-  h += "</div>";
-
-  $("erfolge").innerHTML = h;
-
-  const wochen = Math.min(Math.floor(fertig / 7), 4);
-  $("erfolgZahl").textContent = "· " + Math.min(fertig, 30) + " von 30 Tagen"
-    + (wochen ? " · " + wochen + (wochen === 1 ? " Woche" : " Wochen") : "");
-
-  erfolgAntwort(verstrichen);
-}
-
-/* Ein Zuhörer für alle Felder und Chips. Beim Neuzeichnen verschwinden die
-   Knöpfe, ein Zuhörer je Knopf wäre also jedes Mal neu zu setzen. */
-$("erfolge").addEventListener("click", e => {
+/* Jede Zeile öffnet das Tagesfenster mit dem, was an genau diesem Tag
+   zusammengekommen ist. Die Fenster hingen vorher an den Feldern im Block
+   „Erfolge“; der Block ist weg, die Funktion bleibt. Ein Zuhörer für die
+   ganze Liste, weil die Zeilen bei jedem Neuzeichnen neu entstehen. */
+$("tage").addEventListener("click", e => {
   const knopf = e.target.closest("[data-tag]");
-  if (!knopf) return;
-  tagfensterAuf(parseInt(knopf.dataset.tag, 10));
+  if (knopf) tagfensterAuf(parseInt(knopf.dataset.tag, 10));
 });
+
+$("bMehrTage").onclick = () => {
+  freiOffen = !freiOffen;
+  tageZeichnen(rechnen(profil).tage, profil, null);
+  if (!freiOffen) $("blockFrei").scrollIntoView({ block:"nearest" });
+};
+
+/* Eine Zwischenüberschrift ohne Inhalt darunter wäre schlimmer als keine.
+   „Geschafft“ steht nur da, solange wenigstens eine der beiden Karten
+   sichtbar ist. */
+function gruppenTitel(){
+  const stand = $("blockStand"), frei = $("blockFrei");
+  $("titelGeschafft").hidden = (!stand || stand.hidden) && (!frei || frei.hidden);
+}
 
 /* ---------- Standhaft-Trophäen ---------- */
 function wellenZeichnen(){
@@ -749,6 +699,15 @@ function wellenZeichnen(){
   }
 
   const naechste = WELLEN.findIndex(t => !t.hat(profil));
+
+  /* Wer den Knopf nie gebraucht hat, sah hier acht graue Scheiben und einen
+     Satz: zweihundertfünfzig Pixel für „hier ist noch nichts“. Genau das war
+     bei „Freigeschaltet“ am ersten Tag schon einmal das Problem. Solange
+     nichts zu zeigen ist, ist die Karte weg; mit der ersten überstandenen
+     Welle taucht sie auf, und das ist dann auch ein Moment. */
+  const etwas = (profil.wellen || 0) > 0 || WELLEN.some(t => t.hat(profil));
+  $("blockStand").hidden = !etwas;
+  if (!etwas){ gruppenTitel(); return; }
 
   $("wellen").innerHTML = WELLEN.map((t, i) => {
     const da   = t.hat(profil);
@@ -767,6 +726,7 @@ function wellenZeichnen(){
     ? "Noch keine. Wenn dich das Verlangen packt, drück unten rechts und halte durch — genau das zählt hier."
     : t ? "Als Nächstes: " + t.n + " — " + t.was
         : "Alles geholt. Mehr habe ich nicht vorgesehen.";
+  gruppenTitel();
 }
 
 /* ---------- Was das gesparte Geld wert ist ---------- */

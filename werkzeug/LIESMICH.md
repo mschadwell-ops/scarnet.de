@@ -42,11 +42,12 @@ weil man sie selbst nie geht.
 | 1 | Jede angesprochene Kennung existiert im Markup | Das Skript griff auf einen Kasten zu, den das Markup nicht mehr hatte. `zeichnen()` brach ab, im Countdown blieb „In –“ stehen. |
 | 2 | Der Startblock steht hinter allen Konstanten | Der gemerkte Zugang meldet mitten im Laden an und ruft `zeichnen()` auf. Alles, was danach mit `const` kommt, ist in der zeitlichen Totzone. Daran ist das Feuerwerk gescheitert. |
 | 3 | Alle vier Einstiegswege | Beim Bauen meldet man sich über das Formular an. Der gemerkte Zugang ist der Weg, den die Leute nehmen — und der lief nie durch. |
-| 4 | Zeitliche Randzustände von Tag 0 bis 4000 | „Erfolge“ war an Tag 0 leer, weil immer mit siebzehn Tagen getestet wurde. |
+| 4 | Zeitliche Randzustände von Tag 0 bis 4000 | Ein Bereich war an Tag 0 leer, weil immer mit siebzehn Tagen getestet wurde. |
 | 5 | Der Moment des Centwechsels | Betrag und Münze waren in jedem Zustand richtig, nur im Übergang nicht. |
 | 6 | Inhaltslisten auf Anzahl und Dubletten | 38 von 137 selbst geschriebenen Vorschlägen waren Dubletten — frisches eigenes Material wurde weniger streng geprüft als altes. |
 | 7 | Zieltexte in der Zukunftsform | Dreimal derselbe Fehler: Texte hinter „Als Nächstes“ waren als Rückblick geschrieben. |
 | 8 | Umlaute, Einzahl mit Mehrzahlwort, Null mit Einheit | „1 Jahr 1 Tage“, „1 Jahr 0 Tage“, kaputte Umlaute nach einer Perl-Ersetzung. |
+| 8b | Leere Bereiche verschwinden — samt ihrer Zwischenüberschrift; und die Kurzliste klappt auf und wieder zu | „Freigeschaltet“ stand an Tag 0 als Überschrift ohne Inhalt da. Bei „Standhaft“ mit null Wellen ist mir derselbe Fehler ein zweites Mal durchgegangen, weil ich nie mit null Wellen getestet habe. |
 | 9 | Jeder Knopf lässt sich drücken, ohne zu werfen | — |
 | 10 | Feuerwerk nur bei neuem Tag, und nur einmal | — |
 
