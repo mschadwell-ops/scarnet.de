@@ -91,6 +91,13 @@ ist und nicht Zufall:
   diesem Foto freigestellt — es ist derselbe Hund, dieselbe Gangart, nur nicht
   mehr im Rechenzentrum. Neu erzeugen mit `werkzeug/hund-freistellen.mjs`
   (Weg und Fallen stehen im README).
+
+  **Nach jedem Freistellen die Innenlöcher prüfen.** Der Nachputz, der kalte
+  dunkle Reste entfernt, trifft auch dunkle Stellen *innerhalb* der Silhouette
+  — einmal war dadurch ein Loch mitten in der Stirn, durch das die Tanzfläche
+  leuchtete. Das Skript füllt jetzt alles, was vom Bildrand aus nicht
+  erreichbar ist, und meldet, wie viele Punkte das waren. Es meldet außerdem
+  Randberührung: steht dort oben ein Wert, ist der Hund abgeschnitten.
 - **Es gibt keine Fremdfotos mehr.** Die vier Revier-Bilder von Wikimedia
   Commons sind raus, samt Lizenznachweisen — der Nutzer mochte sie nicht. Wer
   wieder fremde Bilder einbaut, holt sich die Nennungspflichten zurück; der
@@ -100,10 +107,16 @@ ist und nicht Zufall:
 
 **Was in dieser Fläche leicht kaputtgeht:**
 
-- Die Tanzfläche ist eine echte perspektivische Ebene. Ihre Kacheln brauchen
-  `aspect-ratio:1` — mit fester Zeilenhöhe werden daraus Farbfelder. Und die
-  Perspektive darf nicht zu stark sein (340px, nicht 165px), sonst bläst sie
-  die vorderen Kacheln auf Bildschirmgröße auf. Beides ist genau so passiert.
+- Die Tanzfläche ist eine echte perspektivische Ebene, und ihr Muster hat eine
+  **feste Kachelgröße in Pixeln**. Macht man die Kacheln zu Bruchteilen der
+  Fensterbreite, wächst die Kachel mit dem Fenster, die Kameradistanz aber
+  nicht — auf einem breiten Bildschirm zerfällt die Fläche dann in vier
+  Farbschollen. Genau so passiert, mit 432 einzelnen Elementen, von denen
+  sechzig sichtbar waren. Die Perspektive darf ebenso wenig zu stark sein
+  (340px, nicht 165px).
+- **Zwei Farbebenen müssen deckend sein und hart wechseln.** Halbdurchsichtig
+  und langsam übergeblendet mischen sie sich in der Mitte zu Pastell — und
+  Pastell ist das Gegenteil dessen, was hier bestellt war.
 - Die farbigen Schlagschatten am Hund müssen **eng** bleiben. Weit und weich
   überlagern sich Magenta und Cyan hinter ihm zu einem hellen Kasten, der wie
   ein Freistellungsfehler aussieht.

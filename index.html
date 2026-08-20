@@ -287,39 +287,17 @@ body{
     animation:blinzeln 7s ease-in-out infinite alternate;
 }
 
-/* Lichtkegel von oben. Ein Kegelverlauf, der langsam schwenkt — mehr
-   braucht es nicht, damit ein Raum nach Scheinwerfern aussieht. */
-.strahlen{
-    position:absolute;
-    left:50%; top:-4%;
-    width:min(150vw,1500px);
-    height:74%;
-    transform:translateX(-50%);
-    transform-origin:50% 0;
-    pointer-events:none;
-    opacity:.62;
-    filter:blur(14px);
-    background:conic-gradient(from 208deg at 50% 0%,
-        transparent 0 7deg,
-        rgba(255,46,139,.30) 7deg 11deg,
-        transparent 11deg 17deg,
-        rgba(34,228,255,.26) 17deg 21deg,
-        transparent 21deg 29deg,
-        rgba(255,194,74,.22) 29deg 32deg,
-        transparent 32deg 39deg,
-        rgba(168,92,255,.26) 39deg 43deg,
-        transparent 43deg 120deg);
-    animation:schwenken 11s ease-in-out infinite alternate;
-}
-
 /* Die Discokugel. Facetten aus einem sich drehenden Kegelverlauf,
    Rundung aus einem Radialverlauf, Aufhaengung aus einer Linie. */
 .kugel{
     position:absolute;
     /* Haengt unter der Menueleiste, nicht dahinter — sonst ist die Kugel
-       genau dort angeschnitten, wo man auf dem Abschnitt landet. */
-    top:44px; left:50%;
-    width:clamp(46px,7.5vw,78px);
+       genau dort angeschnitten, wo man auf dem Abschnitt landet. Und sie
+       haengt AUS DER MITTE: vorher standen Kugel, Schild, Sonne, Hund und
+       Fluchtpunkt alle auf derselben Achse, und die Kugel lag mitten auf
+       der Schrift darunter. */
+    top:44px; left:24%;
+    width:clamp(52px,8vw,86px);
     transform:translateX(-50%);
     pointer-events:none;
 }
@@ -339,7 +317,7 @@ body{
         repeating-conic-gradient(from 0deg, rgba(255,255,255,.26) 0 5deg, rgba(120,160,220,.06) 5deg 10deg),
         repeating-linear-gradient(0deg, rgba(0,0,0,.34) 0 4px, transparent 4px 9px),
         radial-gradient(circle at 32% 26%, #F2FAFF 0%, #93A8D8 34%, #3A4270 66%, #12162E 100%);
-    box-shadow:0 0 30px rgba(180,220,255,.4), 0 0 90px rgba(168,92,255,.3);
+    box-shadow:0 0 34px rgba(190,225,255,.5), 0 0 110px rgba(168,92,255,.42), 0 0 200px rgba(34,228,255,.2);
     animation:drehen 14s linear infinite;
 }
 
@@ -367,11 +345,18 @@ body{
 }
 
 /* ---------- Die Tanzflaeche ----------
-   Eine echte perspektivische Ebene: das Kachelraster liegt flach und wird
-   gekippt. Deshalb laufen die Fugen richtig auf den Fluchtpunkt zu und die
-   Kacheln werden nach hinten kleiner. Jede Kachel pulst fuer sich; die
-   Verteilung kommt aus elf Gruppen, die sich mit den zwoelf Spalten nicht
-   decken — sonst stuenden die Farben in Streifen statt im Muster. */
+   Eine echte perspektivische Ebene: das Muster liegt flach und wird gekippt.
+
+   Es sind KEINE Elemente mehr, sondern zwei Hintergrundebenen. Vorher lagen
+   hier 432 einzelne Kacheln — bei 1440 Pixeln Fensterbreite waren davon
+   sechzig sichtbar, der Rest lief unsichtbar mit. Schlimmer: die Kacheln
+   waren Bruchteile der Fensterbreite, die Kameradistanz aber fest. Auf einem
+   breiten Bildschirm wurden daraus vier Farbschollen statt einer Flaeche.
+
+   Als Muster ist die Kachel 76 Pixel gross — auf jedem Bildschirm gleich,
+   und sie wiederholt sich von allein so weit, wie die Ebene reicht. Zwei
+   Ebenen mit verschobener Farbfolge blenden gegeneinander: so wechselt die
+   Flaeche die Farbe, wie sie das gehoert. */
 .flaeche{
     position:absolute;
     left:0; right:0;
@@ -381,39 +366,50 @@ body{
     pointer-events:none;
     perspective:340px;
     perspective-origin:50% 0%;
+    background:#0A0518;
     -webkit-mask-image:linear-gradient(to bottom, transparent 0, #000 15%);
     mask-image:linear-gradient(to bottom, transparent 0, #000 15%);
+}
+/* Das Licht der Sonne, das auf dem Boden liegt. Absichtlich gesetzt: vorher
+   schien die Sonne durch die halbdurchsichtigen Kacheln durch und endete in
+   einer geraden Kante — das sah nach Fehler aus, nicht nach Spiegelung. */
+.flaeche::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:linear-gradient(to bottom, rgba(255,90,170,.26) 0%, rgba(255,90,170,.07) 24%, transparent 52%);
 }
 .kacheln{
     position:absolute;
     left:-32%; right:-32%;
     top:0;
+    height:340%;
     transform-origin:50% 0%;
     transform:rotateX(72deg);
-    display:grid;
-    grid-template-columns:repeat(24,1fr);
-    gap:2px;
 }
-/* aspect-ratio statt fester Zeilenhoehe: so bleiben die Kacheln quadratisch,
-   egal wie breit das Fenster ist. Mit fester Hoehe wurden daraus auf dem
-   Bildschirm Farbfelder statt einer Flaeche. */
-.kacheln i{
-    aspect-ratio:1;
-    background:var(--k);
-    opacity:.16;
-    animation:leuchten 2.6s ease-in-out infinite;
+.kacheln span{
+    position:absolute;
+    inset:0;
+    background-image:
+        repeating-linear-gradient(90deg, rgba(0,0,0,.66) 0 3px, transparent 3px 76px),
+        repeating-linear-gradient(0deg,  rgba(0,0,0,.66) 0 3px, transparent 3px 76px),
+        conic-gradient(from 0deg at 50% 50%,
+            var(--magenta) 0 25%, var(--cyan) 25% 50%,
+            var(--gold) 50% 75%, var(--flieder) 75% 100%);
+    background-size:76px 76px, 76px 76px, 152px 152px;
+    opacity:.92;
 }
-.kacheln i:nth-child(11n)   { --k:var(--magenta); animation-delay:0s;    }
-.kacheln i:nth-child(11n+1) { --k:var(--cyan);    animation-delay:-.9s;  }
-.kacheln i:nth-child(11n+2) { --k:var(--gold);    animation-delay:-1.7s; }
-.kacheln i:nth-child(11n+3) { --k:var(--flieder); animation-delay:-.4s;  }
-.kacheln i:nth-child(11n+4) { --k:var(--magenta); animation-delay:-2.2s; }
-.kacheln i:nth-child(11n+5) { --k:var(--cyan);    animation-delay:-1.3s; }
-.kacheln i:nth-child(11n+6) { --k:var(--gruen);   animation-delay:-.6s;  }
-.kacheln i:nth-child(11n+7) { --k:var(--gold);    animation-delay:-2s;   }
-.kacheln i:nth-child(11n+8) { --k:var(--flieder); animation-delay:-1.1s; }
-.kacheln i:nth-child(11n+9) { --k:var(--magenta); animation-delay:-.2s;  }
-.kacheln i:nth-child(11n+10){ --k:var(--cyan);    animation-delay:-2.5s; }
+.kacheln .b{
+    background-image:
+        repeating-linear-gradient(90deg, rgba(0,0,0,.66) 0 3px, transparent 3px 76px),
+        repeating-linear-gradient(0deg,  rgba(0,0,0,.66) 0 3px, transparent 3px 76px),
+        conic-gradient(from 0deg at 50% 50%,
+            var(--cyan) 0 25%, var(--gruen) 25% 50%,
+            var(--flieder) 50% 75%, var(--gold) 75% 100%);
+    background-position:0 0, 0 0, 76px 76px;
+    opacity:0;
+    animation:wechsel 4.4s ease-in-out infinite;
+}
 
 /* ---------- Der Hund ----------
    Freigestellt aus demselben Foto, das oben im Hero steht — er laeuft also
@@ -429,22 +425,37 @@ body{
     height:min(38svh,296px);
     width:auto;
     transform:translateX(-50%);
-    -webkit-mask-image:linear-gradient(to top, transparent 0, #000 20%);
-    mask-image:linear-gradient(to top, transparent 0, #000 20%);
+    -webkit-mask-image:linear-gradient(to top, transparent 0, #000 12%);
+    mask-image:linear-gradient(to top, transparent 0, #000 12%);
     /* Eng gehaltene Schlagschatten: so lesen sie als Randlicht von links
        und rechts. Weit und weich ueberlagern sie sich hinter dem Hund zu
        einem hellen Kasten — das sah aus wie ein Ausschnittfehler. */
+    /* Eng gehalten, sonst liest es sich als Farbversatz wie bei einem
+       schlecht registrierten Druck statt als Randlicht. */
     filter:
-        saturate(1.22) contrast(1.08)
-        drop-shadow(-5px 0 3px rgba(255,46,139,.8))
-        drop-shadow(5px 0 3px rgba(34,228,255,.8))
-        drop-shadow(0 12px 18px rgba(0,0,0,.55));
+        saturate(1.18) contrast(1.06)
+        drop-shadow(0 10px 14px rgba(0,0,0,.62))
+        drop-shadow(-3px 0 2px rgba(255,46,139,.6))
+        drop-shadow(3px 0 2px rgba(34,228,255,.6));
     animation:tappen 3.6s ease-in-out infinite;
 }
 /* Der Lichtnebel an den Pfoten. Er hat eine Aufgabe: der Hund laeuft unten
    weich aus, weil die Freistellung an den Laeufen ausfranst — dieser Schein
    macht daraus Licht statt eines Schnitts. Deshalb sitzt er genau auf
    Pfotenhoehe und nicht am unteren Rand. */
+.hundschatten{
+    position:absolute;
+    left:50%;
+    bottom:5.5%;
+    z-index:4;
+    width:min(28vw,196px);
+    height:min(4.4vh,30px);
+    transform:translateX(-50%);
+    pointer-events:none;
+    border-radius:50%;
+    background:radial-gradient(ellipse at center, rgba(0,0,0,.72), rgba(0,0,0,.3) 52%, transparent 74%);
+    filter:blur(7px);
+}
 .hundlicht{
     position:absolute;
     left:50%;
@@ -456,8 +467,8 @@ body{
     pointer-events:none;
     border-radius:50%;
     background:radial-gradient(ellipse at center,
-        rgba(255,255,255,.78) 0%, rgba(180,240,255,.55) 22%,
-        rgba(34,228,255,.34) 44%, rgba(255,46,139,.20) 66%, transparent 78%);
+        rgba(255,255,255,.55) 0%, rgba(180,240,255,.42) 24%,
+        rgba(34,228,255,.30) 46%, rgba(255,46,139,.18) 66%, transparent 78%);
     filter:blur(16px);
     animation:atmen 3.6s ease-in-out infinite;
 }
@@ -475,15 +486,6 @@ body{
     align-items:center;
     gap:clamp(14px,2.6vh,24px);
     text-align:center;
-}
-
-.augenbraue{
-    font-size:10px;
-    font-weight:600;
-    letter-spacing:.34em;
-    text-transform:uppercase;
-    color:var(--gold);
-    text-shadow:0 0 16px rgba(255,194,74,.85);
 }
 
 /* Das Leuchtschild. Der einzige Weg, den diese Seite anbietet — also
@@ -509,12 +511,12 @@ body{
     box-shadow:0 0 38px rgba(34,228,255,.55), inset 0 0 28px rgba(34,228,255,.24);
     transform:translateY(-2px);
 }
-.schild:focus-visible{ outline:2px solid var(--cyan); outline-offset:5px; }
+.schild:focus-visible{ outline:2px solid #fff; outline-offset:5px; }
 
 .schild-wort{
     display:block;
     font-family:var(--anzeige);
-    font-size:clamp(23px,5.8vw,54px);
+    font-size:clamp(30px,6.6vw,54px);
     line-height:1.06;
     letter-spacing:.045em;
     text-transform:uppercase;
@@ -531,9 +533,11 @@ body{
 }
 .schild-zeile{
     display:block;
-    margin-top:12px;
+    max-width:42ch;
+    margin:12px auto 0;
     font-size:13px;
     letter-spacing:.06em;
+    text-wrap:balance;
     color:var(--leise);
 }
 
@@ -599,10 +603,10 @@ body{
 }
 
 /* ---------- Bewegung ---------- */
-@keyframes leuchten{ 0%,100%{ opacity:.12; } 50%{ opacity:.92; } }
+@keyframes wechsel{ 0%,44%{ opacity:0; } 50%,94%{ opacity:1; } 100%{ opacity:0; } }
 @keyframes drehen{   from{ transform:rotate(0deg); } to{ transform:rotate(360deg); } }
 @keyframes schwenken{ from{ transform:translateX(-50%) rotate(-7deg); } to{ transform:translateX(-50%) rotate(7deg); } }
-@keyframes tappen{ 0%,100%{ transform:translateX(-50%) translateY(0) rotate(0deg); } 50%{ transform:translateX(-50%) translateY(-9px) rotate(-1.1deg); } }
+@keyframes tappen{ 0%,100%{ transform:translateX(-50%) translateY(0); } 50%{ transform:translateX(-50%) translateY(-5px); } }
 @keyframes atmen{  0%,100%{ opacity:.75; transform:translateX(-50%) scale(1); } 50%{ opacity:1; transform:translateX(-50%) scale(1.06); } }
 @keyframes blinzeln{
     from{ opacity:.55; }
@@ -628,9 +632,9 @@ body{
 /* Wer Bewegung abgestellt hat, bekommt dasselbe Bild im Stand: die Röhre
    brennt, das Gitter steht, die Sterne stehen. */
 @media (prefers-reduced-motion:reduce){
-    .kacheln i, .sterne, .kugel::after, .strahlen,
+    .kacheln .b, .sterne, .kugel::after,
     .hund, .hundlicht, .schild-wort, .hinweis svg{ animation:none !important; }
-    .kacheln i{ opacity:.5; }
+    .kacheln .b{ opacity:.4; }
     .schild{ transition:none; }
 }
 
@@ -663,7 +667,6 @@ body{
 <section class="club" id="weiter">
 
   <div class="sterne" aria-hidden="true"></div>
-  <div class="strahlen" aria-hidden="true"></div>
   <div class="kugel" aria-hidden="true"></div>
 
   <svg class="sonne" viewBox="0 0 200 200" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
@@ -690,20 +693,21 @@ body{
 
   <div class="horizont" aria-hidden="true"></div>
 
-  <!-- Die Tanzflaeche. 432 Kacheln, jede pulst fuer sich. -->
+  <!-- Die Tanzflaeche. Zwei Musterebenen, die gegeneinander blenden. -->
   <div class="flaeche" aria-hidden="true">
-    <div class="kacheln"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="kacheln"><span class="a"></span><span class="b"></span></div>
   </div>
 
   <div class="hundlicht" aria-hidden="true"></div>
-  <img class="hund" src="bilder/hund.png" width="152" height="330" decoding="async"
-       alt="Derselbe Hund wie im Bild oben, freigestellt und auf einer beleuchteten Tanzfläche.">
+  <div class="hundschatten" aria-hidden="true"></div>
+  <!-- Schmueckend: das Bild darueber ist ein CSS-Hintergrund und hat gar
+       keine Textalternative, ein Verweis darauf ginge also ins Leere. -->
+  <img class="hund" src="bilder/hund.png" width="152" height="330" decoding="async" alt="">
 
   <div class="club-inhalt">
-    <p class="augenbraue">Auf dieser Seite</p>
     <a class="schild" href="/rauchfrei.html" data-rauchfrei>
       <span class="schild-wort">Rauchfrei</span>
-      <span class="schild-zeile">Der Zähler seit dem ersten Tag. Mit Anmeldung.</span>
+      <span class="schild-zeile">Der Zähler seit dem ersten&nbsp;Tag. Mit&nbsp;Anmeldung.</span>
     </a>
   </div>
 

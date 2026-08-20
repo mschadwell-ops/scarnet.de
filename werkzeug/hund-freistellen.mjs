@@ -54,6 +54,14 @@ for (let s = 0; s < B*H; s++) {
   if (n > besteN) { besteN = n; beste = id; }
   id++;
 }
+{
+  let roh = 0, nachSchliessen = 0;
+  for (let s = 0; s < B*H; s++) { if (a[s] > .5) roh++; if (m[s] > .5) nachSchliessen++; }
+  console.log(`  Schwellen: warm>${T_WARM}, hell>${T_HELL} → ${roh} Punkte roh, ${nachSchliessen} nach dem Schliessen, ${id} Flaechen, groesste ${besteN}`);
+}
+// Ohne gefundene Flaeche waere marke[s] === beste ein Vergleich -1 === -1 und
+// damit der GANZE Hintergrund der Hund. Lieber ehrlich abbrechen.
+if (beste < 0) { console.error("  FEHLER: keine zusammenhaengende Flaeche gefunden — Schwellen zu streng"); process.exit(2); }
 for (let s = 0; s < B*H; s++) m[s] = marke[s] === beste ? 1 : 0;
 
 // Kalte, dunkle Stellen innerhalb der Maske sind kein Hund, sondern der
@@ -65,6 +73,31 @@ for (let s = 0; s < B*H; s++) {
   if (b >= r - 2 && lum < 96) m[s] = 0;
 }
 m = nachbar(nachbar(m, 2, "max"), 2, "min");
+
+// Loecher fuellen. Der Nachputz oben trifft auch dunkle Stellen INNERHALB der
+// Silhouette — Augen, Nasenschatten, dunkles Fell. Die wurden dadurch
+// durchsichtig, und auf einer bunten Flaeche leuchtete dann der Hintergrund
+// mitten durch den Hund. Deshalb: alles, was vom Bildrand aus nicht
+// erreichbar ist, gehoert zum Hund, egal wie dunkel es ist.
+{
+  const aussen = new Uint8Array(B*H);
+  const stapel = [];
+  for (let x = 0; x < B; x++) { stapel.push(x, (H-1)*B + x); }
+  for (let y = 0; y < H; y++) { stapel.push(y*B, y*B + B - 1); }
+  while (stapel.length) {
+    const p = stapel.pop();
+    if (aussen[p] || m[p] >= .5) continue;
+    aussen[p] = 1;
+    const y = (p/B)|0, x = p % B;
+    if (x > 0)   stapel.push(p-1);
+    if (x < B-1) stapel.push(p+1);
+    if (y > 0)   stapel.push(p-B);
+    if (y < H-1) stapel.push(p+B);
+  }
+  let gefuellt = 0;
+  for (let s = 0; s < B*H; s++) if (!aussen[s] && m[s] < .5) { m[s] = 1; gefuellt++; }
+  console.log("  Loecher gefuellt:", gefuellt, "Bildpunkte");
+}
 
 // Kante weich machen
 for (let d = 0; d < WEICH; d++) {
@@ -93,5 +126,18 @@ for (let y=0;y<nh;y++) for (let x=0;x<nb;x++) {
   png.data[t+3]=Math.round(Math.min(1,m[s])*255);
 }
 fs.writeFileSync(A.out ?? "hund.png", PNG.sync.write(png));
+{
+  let oben = 0, unten = 0, links = 0, rechts = 0;
+  for (let x = 0; x < nb; x++) {
+    if (m[(ay0)*B + (x+ax0)] > .5) oben++;
+    if (m[(ay1)*B + (x+ax0)] > .5) unten++;
+  }
+  for (let y = 0; y < nh; y++) {
+    if (m[(y+ay0)*B + ax0] > .5) links++;
+    if (m[(y+ay0)*B + ax1] > .5) rechts++;
+  }
+  console.log(`  Randberuehrung — oben ${oben}px, unten ${unten}px, links ${links}px, rechts ${rechts}px`);
+  if (oben > 6) console.log("  ACHTUNG: oben angeschnitten, Schwelle lockern oder Ausschnitt hoeher setzen");
+}
 console.log(`Ausschnitt ${B}x${H} → Hund ${nb}x${nh}, Deckung ${(besteN/(B*H)*100).toFixed(1)} % des Ausschnitts`);
 console.log(`Lage im Originalbild: x ${X0+ax0}–${X0+ax1}, y ${Y0+ay0}–${Y0+ay1}`);

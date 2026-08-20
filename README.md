@@ -31,15 +31,15 @@ Zwei Bildschirme. Oben das Foto, unten der Club.
 `<img>`, keine Leinwand, kein Skript. Das war zwischenzeitlich anders (eine
 Kamerafahrt per WebGL) und ist bewusst zurückgebaut: das Foto steht still.
 
-**Darunter der Club.** Ein Horizont mit geschnittener Sonne, eine Discokugel,
-Lichtkegel, eine beleuchtete Tanzfläche in echter Perspektive — und der Hund
-aus dem Hero-Foto, freigestellt, mitten drauf. Der einzige Weg, den die Seite
-anbietet, steht als Leuchtschild darüber: Rauchfrei.
+**Darunter der Club.** Ein Horizont mit geschnittener Sonne, eine Discokugel
+aus der Mitte, eine beleuchtete Tanzfläche in echter Perspektive — und der
+Hund aus dem Hero-Foto, freigestellt, mitten drauf. Der einzige Weg, den die
+Seite anbietet, steht als Leuchtschild darüber: Rauchfrei.
 
-Alles davon ist gerechnet — Kugel, Strahlen, Sonne und 432 Kacheln sind CSS
-und ein kleines SVG. Das einzige zusätzliche Bild ist der freigestellte Hund
-(107 KB). Skript hat die Seite genau eines, und das hängt nur den
-Frisch-Parameter an die Rauchfrei-Verweise.
+Alles davon ist gerechnet — Kugel, Sonne und Tanzfläche sind CSS und ein
+kleines SVG. Das einzige zusätzliche Bild ist der freigestellte Hund (107 KB).
+Skript hat die Seite genau eines, und das hängt nur den Frisch-Parameter an
+die Rauchfrei-Verweise. Das ganze Markup sind **64 Elemente**.
 
 ### Der freigestellte Hund
 
@@ -58,16 +58,21 @@ An den Läufen franst es trotzdem aus — deshalb läuft der Hund auf der Seite
 unten weich aus und steht in einem Lichtnebel. Das ist keine Notlösung,
 sondern der Grund, warum der Lichtnebel genau auf Pfotenhöhe sitzt.
 
-### Drei Fallen in der Tanzfläche
+### Die Tanzfläche ist ein Muster, keine Kacheln
+
+Zwei Hintergrundebenen auf einer gekippten Fläche, mehr nicht. Die Kachel ist
+**76 Pixel groß — auf jedem Bildschirm gleich**, und das Muster wiederholt sich
+von allein so weit, wie die Ebene reicht. Zwei Ebenen mit verschobener
+Farbfolge blenden hart gegeneinander, dadurch wechselt die Fläche die Farbe.
+
+Das war zweimal falsch, bevor es stimmte — beide Fehler lohnt es zu kennen:
 
 | Falle | Was passiert | Richtig |
 |---|---|---|
-| Feste Zeilenhöhe (`grid-auto-rows:1fr`) | Aus Kacheln werden Farbfelder | `aspect-ratio:1` auf der Kachel |
-| Perspektive zu stark (165px) | Die vorderen Kacheln werden riesig | 340px, `rotateX(72deg)` |
-| Weiche farbige Schlagschatten am Hund | Überlagern sich hinter ihm zu einem hellen Kasten | Eng halten (5px Versatz, 3px Unschärfe) |
-
-Die Farbverteilung kommt aus elf Gruppen (`:nth-child(11n+k)`), die sich mit
-den 24 Spalten nicht decken — sonst stünden die Farben in Streifen.
+| Kacheln als Bruchteil der Breite (`repeat(24,1fr)`) | Kachelgröße wächst mit dem Fenster, die Kameradistanz nicht. Auf 1440 px waren von 432 Kacheln 60 sichtbar, der Rest lief unsichtbar mit; die Fläche zerfiel in vier Farbschollen | Muster mit fester Kachelgröße in Pixeln |
+| Perspektive zu stark (165 px) | Die vorderen Kacheln werden bildschirmgroß | 340 px, `rotateX(72deg)` |
+| Zwei halbdurchsichtige Farbebenen mit langer Blende | Mischen sich in der Mitte zu Pastell | Deckende Ebenen, harter Wechsel (`0,44% → 50,94%`) |
+| Weiche farbige Schlagschatten am Hund | Überlagern sich hinter ihm zu einem hellen Kasten, der wie ein Freistellungsfehler aussieht | Eng halten: 3 px Versatz, 2 px Unschärfe |
 
 ## Schriften
 
