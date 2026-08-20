@@ -308,8 +308,21 @@ $("einrichtenForm").addEventListener("submit", e => {
   const menge = parseInt($("fMenge").value, 10);
   if (!menge || menge < 1){ fehler.textContent = "Bitte eine Zahl ab 1 eintragen."; return; }
 
+  /* Preis und Inhalt werden seit dem 20.08.2026 hier gefragt statt still aus
+     standard() genommen. Dieselbe Klemmung wie in den Einstellungen, damit
+     beide Wege nicht auseinanderlaufen: was ausserhalb der Grenzen liegt,
+     wird auf die Grenze gezogen statt abgewiesen — ein Tippfehler soll den
+     Einstieg nicht blockieren, und aendern kann man es hinterher. */
+  const klemmen = (el, ersatz) => {
+    const lo = parseFloat(el.min), hi = parseFloat(el.max);
+    const n  = parseFloat(el.value);
+    return Number.isNaN(n) ? ersatz : Math.min(hi, Math.max(lo, n));
+  };
+  const preis        = klemmen($("fPreis"), standard().preis);
+  const proSchachtel = Math.round(klemmen($("fProSchachtel"), standard().proSchachtel));
+
   fehler.textContent = "";
-  profil = Object.assign(standard(), { start, menge });
+  profil = Object.assign(standard(), { start, menge, preis, proSchachtel });
   /* Wer beim Einrichten ein Datum von vor fünf Tagen einträgt, hat Tag 5 nicht
      in der App erlebt — dafür gibt es kein Feuerwerk. Der Stand von jetzt gilt
      als gesehen, gefeiert wird ab dem nächsten Tag. */
