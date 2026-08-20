@@ -809,7 +809,7 @@ const PREISE = [
              w:"Damit bist du raus aus dem einen Club und drin in einem anderen." },
 
   /* ---- Erlebnisse ---- */
-  { p:35.00, e:"ein Tag Kanu",                        v:"Tage Kanu" },
+  { p:35.00, e:"ein Tag Kanu fahren",                 v:"Tage Kanu fahren" },
   { p:40.00, e:"ein Stern mit deinem Namen", v:"Sterne mit deinem Namen",
              w:"Rechtlich bedeutet das nichts, aber der Stern weiß das nicht." },
   { p:45.00, e:"eine Alpaka-Wanderung",               v:"Alpaka-Wanderungen",
