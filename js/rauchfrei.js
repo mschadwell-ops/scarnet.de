@@ -350,13 +350,17 @@ function zeichnen(){
      Genau derselbe Fehler wie damals in der Tagesliste.
 
      Ab Tag eins wieder ganze Tage — „3,42 Tage rauchfrei“ sagt niemand. */
+  /* Die Ueberschrift der Karte lautet "Rauchfrei seit", und nach "seit" steht
+     der Dativ — also "seit 2 Tagen", nicht "seit 2 Tage". krisenStand() macht
+     das weiter unten schon richtig; diese Karte war beim Umbau uebersehen
+     worden. Die Einzahl bleibt "Tag", das IST der Dativ. */
   if (w.tage < 1){
     const anteil = Math.floor((w.verstrichen / TAG) * 100) / 100;
     $("zTage").textContent = anteil.toFixed(2).replace(".", ",");
-    $("zTageWort").textContent = " Tage";
+    $("zTageWort").textContent = " Tagen";
   } else {
     $("zTage").textContent = zahl(w.tage);
-    $("zTageWort").textContent = w.tage === 1 ? " Tag" : " Tage";
+    $("zTageWort").textContent = w.tage === 1 ? " Tag" : " Tagen";
   }
 
   // Der Rauch der ersten 24 Stunden. Voll beim Start, gleichmäßig dünner,
