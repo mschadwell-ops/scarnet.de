@@ -52,8 +52,10 @@ Hero-Bilder bleiben **JPEG**, Qualitätsstufe 90. Dieselben Fotos lagen als PNG
 bei 4,14 MB statt 711 KB, ohne besser auszusehen. Desktop quer, Mobil hoch —
 `background-size:cover` beschneidet sonst an unerwarteter Stelle.
 
-Auf dem Mac konvertiert `sips` (auch nach WebP), auf dem Windows-PC geht es nur
+Auf dem Mac skaliert und komprimiert `sips`, auf dem Windows-PC geht es nur
 über PowerShell mit WPF. Weder ImageMagick noch ffmpeg noch cwebp sind da.
+**`sips` kann WebP lesen, aber nicht schreiben** (`Error: Can't write format:
+org.webmproject.webp`, geprüft am 20.08.2026) — deshalb bleibt es bei JPEG.
 
 ## 4. Impressum und Datenschutz — bewusste Entscheidungen
 
@@ -75,7 +77,54 @@ Auf dem Mac konvertiert `sips` (auch nach WebP), auf dem Windows-PC geht es nur
   braucht die Menüleiste 417 px bei 288 px Platz auf einem 375-px-Display, und
   „Datenschutz" fällt aus dem Bild. Nicht zurückbauen.
 
-## 5. Der Rauchfrei-Bereich ist absichtlich zurückhaltend
+## 5. Die Startseite: fremde Fotos, eigene Tiefe
+
+Seit dem 20.08.2026 ist die Startseite eine Bildseite. Vier Fotos aus dem
+Revier und das Hero-Bild bekommen im Browser **Tiefe**: ein WebGL-Shader
+verschiebt jeden Bildpunkt danach, wie nah er ist — vorne viel, hinten
+wenig. Beim Scrollen und bei Mausbewegung schieben sich die Ebenen deshalb
+gegeneinander. Keine Bibliothek, rund 130 Zeilen im `<script>`.
+
+**Die Fotos sind fremdes Eigentum. Das ist der teure Teil.**
+
+- Alle vier stammen von Wikimedia Commons unter **CC BY-SA 3.0/4.0 bzw.
+  CC BY 4.0**. Die Nennung von Urheber und Lizenz unter jedem Bild ist
+  **Lizenzbedingung, keine Höflichkeit** — wer sie entfernt, verliert das
+  Nutzungsrecht rückwirkend und ist Abmahnungen ausgesetzt.
+- Beide Verweise pro Bild müssen stehen bleiben: der Name zeigt auf die
+  Commons-Seite, die Lizenz auf den Lizenztext. Das sind `<a href>`, keine
+  Einbindung — es wird nichts von dort geladen, Punkt 1 bleibt gewahrt.
+- Die Bilder sind zugeschnitten und farblich angepasst. Der Satz darüber
+  unter den Tafeln ist Teil der Pflicht („indicate changes"), er ist keine
+  Fußnote zum Kürzen. Bei den BY-SA-Bildern gilt zusätzlich Share-Alike:
+  die bearbeitete Fassung steht unter derselben Lizenz.
+- **Neue Bilder nur mit freier Lizenz.** Fotos vom Stadion oder von Zechen
+  aus einer Bildersuche sind geschützt; selbst gehostet auf scarnet.de wäre
+  das genau das Risiko, das die Seite sonst überall vermeidet.
+
+**Drei Dinge in der Technik, die man dem Quelltext nicht ansieht:**
+
+- **Das `<img>` ist Rückfallebene und Texturquelle zugleich.** Ohne
+  JavaScript oder WebGL bleibt es sichtbar und die Seite ist eine
+  gewöhnliche Bildseite; läuft WebGL, dient genau dieses Element als Textur
+  und blendet sich weg. Wer daraus ein CSS-`background-image` macht, lädt
+  jedes Foto zweimal.
+- **Die Tiefe ist eine Formel, keine Tiefenkarte.** Waagerechte Fotos
+  werden nach unten hin näher (`tiefeY`), Motive mit Fluchtpunkt zum Rand
+  hin (`tiefeR`). Das kostet null zusätzliche Bytes und trägt genau diese
+  fünf Motive. Ein Foto ohne klare Ordnung — Nahaufnahme, Menschenmenge von
+  vorn — bräuchte ein zweites Bild als echte Tiefenkarte.
+- **Jedes Motiv hat eigene Regler** in `REGLER` (Fluchtpunkt, Fokus, Fahrt,
+  Schub, Farbanpassung). Sie sind nach Augenmaß gesetzt. Wird ein Foto
+  ausgetauscht, müssen sie neu gesetzt werden, sonst kippt die Fahrt in die
+  falsche Richtung.
+
+Ab Tablet bekommt jede Tafel das **Seitenverhältnis ihres eigenen Fotos**,
+damit nichts abgeschnitten wird — ein hohes Motiv wie der Doppelbock
+überlebt keinen breiten Ausschnitt. Auf dem Handy geht das nicht, dort
+entscheidet der Fokuspunkt.
+
+## 6. Der Rauchfrei-Bereich ist absichtlich zurückhaltend
 
 Das ist kein Mangel an Gestaltung, sondern der Zweck. Der **Krisenknopf** ist
 klein, rund, halb durchsichtig und in der Ecke: ein dauerhaft sichtbarer Knopf
@@ -90,7 +139,7 @@ Zugänge stehen als SHA-256 in `KONTEN` (`js/rauchfrei.js`). Das Kennwort steht
 nirgends im Repository und darf dort auch nie landen — es stand dort schon
 einmal. Neue Zugänge über `setup.html`.
 
-## 6. Prüfen
+## 7. Prüfen
 
 Im Browser, nicht per Werkzeugkette:
 
@@ -111,7 +160,7 @@ Sprachfehler im zur Laufzeit erzeugten Text („seit 2 Tage" statt „Tagen") ka
 er nicht finden. Nach dem Ausliefern über den echten Weg gegenprüfen —
 Startseite, Reiter, anmelden — nicht nur per `curl`.
 
-## 7. Arbeitskopie
+## 8. Arbeitskopie
 
 Maßgeblich ist **`origin/main`**. Der Ordner
 `~/Library/CloudStorage/Dropbox/Claude/scarnet.de` ist ein veralteter

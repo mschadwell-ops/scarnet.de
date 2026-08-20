@@ -7,13 +7,14 @@ vom Branch `main`. Kein Build, kein Generator — was hier liegt, ist die Seite.
 
 | Datei | Zweck |
 |---|---|
-| `index.html` | Startseite: Hero-Bild und Menü |
+| `index.html` | Startseite: Hero mit Kamerafahrt, vier Fotos aus dem Revier, Menü |
 | `rauchfrei.html` | Reiter „Rauchfrei“ — Anmeldung und Zähler, alles in einer Datei |
 | `setup.html` | Werkzeug, um Zugänge zu erzeugen. Nicht im Menü verlinkt |
 | `impressum.html` | Anbieterkennzeichnung nach § 5 DDG |
 | `datenschutz.html` | Datenschutzerklärung |
 | `Welcome.jpg` | Hero-Bild quer (1672 × 941), ab Viewport ≥ 769 px |
 | `Welcome-mobile.jpg` | Hero-Bild hoch (941 × 1672), bis Viewport ≤ 768 px |
+| `bilder/` | vier Fotos aus dem Revier, je groß (1600 px) und klein (900 px) |
 | `CNAME` | bindet die Domain `scarnet.de` an GitHub Pages |
 | `robots.txt` | hält den persönlichen Bereich aus Suchmaschinen |
 
@@ -21,6 +22,59 @@ Jede Seite ist für sich vollständig — kein gemeinsames Stylesheet, kein
 Skript von außen, nichts von einem fremden Server. Das ist Absicht:
 So läuft jede Datei auch per Doppelklick lokal, und es geht nichts an Dritte
 raus, was datenschutzrechtlich relevant wäre.
+
+## Die Startseite
+
+Ein Hero über knapp zwei Bildschirme, darunter vier Fotos, darunter die Karte
+zum Rauchfrei-Bereich und die Rechtsfußzeile.
+
+### Tiefe in flachen Fotos
+
+Jedes Foto liegt hinter einer WebGL-Leinwand. Ein Shader rechnet für jeden
+Bildpunkt aus, wie nah er ist, und verschiebt ihn entsprechend: Vordergrund
+viel, Hintergrund kaum. Genau daran erkennt das Auge Raum. Beim Hero liegt der
+Fluchtpunkt im Gang — dort wird aus der Verschiebung eine Kamerafahrt, und man
+scrollt den Serverraum hinunter.
+
+Die Tiefe steht als **Formel** im Shader, nicht als zweites Bild:
+
+| Regler | Wofür |
+|---|---|
+| `tiefeY` | waagerechte Fotos werden nach unten hin näher |
+| `tiefeR` | Motive mit Fluchtpunkt werden zum Rand hin näher |
+| `flucht` | wo der Fluchtpunkt liegt |
+| `fokus` | welcher Teil im Ausschnitt bleibt, wenn beschnitten wird |
+| `fahrt` | wie weit die Kamera hineinfährt |
+| `schub` | wie weit sich die Ebenen beim Scrollen gegeneinander schieben |
+| `grade` | dunkel, Kontrast, Wärme, Vignette — bindet vier fremde Fotos zu einer Serie |
+
+Das kostet **keine Bibliothek und keine zusätzliche Datei**: rund 130 Zeilen
+im `<script>`, 12 KB über die Leitung für das ganze HTML. Three.js wäre für
+einen bildschirmfüllenden Shader Ballast.
+
+Das `<img>` im Markup ist dabei **Rückfallebene und Texturquelle zugleich**:
+ohne JavaScript oder WebGL bleibt es stehen, mit WebGL wird genau dieses
+Element zur Textur und blendet sich weg. Deshalb lädt kein Foto zweimal. Bei
+„Bewegung reduzieren" startet das Skript gar nicht erst.
+
+### Die Fotos und ihre Lizenzen
+
+Alle vier stammen von Wikimedia Commons. **Die Nennung unter jedem Bild ist
+Lizenzbedingung** — nicht entfernen, nicht ins Impressum verschieben.
+
+| Motiv | Urheber | Lizenz |
+|---|---|---|
+| Zeche Zollverein, Schacht XII | Anil Öztas | CC BY-SA 4.0 |
+| Bochum, Jahrhunderthalle im Westpark | Frank Vincentz | CC BY-SA 3.0 |
+| Dortmund, Südtribüne | Der-wuppertaler | CC BY-SA 3.0 |
+| Halde Hoheward, Horizontobservatorium | Unukorno | CC BY 4.0 |
+
+Zugeschnitten und farblich angepasst; der Hinweis darauf steht unter den
+Tafeln und gehört zur Pflicht. Bei den BY-SA-Bildern gilt Share-Alike.
+
+Jedes Foto liegt zweimal da: 1600 px für den Bildschirm, 900 px fürs Handy,
+ausgewählt über `srcset`. Groß 1,2 MB zusammen, klein 0,4 MB — geladen wird
+erst, wenn man in die Nähe scrollt (`loading="lazy"`).
 
 ## Schriften
 
