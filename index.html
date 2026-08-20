@@ -697,6 +697,9 @@ body{
     "uniform float tiefeR;",
     "uniform float fahrt;",
     "uniform vec4  grade;",
+    "uniform vec4  hund;",        /* Mitte und Halbachsen der Hundezone */
+    "uniform float hundNaehe;",   /* wie viel naeher der Hund ist als sein Umfeld */
+    "uniform float wisch;",       /* radiales Verwischen, aus der Scrollgeschwindigkeit */
     "void main(){",
     "  vec2 uv = fokus + (vUv - 0.5) * zuschnitt;",
     "  vec2 p  = uv - flucht;",
@@ -704,9 +707,37 @@ body{
     "  float rand = clamp(length(p * vec2(0.62, 1.0)) / 0.52, 0.0, 1.0);",
     "  float nah  = clamp(tiefeY * (1.0 - uv.y) + tiefeR * rand, 0.0, 1.0);",
     "  nah = nah * nah * (3.0 - 2.0 * nah);",
+    /* Der Hund ist eine eigene Ebene. Ohne diese Glocke ist er fuer den
+       Shader nur Bildmitte und damit weit weg — mit ihr ist er das
+       naechste im Bild und waechst schneller als der Gang. Weich
+       auslaufend, damit keine Kante entsteht: eine harte Maske wuerde
+       einen Blasenrand um ihn herum sichtbar machen. */
+    "  vec2  dh   = (uv - hund.xy) / max(hund.zw, vec2(0.001));",
+    "  float weit = dot(dh, dh);",
+    "  float ganz = exp(-weit * 1.7) * hundNaehe;",
+    "  nah = clamp(nah + ganz, 0.0, 1.0);",
+    /* Zweite, breitere und flachere Glocke — nur fuer die Schaerfe. Mit
+       derselben wie oben blieb nur die Nasenspitze scharf und der Rest
+       des Hundes verwischte mit dem Gang. */
+    "  float schutz = clamp(exp(-weit * 0.85) * 1.9, 0.0, 1.0);",
     /* Kamerafahrt: was nah ist, waechst schneller aus dem Bild heraus */
     "  vec2 q = flucht + p * (1.0 - fahrt * nah) + versatz * nah;",
-    "  vec3 farbe = texture2D(bild, clamp(q, 0.0015, 0.9985)).rgb;",
+    /* Radiales Verwischen: die Schraenke streifen vorbei, der Hund bleibt
+       scharf. Die Staerke kommt aus der Scrollgeschwindigkeit, also steht
+       das Bild still, sobald man aufhoert zu scrollen. */
+    "  float streif = wisch * rand * (1.0 - schutz);",
+    "  vec3 farbe;",
+    "  if(streif > 0.0015){",
+    "    vec3 summe = vec3(0.0);",
+    "    for(int i = 0; i < 6; i++){",
+    "      float t = float(i) / 5.0 - 0.5;",
+    "      vec2 qq = flucht + (q - flucht) * (1.0 + t * streif);",
+    "      summe += texture2D(bild, clamp(qq, 0.0015, 0.9985)).rgb;",
+    "    }",
+    "    farbe = summe / 6.0;",
+    "  }else{",
+    "    farbe = texture2D(bild, clamp(q, 0.0015, 0.9985)).rgb;",
+    "  }",
     "  farbe = (farbe - 0.5) * grade.y + 0.5;",
     "  farbe *= grade.x;",
     "  farbe *= vec3(1.0 + grade.z, 1.0, 1.0 - grade.z * 0.8);",
@@ -777,13 +808,29 @@ body{
       tiefeY:    gl.getUniformLocation(pr,"tiefeY"),
       tiefeR:    gl.getUniformLocation(pr,"tiefeR"),
       fahrt:     gl.getUniformLocation(pr,"fahrt"),
-      grade:     gl.getUniformLocation(pr,"grade")
+      grade:     gl.getUniformLocation(pr,"grade"),
+      hund:      gl.getUniformLocation(pr,"hund"),
+      hundNaehe: gl.getUniformLocation(pr,"hundNaehe"),
+      wisch:     gl.getUniformLocation(pr,"wisch")
     };
     var g = this.regler.grade;
     gl.uniform1f(this.ort.tiefeY, this.regler.tiefeY);
     gl.uniform1f(this.ort.tiefeR, this.regler.tiefeR);
     gl.uniform4f(this.ort.grade, g[0], g[1], g[2], g[3]);
     gl.uniform2f(this.ort.flucht, this.regler.flucht[0], this.regler.flucht[1]);
+
+    /* Wo der Hund steht, haengt davon ab, welches der beiden Hero-Bilder
+       geladen wurde — quer und hoch zeigen ihn an verschiedenen Stellen.
+       Auf allen anderen Szenen ist die Zone aus, dort gibt es keinen Hund. */
+    var h = [0, 0, 1, 1], staerke = 0;
+    if(this.istHero){
+      var hoch = /mobile/.test(this.bild.currentSrc || this.bild.src);
+      h = hoch ? [.49, .33, .15, .18] : [.47, .25, .10, .22];
+      staerke = .55;
+    }
+    gl.uniform4f(this.ort.hund, h[0], h[1], h[2], h[3]);
+    gl.uniform1f(this.ort.hundNaehe, staerke);
+    gl.uniform1f(this.ort.wisch, 0);
 
     this.bereit = true;
     this.messen();
@@ -825,6 +872,14 @@ body{
       vx = maus.x * r.schub;
       vy = maus.y * r.schub;
       if(this.hinweis) this.hinweis.style.opacity = Math.max(0, 1 - p * 2.6);
+
+      /* Verwischen nach Tempo, nicht nach Strecke: wer scrollt, sieht die
+         Schraenke streifen; wer stehenbleibt, sieht ein scharfes Bild.
+         Nachlaufend geglaettet, sonst flackert es bei jedem Rad-Klick. */
+      var tempo = Math.abs(p - (this.letztesP === undefined ? p : this.letztesP));
+      this.letztesP = p;
+      this.wisch = (this.wisch || 0) + (Math.min(tempo * 24, .20) - (this.wisch || 0)) * .18;
+      this.gl.uniform1f(this.ort.wisch, this.wisch < .004 ? 0 : this.wisch);
     }else{
       /* Wie weit die Tafel durch das Bild gewandert ist: -1 unten, 0 mittig. */
       var q = ((kasten.top + kasten.height / 2) - fh / 2) / fh;

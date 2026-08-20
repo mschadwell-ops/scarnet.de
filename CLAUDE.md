@@ -118,6 +118,23 @@ gegeneinander. Keine Bibliothek, rund 130 Zeilen im `<script>`.
   Schub, Farbanpassung). Sie sind nach Augenmaß gesetzt. Wird ein Foto
   ausgetauscht, müssen sie neu gesetzt werden, sonst kippt die Fahrt in die
   falsche Richtung.
+- **Der Hund im Hero hat eine eigene Zone**, sonst wäre er für den Shader
+  nur Bildmitte und damit weit weg. Zwei Glocken über derselben Stelle, und
+  sie machen verschiedene Dinge — nicht zu einer zusammenfassen:
+
+  | Glocke | Wofür | Warum so |
+  |---|---|---|
+  | `ganz`, eng (`exp(-weit*1.7)`) | Nähe: er wächst schneller als der Gang | eng, sonst wölbt sich der halbe Gang mit |
+  | `schutz`, breit und flach (`exp(-weit*0.85)*1.9`) | Schärfe: er bleibt scharf, während die Schränke streifen | mit der engen blieb nur die Nasenspitze scharf |
+
+  Die Koordinaten der Zone hängen davon ab, **welches der beiden Hero-Bilder
+  geladen wurde** — quer und hoch zeigen den Hund an verschiedenen Stellen.
+  Das Skript liest dafür `currentSrc`. Wer ein Hero-Bild austauscht, muss
+  beide Wertepaare neu messen.
+- **Das radiale Verwischen kommt aus der Scroll­geschwindigkeit, nicht aus
+  der Strecke.** Wer stehenbleibt, sieht ein scharfes Bild; wer scrollt,
+  sieht die Schränke streifen. Nach Strecke gerechnet bliebe das Bild dauerhaft
+  unscharf stehen, sobald man einmal unten war.
 
 Ab Tablet bekommt jede Tafel das **Seitenverhältnis ihres eigenen Fotos**,
 damit nichts abgeschnitten wird — ein hohes Motiv wie der Doppelbock

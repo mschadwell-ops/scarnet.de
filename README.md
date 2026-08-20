@@ -47,8 +47,14 @@ Die Tiefe steht als **Formel** im Shader, nicht als zweites Bild:
 | `fahrt` | wie weit die Kamera hineinfährt |
 | `schub` | wie weit sich die Ebenen beim Scrollen gegeneinander schieben |
 | `grade` | dunkel, Kontrast, Wärme, Vignette — bindet vier fremde Fotos zu einer Serie |
+| `hund` | eigene Tiefenzone im Hero: der Hund wächst schneller als der Gang und bleibt beim Verwischen scharf |
 
-Das kostet **keine Bibliothek und keine zusätzliche Datei**: rund 130 Zeilen
+Beim Hero kommt dazu ein **radiales Verwischen**, dessen Stärke aus der
+Scrollgeschwindigkeit kommt: die Serverschränke streifen vorbei, während der
+Hund scharf bleibt — er hat dafür eine eigene, breitere Schutzzone. Hört man
+auf zu scrollen, steht das Bild wieder still.
+
+Das kostet **keine Bibliothek und keine zusätzliche Datei**: rund 150 Zeilen
 im `<script>`, 12 KB über die Leitung für das ganze HTML. Three.js wäre für
 einen bildschirmfüllenden Shader Ballast.
 
