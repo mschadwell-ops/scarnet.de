@@ -134,11 +134,11 @@ body{
 /* Beschriftung der Leiste, absichtlich kein Link — die Ziele stehen rechts. */
 .mark{
     flex:none;
-    font-size:11px;
+    font-size:15.5px;
     font-weight:600;
-    letter-spacing:.18em;
-    text-transform:uppercase;
-    color:rgba(255,255,255,.38);
+    letter-spacing:-.015em;
+    
+    color:rgba(255,255,255,.92);
     white-space:nowrap;
     -webkit-user-select:none;
     user-select:none;
@@ -210,10 +210,11 @@ body{
 .szene.laeuft .szene-glas{ opacity:1; }
 
 /* ---------- Hero ----------
-   Die Buehne ist knapp zwei Bildschirme hoch, der Hero klebt darin oben fest.
-   Diese Strecke ist die Kamerafahrt: das Bild hat einen Fluchtpunkt, und
-   waehrend man scrollt, faehrt die Kamera den Gang hinunter. */
-.hero-buehne{ position:relative; height:190vh; }
+   Der Hero klebt oben fest, die Buehne darum ist eine halbe Bildschirmhoehe
+   hoeher — das ist die Strecke der Kamerafahrt. Vorher waren es knapp zwei
+   Bildschirme: beim ersten Besuch ein Erlebnis, beim fuenften eine Mautstelle.
+   Eine halbe Umdrehung am Rad reicht fuer die Fahrt, danach kommt Inhalt. */
+.hero-buehne{ position:relative; height:150vh; }
 
 .hero{
     position:sticky;
@@ -496,7 +497,7 @@ body{
 <!-- MENÜ — hier kommen neue Reiter dazu. Auf der jeweils eigenen Seite
      bekommt der Reiter aria-current="page", damit er hervorgehoben wird. -->
 <nav class="nav">
-  <span class="mark">Menü</span>
+  <span class="mark">scaRnet</span>
   <div class="tabs">
     <a href="/" aria-current="page">Start</a>
     <a href="/rauchfrei.html" data-rauchfrei>Rauchfrei</a>
@@ -513,14 +514,27 @@ body{
     </picture>
     <canvas class="szene-glas" aria-hidden="true"></canvas>
 
-    <a class="hinweis" href="#revier">
-      <span>Weiter ins Revier</span>
+    <a class="hinweis" href="#weiter">
+      <span>Weiter</span>
       <svg width="15" height="9" viewBox="0 0 15 9" fill="none" aria-hidden="true">
         <path d="M1 1L7.5 7.5L14 1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
       </svg>
     </a>
   </header>
 </div>
+
+<!-- Das Einzige, was diese Seite tatsaechlich kann, steht jetzt direkt
+     unter dem Hero und nicht mehr hinter vier bildschirmfuellenden Fotos. -->
+<section class="weiter" id="weiter">
+  <p class="augenbraue">Auf dieser Seite</p>
+  <a class="karte" href="/rauchfrei.html" data-rauchfrei>
+    <span>
+      <span class="karte-titel">Rauchfrei</span>
+      <span class="karte-zeile">Der Zähler seit dem ersten Tag. Mit Anmeldung.</span>
+    </span>
+    <span class="karte-pfeil" aria-hidden="true">→</span>
+  </a>
+</section>
 
 <!-- ============================ DAS REVIER ============================
      Vier Fotos, jedes mit Tiefe: der Shader verschiebt die Bildpunkte je
@@ -603,17 +617,6 @@ body{
 
   <p class="bildhinweis">Alle vier Fotos stammen von Wikimedia Commons und sind
      im Ausschnitt und in der Farbe angepasst.</p>
-</section>
-
-<section class="weiter">
-  <p class="augenbraue">Auf dieser Seite</p>
-  <a class="karte" href="/rauchfrei.html" data-rauchfrei>
-    <span>
-      <span class="karte-titel">Rauchfrei</span>
-      <span class="karte-zeile">Der Zähler seit dem ersten Tag. Mit Anmeldung.</span>
-    </span>
-    <span class="karte-pfeil" aria-hidden="true">→</span>
-  </a>
 </section>
 
 <!-- Pflichtangaben. Bewusst hier und nicht im Menü — siehe Kommentar im CSS. -->

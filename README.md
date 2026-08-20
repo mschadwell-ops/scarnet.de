@@ -25,8 +25,13 @@ raus, was datenschutzrechtlich relevant wäre.
 
 ## Die Startseite
 
-Ein Hero über knapp zwei Bildschirme, darunter vier Fotos, darunter die Karte
-zum Rauchfrei-Bereich und die Rechtsfußzeile.
+Ein Hero über anderthalb Bildschirme, darunter die Karte zum
+Rauchfrei-Bereich, darunter vier Fotos und die Rechtsfußzeile.
+
+Die Reihenfolge ist eine Entscheidung: **das Einzige, was die Seite
+tatsächlich kann, steht direkt unter dem Hero** und nicht hinter vier
+bildschirmfüllenden Fotos. Und die Kamerafahrt ist bewusst kurz — beim ersten
+Besuch ist sie ein Erlebnis, beim fünften eine Mautstelle.
 
 ### Tiefe in flachen Fotos
 
@@ -107,6 +112,13 @@ wäre für Deutsch unnötiger Ballast. Npm wurde nur zum Beschaffen gebraucht �
 die Seite bleibt buildfrei, die Dateien liegen im Repo.
 
 ## Ein neuer Menüpunkt
+
+Links in der Leiste steht der Name der Seite, nicht das Wort „Menü" — die
+wertvollste Stelle der Seite gehört der Kennung, nicht einem Etikett für
+etwas Offensichtliches. Er steht als Text und nicht als Bild da, also
+skaliert er mit und lässt sich auswählen; das große R in der Mitte trägt den
+Namen, deshalb ist die Beschriftung **nicht** in Großbuchstaben gesetzt.
+Absichtlich kein Verweis: die Ziele stehen rechts.
 
 Das Menü steht als `<nav class="nav">` in jeder Seite. Neuer Reiter heißt:
 in `index.html` und in allen bestehenden Seiten eine Zeile in `.tabs`
