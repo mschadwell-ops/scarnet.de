@@ -124,6 +124,16 @@ damit nichts abgeschnitten wird — ein hohes Motiv wie der Doppelbock
 überlebt keinen breiten Ausschnitt. Auf dem Handy geht das nicht, dort
 entscheidet der Fokuspunkt.
 
+**Der Stand davor liegt als Marke `startseite-v1`** — die alte Startseite, ein
+Bildschirm Foto und sonst nichts. Zurückholen:
+
+```bash
+git checkout main && git checkout startseite-v1 -- index.html
+```
+
+Danach müssen `bilder/` und die Abschnitte in README und hier von Hand mit
+raus, sonst stehen Lizenzhinweise für Fotos da, die niemand mehr sieht.
+
 ## 6. Der Rauchfrei-Bereich ist absichtlich zurückhaltend
 
 Das ist kein Mangel an Gestaltung, sondern der Zweck. Der **Krisenknopf** ist
