@@ -374,10 +374,18 @@ function zeichnen(){
      Richtung: es wird nie mehr behauptet, als tatsaechlich gespart ist. */
   $("kGeld").textContent = euro(Math.floor(w.geld * 100) / 100);
   muenzeZeichnen(w);
+  /* Unter einer ganzen Schachtel keine Null hinschreiben. Am ersten Tag ist
+     das die erste Zahl, die jemand zu sehen bekommt, und eine 0 mit Einheit
+     liest sich wie eine Bilanz statt wie ein Anfang — dieselbe Ueberlegung
+     wie bei den leeren Bereichen, die verschwinden. Es haelt bis in Tag 1
+     hinein an, weil eine Schachtel hier 22 Zigaretten hat. Die Zeile
+     darunter macht es mit den Stangen schon genauso. */
   const schachteln = Math.floor(w.schachteln);
-  $("kGeldNote").textContent = schachteln === 1
-    ? "eine Schachtel nicht gekauft"
-    : zahl(schachteln) + " Schachteln nicht gekauft";
+  $("kGeldNote").textContent = schachteln === 0
+    ? "noch keine ganze Schachtel"
+    : schachteln === 1
+      ? "eine Schachtel nicht gekauft"
+      : zahl(schachteln) + " Schachteln nicht gekauft";
 
   const zig = Math.floor(w.nichtGeraucht);
   $("kZig").textContent = zahl(zig);

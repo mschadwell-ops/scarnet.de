@@ -28,14 +28,14 @@
    Mit ?v= kann das nicht mehr vorkommen: neues HTML verweist auf neue
    Adressen, die im Zwischenspeicher gar nicht liegen. Als Netz prueft die
    Seite die Zahl zusaetzlich gegen. */
-const FASSUNG = 20;
+const FASSUNG = 21;
 
 /* Das Datum, an dem diese Fassung ausgeliefert wurde. Steht bewusst hier
    neben der Nummer und nicht irgendwo im Markup: wer die eine aendert,
    sieht die andere und vergisst sie nicht. Wird unten in den Einstellungen
    angezeigt, damit bei einer Rueckmeldung feststeht, welcher Stand da
    ueberhaupt lief. */
-const FASSUNG_DATUM = "19.08.2026";
+const FASSUNG_DATUM = "20.08.2026";
 
 /* Zeit. Steht hier, weil TROPHAEEN in inhalte.js damit rechnet und diese
    Datei zuerst geladen wird. */

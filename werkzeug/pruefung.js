@@ -64,6 +64,21 @@ function pruefung(kennwort){
     .map(s => s.textContent)
     .filter(t => t.indexOf("function pruefung()") < 0)
     .join("\n");
+
+  /* Der Zusammenbau aus LIESMICH.md ist Voraussetzung, keine Bequemlichkeit:
+     quelle liest script.textContent und sieht damit ausschliesslich
+     eingebettete Skripte. Laeuft die Pruefung gegen die ausgelieferten
+     Dateien mit <script src="js/...">, ist quelle praktisch leer. Dann
+     findet Pruefung 1 eine Handvoll Kennungen statt achtzig und meldet
+     trotzdem "ok", und Pruefung 2 vergleicht -1 mit -1 und schlaegt an.
+     Eine gruene Meldung, die nichts geprueft hat, ist schlimmer als gar
+     keine — deshalb hier abbrechen statt weiterlaufen. */
+  if (quelle.indexOf("(function los()") < 0)
+    return "Abgebrochen: der Pruefabzug ist nicht zusammengebaut.\n\n"
+         + "Diese Pruefung liest nur eingebettete Skripte und saehe hier fast\n"
+         + "nichts — sie wuerde gruen melden, ohne etwas geprueft zu haben.\n"
+         + "Erst _pruef.html nach werkzeug/LIESMICH.md erzeugen und dort\n"
+         + "aufrufen, nicht auf rauchfrei.html.";
   const ids = new Set();
   const muster = /\$\("([A-Za-z][\w-]*)"\)|getElementById\("([A-Za-z][\w-]*)"\)/g;
   let m;
