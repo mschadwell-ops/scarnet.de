@@ -75,7 +75,37 @@ Auf dem Mac konvertiert `sips` (auch nach WebP), auf dem Windows-PC geht es nur
   braucht die Menüleiste 417 px bei 288 px Platz auf einem 375-px-Display, und
   „Datenschutz" fällt aus dem Bild. Nicht zurückbauen.
 
-## 5. Der Rauchfrei-Bereich ist absichtlich zurückhaltend
+## 5. Die Startseite trägt das Panorama — der Rest der Seite nicht
+
+„Das Revier“ in `index.html` ist der einzige Ort mit Bewegung. Das ist eine
+Entscheidung, kein Zufall: die Startseite darf etwas hermachen, der
+Rauchfrei-Bereich soll das ausdrücklich nicht (siehe Punkt 6). Impressum,
+Datenschutz und `setup.html` behalten ihre grüne Farbwelt und sind vom
+Umbau am 20.08.2026 nicht berührt.
+
+Drei Dinge dort nicht anfassen, ohne den Grund zu kennen:
+
+- **Kein `overflow` auf `html` oder `body`.** Ein Rollcontainer weiter oben
+  setzt `position:sticky` in Safari außer Kraft — dann steht das Panorama
+  still und die Buehne ist nur noch ein langes Loch. Nach der Breite muss
+  auch niemand schielen: die Zeichnung steckt in `.band`, das schneidet ab.
+- **Die Grundstellung im CSS ist die Fassung ohne Skript** — ein Streifen
+  zum Seitwärtsschieben, die vier Tafeln untereinander. Erst das Skript
+  setzt `pano` auf `<html>`. Wer die Reihenfolge umdreht und die Fahrt zur
+  Grundstellung macht, liefert allen ohne JavaScript eine leere Seite.
+- **`messen()` rechnet den Maßstab, er steht nirgends fest.** Die Zeichnung
+  wird immer ganz gezeigt, also bestimmt die Höhe des Streifens auch seine
+  Breite und damit die Länge der Fahrt. Eine feste Höhe sieht auf einem
+  Gerät gut aus und auf allen anderen falsch — auf einem hohen Fenster
+  klebt man mit der Nase am Fördergerüst, auf einem breiten gibt es nichts
+  mehr zu fahren.
+
+Die Farben der Zeichnung sind keine Dekoration: Rost gehört der Zeche, Blau
+Bochum, Gelb Dortmund, Grün der Halde. Jede Farbe kommt genau einmal vor,
+damit sie etwas bedeutet. Vereinslogos und Wappen sind bewusst nirgends
+gezeichnet — abstrakte Silhouetten und Farben, mehr nicht.
+
+## 6. Der Rauchfrei-Bereich ist absichtlich zurückhaltend
 
 Das ist kein Mangel an Gestaltung, sondern der Zweck. Der **Krisenknopf** ist
 klein, rund, halb durchsichtig und in der Ecke: ein dauerhaft sichtbarer Knopf
@@ -90,7 +120,7 @@ Zugänge stehen als SHA-256 in `KONTEN` (`js/rauchfrei.js`). Das Kennwort steht
 nirgends im Repository und darf dort auch nie landen — es stand dort schon
 einmal. Neue Zugänge über `setup.html`.
 
-## 6. Prüfen
+## 7. Prüfen
 
 Im Browser, nicht per Werkzeugkette:
 
@@ -111,7 +141,7 @@ Sprachfehler im zur Laufzeit erzeugten Text („seit 2 Tage" statt „Tagen") ka
 er nicht finden. Nach dem Ausliefern über den echten Weg gegenprüfen —
 Startseite, Reiter, anmelden — nicht nur per `curl`.
 
-## 7. Arbeitskopie
+## 8. Arbeitskopie
 
 Maßgeblich ist **`origin/main`**. Der Ordner
 `~/Library/CloudStorage/Dropbox/Claude/scarnet.de` ist ein veralteter

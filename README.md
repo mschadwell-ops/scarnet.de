@@ -7,7 +7,7 @@ vom Branch `main`. Kein Build, kein Generator — was hier liegt, ist die Seite.
 
 | Datei | Zweck |
 |---|---|
-| `index.html` | Startseite: Hero-Bild und Menü |
+| `index.html` | Startseite: Hero-Bild, Panorama „Das Revier“, Menü |
 | `rauchfrei.html` | Reiter „Rauchfrei“ — Anmeldung und Zähler, alles in einer Datei |
 | `setup.html` | Werkzeug, um Zugänge zu erzeugen. Nicht im Menü verlinkt |
 | `impressum.html` | Anbieterkennzeichnung nach § 5 DDG |
@@ -21,6 +21,38 @@ Jede Seite ist für sich vollständig — kein gemeinsames Stylesheet, kein
 Skript von außen, nichts von einem fremden Server. Das ist Absicht:
 So läuft jede Datei auch per Doppelklick lokal, und es geht nichts an Dritte
 raus, was datenschutzrechtlich relevant wäre.
+
+## Die Startseite
+
+Drei Abschnitte, alles in `index.html`, kein zusätzlicher Abruf: das Hero-Foto
+über die volle Höhe, darunter **„Das Revier“**, darunter die Karte zum
+Rauchfrei-Bereich und die Rechtsfußzeile.
+
+„Das Revier“ ist eine gezeichnete Landschaft, 3200 × 900 Einheiten, die beim
+Scrollen von West nach Ost fährt: Fördergerüst im Morgengrauen, Jahrhunderthalle
+am Tag, Flutlicht und gelbe Wand am Abend, Halde zur blauen Stunde. Kein Foto,
+keine Bibliothek — ein Inline-SVG und rund 60 Zeilen Skript. Der Boden macht
+dieselbe Wanderung: links trockenes Braun, rechts Gras.
+
+Drei Sachen dabei sind wichtiger, als sie aussehen:
+
+- **Der Maßstab wird gerechnet, nicht gesetzt.** Die Zeichnung wird immer ganz
+  gezeigt, also legt die Höhe des Streifens auch seine Breite fest. `messen()`
+  gleicht vier Ansprüche aus: hoch genug, um etwas zu erkennen; breit genug, um
+  zu fahren; kurz genug, dass die Fahrt gut drei Bildschirme dauert; und
+  mindestens 1,25 Fensterbreiten, sonst gäbe es auf einem breiten Monitor
+  nichts zu fahren.
+- **Kein `overflow` auf `html` oder `body`.** Ein Rollcontainer weiter oben
+  setzt `position:sticky` in Safari außer Kraft, und dann fährt nichts mehr.
+  Über die Breite läuft ohnehin nichts hinaus, das schneidet `.band` ab.
+- **Ohne Skript bleibt die Seite vollständig.** Die Grundstellung im CSS ist der
+  Streifen zum Seitwärtsschieben mit den vier Tafeln untereinander; erst das
+  Skript setzt die Klasse `pano` auf `<html>` und schaltet die Fahrt frei. Wer
+  „Bewegung reduzieren“ eingestellt hat, bekommt sie gar nicht erst.
+
+Das kostet: 49 KB Quelltext statt 10, über die Leitung rund 15 KB statt 4 —
+GitHub Pages liefert gzip-komprimiert aus. Dafür kommt kein einziger neuer
+Abruf dazu.
 
 ## Schriften
 

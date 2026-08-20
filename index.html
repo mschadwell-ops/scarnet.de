@@ -47,7 +47,7 @@
 
    Alle drei Schriften liegen im Repo, benutzt wird eine. Das kostet den
    Besucher nichts — einen @font-face-Block, auf den keine Regel zeigt, lädt
-   kein Browser. Umschalten heißt deshalb nur: die font-family auf html, body ändern. In index.html
+   kein Browser. Umschalten heißt deshalb nur: --sans ändern. In index.html
    muss der Preload mitgezogen werden, sonst wird die falsche vorgeladen.
 
    Variabler Schnitt, lateinische Teilmenge. Die deckt äöü und ß ab;
@@ -69,56 +69,55 @@
   src:url("schriften/manrope.woff2") format("woff2-variations");
 }
 
+/* ---------- Farbwelt ----------
+   Stahl und Kohlenstaub als Grund, Halde als zweite Stimme, Gelb nur dort,
+   wo Dortmund ist. Rost gehoert der Zeche, Blau gehoert Bochum — beide
+   tauchen genau einmal auf, damit sie etwas bedeuten. Minze (--luft) ist
+   die Farbe des Rauchfrei-Bereichs und steht deshalb nur auf der Karte,
+   die dorthin fuehrt. */
+:root{
+    --nacht:  #0B0E0F;
+    --stahl:  #12181A;
+    --stahl-2:#1A2225;
+    --kante:  #2A3437;
+    --text:   #E8EAE7;
+    --leise:  #95A1A1;
+    --fern:   #6A7679;
+    --rost:   #C2643A;
+    --halde:  #7BA860;
+    --gelb:   #FFD400;
+    --blau:   #4B8CCB;
+    --luft:   #62D6AE;
+    --sans: "Space Grotesk", ui-sans-serif, system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
 *{
     margin:0;
     padding:0;
     box-sizing:border-box;
 }
 
-html, body{
-    width:100%;
-    height:100%;
-    overflow:hidden;
-    background:black;
+body{
+    background:var(--nacht);
+    color:var(--text);
 
     /* Muss hier stehen, seit das Menü Text enthält: ohne Angabe erbt die
-       Seite die Voreinstellung des Browsers, und die ist eine Serifenschrift.
-       Systemschriften statt Google Fonts — es soll nichts nachgeladen werden. */
-    font-family:"Space Grotesk", ui-sans-serif, system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+       Seite die Voreinstellung des Browsers, und die ist eine Serifenschrift. */
+    font-family:var(--sans);
+    font-size:15.5px;
+    line-height:1.7;
     -webkit-font-smoothing:antialiased;
 }
 
-/* Desktop */
-.hero{
-    position:relative;   /* Bezugsrahmen fuer die Fusszeile weiter unten */
-    width:100%;
-    height:100vh;
-    height:100svh;   /* mobil: rechnet die Adressleiste raus, sonst wird unten abgeschnitten */
-
-    background-image:url('Welcome.jpg');
-    background-size:cover;
-    background-position:center;
-    background-repeat:no-repeat;
-}
-
-/* Mobile — nur die Bildquelle wechselt, der Rest von oben gilt weiter */
-@media (max-width:768px){
-
-    .hero{
-        background-image:url('Welcome-mobile.jpg');
-    }
-
-}
-
 /* ---------- Menü ----------
-   Liegt als schmale Leiste über dem Bild. Neue Reiter kommen unten im <nav>
+   Liegt als schmale Leiste über allem. Neue Reiter kommen unten im <nav>
    dazu; die Liste scrollt auf schmalen Geräten seitwärts, statt umzubrechen. */
 .nav{
     position:fixed;
     top:0;
     left:0;
     right:0;
-    z-index:10;
+    z-index:30;
     height:52px;
     display:flex;
     align-items:center;
@@ -179,9 +178,7 @@ html, body{
 }
 
 /* Handy: Antippflächen auf mindestens 44 Pixel Höhe bringen, sonst trifft man
-   mit dem Daumen daneben. Passt weiterhin in die 52 Pixel hohe Leiste.
-   Die Zeilenhöhe steht hier ausdrücklich, weil diese Seite anders als der
-   Rauchfrei-Bereich keine auf dem body setzt — sonst fehlt ein Pixel. */
+   mit dem Daumen daneben. Passt weiterhin in die 52 Pixel hohe Leiste. */
 @media (max-width:768px){
     .tabs a{
         padding:14px 12px;
@@ -189,26 +186,320 @@ html, body{
     }
 }
 
+/* ---------- Hero ----------
+   Bleibt, wie er war: ein Bildschirm Foto, sonst nichts. Neu ist nur der
+   Verlauf am unteren Rand — vorher endete die Seite hier, jetzt geht sie
+   weiter, und die Kante zwischen Foto und Seite soll nicht schneiden. */
+.hero{
+    position:relative;
+    width:100%;
+    height:100vh;
+    height:100svh;   /* mobil: rechnet die Adressleiste raus, sonst wird unten abgeschnitten */
+    min-height:420px;
+
+    background-image:url('Welcome.jpg');
+    background-size:cover;
+    background-position:center;
+    background-repeat:no-repeat;
+}
+
+/* Mobile — nur die Bildquelle wechselt, der Rest von oben gilt weiter */
+@media (max-width:768px){
+    .hero{ background-image:url('Welcome-mobile.jpg'); }
+}
+
+.hero::after{
+    content:"";
+    position:absolute;
+    left:0; right:0; bottom:0;
+    height:180px;
+    background:linear-gradient(to top, var(--nacht), rgba(11,14,15,0));
+    pointer-events:none;
+}
+
+.hinweis{
+    position:absolute;
+    left:50%;
+    bottom:22px;
+    transform:translateX(-50%);
+    z-index:2;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:9px;
+    padding:12px 16px;
+    border-radius:8px;
+    color:rgba(255,255,255,.72);
+    text-decoration:none;
+    font-size:10.5px;
+    font-weight:600;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    transition:color .15s, background .15s;
+}
+.hinweis:hover{ color:#fff; background:rgba(255,255,255,.08); }
+.hinweis:focus-visible{ outline:2px solid #fff; outline-offset:2px; }
+.hinweis svg{ animation:tippen 2.6s ease-in-out infinite; }
+
+/* ---------- Das Revier ----------
+   Die Grundstellung, die hier steht, ist die ohne JavaScript und die bei
+   "Bewegung reduzieren": das Panorama liegt als Streifen da und laesst sich
+   seitwaerts schieben, die vier Tafeln stehen untereinander. Erst das
+   Skript unten setzt die Klasse "pano" auf <html> und schaltet damit den
+   mitfahrenden Aufbau frei. So bleibt die Seite ohne Skript vollstaendig,
+   statt leer. */
+.revier{
+    position:relative;
+    border-top:1px solid var(--kante);
+}
+
+.buehne{ position:relative; }
+
+.klebe{ position:relative; }
+
+.band{
+    position:relative;
+    height:clamp(260px,46svh,480px);
+    overflow-x:auto;
+    overflow-y:hidden;
+    -webkit-overflow-scrolling:touch;
+    background:var(--stahl);
+}
+
+.panorama{
+    display:block;
+    height:100%;
+    width:auto;
+    max-width:none;
+    aspect-ratio:32 / 9;
+}
+
+.schilder{
+    max-width:min(1100px,92vw);
+    margin:0 auto;
+    padding:clamp(28px,6vh,54px) clamp(14px,4vw,30px) clamp(34px,7vh,60px);
+}
+
+.revier-kopf{
+    font-size:clamp(26px,4.4vw,44px);
+    font-weight:700;
+    letter-spacing:-.035em;
+    line-height:1.05;
+    margin-bottom:6px;
+}
+.revier-unter{
+    font-size:12.5px;
+    color:var(--fern);
+    letter-spacing:.02em;
+    margin-bottom:clamp(20px,3.4vh,32px);
+}
+
+.tafeln{ display:grid; gap:12px; }
+
+/* Die Tafel ist ein Schild aus Blech: kleine Radien, harte Kante, vier
+   Nieten in den Ecken. Die Nieten sind Hintergrundverlaeufe, keine
+   Elemente — sie sollen nichts kosten und nichts bedeuten. */
+.schild{
+    position:relative;
+    padding:16px 18px 17px;
+    border:1px solid var(--kante);
+    border-left:3px solid var(--akzent);
+    border-radius:3px;
+    background-color:rgba(16,21,23,.96);
+    background-image:
+        radial-gradient(circle at 11px 11px, rgba(255,255,255,.17) 1.4px, transparent 2.2px),
+        radial-gradient(circle at calc(100% - 11px) 11px, rgba(255,255,255,.17) 1.4px, transparent 2.2px),
+        radial-gradient(circle at 11px calc(100% - 11px), rgba(255,255,255,.17) 1.4px, transparent 2.2px),
+        radial-gradient(circle at calc(100% - 11px) calc(100% - 11px), rgba(255,255,255,.17) 1.4px, transparent 2.2px);
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
+    --akzent:var(--fern);
+}
+.schild--zeche{  --akzent:var(--rost);  }
+.schild--bochum{ --akzent:var(--blau);  }
+.schild--bvb{    --akzent:var(--gelb);  }
+.schild--halde{  --akzent:var(--halde); }
+
+.schild-ort{
+    display:block;
+    font-size:10px;
+    font-weight:600;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--akzent);
+    margin-bottom:7px;
+}
+.schild-text{
+    font-size:14.5px;
+    line-height:1.6;
+    color:var(--text);
+}
+
+/* Die Schiene mit der Lore ist der Fortschritt: sie zeigt, wie weit die
+   Fahrt durchs Panorama ist. Ohne mitfahrendes Panorama gibt es keinen
+   Fortschritt, also ist sie dort auch nicht da. */
+.schiene{ display:none; }
+
+/* ---------- Aufbau mit Skript: das Panorama faehrt mit ---------- */
+.pano .buehne{ height:300vh; }          /* echter Wert kommt aus dem Skript */
+
+/* Achtung: kein overflow auf <html> oder <body>. Ein Rollcontainer weiter
+   oben setzt position:sticky in Safari ausser Kraft, und dann faehrt hier
+   gar nichts mehr. Ueber die Breite laeuft ohnehin nichts hinaus — die
+   Zeichnung steckt in .band, und das schneidet ab. */
+.pano .klebe{
+    position:sticky;
+    top:0;
+    height:100vh;
+    height:100svh;
+    overflow:hidden;
+}
+
+/* Der Streifen sitzt unten in der Buehne und ist so hoch, wie das Skript
+   ihn rechnet — hoch genug, dass man etwas erkennt, flach genug, dass die
+   Zeichnung zwei bis drei Fensterbreiten weit reicht und es etwas zu fahren
+   gibt. Ueber ihm bleibt Platz fuer die Tafeln, unter ihm die Schiene. */
+.pano .band{
+    position:absolute;
+    left:0;
+    right:0;
+    bottom:44px;
+    top:auto;
+    height:340px;            /* echter Wert kommt aus dem Skript */
+    overflow:hidden;
+    border-top:1px solid var(--kante);
+    border-bottom:1px solid var(--kante);
+}
+
+.pano .panorama{
+    position:absolute;
+    left:0;
+    bottom:0;
+    height:100%;
+    will-change:transform;
+}
+
+.pano .schilder{
+    position:absolute;
+    z-index:3;
+    left:clamp(14px,4vw,52px);
+    top:calc(52px + clamp(16px,4vh,44px));
+    max-width:min(430px,78vw);
+    margin:0;
+    padding:0;
+}
+
+/* Alle vier Tafeln liegen uebereinander im selben Rasterfeld; das Skript
+   blendet die passende ein. Uebereinander statt ausgetauscht, damit der
+   Kasten so hoch ist wie die laengste Tafel und beim Wechsel nichts springt. */
+.pano .tafeln{ display:grid; }
+.pano .schild{
+    grid-area:1 / 1;
+    opacity:0;
+}
+
+.pano .schiene{
+    display:block;
+    position:absolute;
+    left:clamp(14px,4vw,52px);
+    right:clamp(14px,4vw,52px);
+    bottom:0;
+    height:34px;
+    z-index:4;
+    pointer-events:none;
+}
+.pano .schiene::before{
+    content:"";
+    position:absolute;
+    left:0; right:0; bottom:13px;
+    height:1px;
+    background:linear-gradient(90deg, rgba(194,100,58,.55), rgba(123,168,96,.55));
+}
+.lore{
+    position:absolute;
+    bottom:11px;
+    left:0;
+    width:26px;
+    margin-left:-13px;
+    display:block;
+}
+
+/* ---------- Weiter auf der Seite ----------
+   Ein Ziel gibt es, also steht hier eine Karte und keine Liste. Die
+   Kante links traegt die Minze des Rauchfrei-Bereichs: die Karte sieht
+   aus wie das, was hinter ihr liegt. */
+.weiter{
+    max-width:840px;
+    margin:0 auto;
+    padding:clamp(56px,11vh,110px) clamp(18px,5vw,28px) clamp(44px,9vh,84px);
+}
+
+.augenbraue{
+    font-size:10px;
+    font-weight:600;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--fern);
+    margin-bottom:16px;
+}
+
+.karte{
+    display:grid;
+    grid-template-columns:1fr auto;
+    align-items:center;
+    gap:18px;
+    padding:24px clamp(18px,4vw,28px);
+    background:var(--stahl);
+    border:1px solid var(--kante);
+    border-left:3px solid var(--luft);
+    border-radius:4px;
+    color:inherit;
+    text-decoration:none;
+    transition:background .18s, transform .18s, border-color .18s;
+}
+.karte:hover{
+    background:var(--stahl-2);
+    transform:translateY(-2px);
+}
+.karte:focus-visible{
+    outline:2px solid var(--luft);
+    outline-offset:3px;
+}
+.karte-titel{
+    display:block;
+    font-size:20px;
+    font-weight:600;
+    letter-spacing:-.02em;
+    margin-bottom:3px;
+}
+.karte-zeile{
+    display:block;
+    font-size:13.5px;
+    color:var(--leise);
+}
+.karte-pfeil{
+    font-size:20px;
+    color:var(--luft);
+    transition:transform .18s;
+}
+.karte:hover .karte-pfeil{ transform:translateX(4px); }
+
 /* ---------- Fußzeile ----------
    Impressum und Datenschutz stehen unten und nicht als Reiter im Menü. Mit
    vier Reitern scrollt die Leiste auf einem 375 Pixel breiten Display seitwärts
    und der letzte Eintrag fällt aus dem Bild — ausgerechnet der, der leicht
    erreichbar sein muss. Unten sucht ihn ohnehin jeder zuerst.
 
-   Absolut im Hero, nicht fixed: der Hero ist 100svh hoch und endet damit über
-   der Adressleiste des Handybrowsers. Ein fixed-Element auf bottom:0 läge
-   darunter. */
+   Seit die Seite scrollt, steht die Zeile am Ende des Dokuments statt
+   absolut im Hero. Das ist die gewohnte Stelle und erspart den Kunstgriff
+   mit 100svh und der Adressleiste. */
 .rechtsfuss{
-    position:absolute;
-    left:0;
-    right:0;
-    bottom:0;
     display:flex;
     justify-content:center;
     align-items:center;
     gap:2px;
-    padding:6px clamp(14px,4vw,30px) 8px;
-    background:linear-gradient(to top, rgba(0,0,0,.5), rgba(0,0,0,0));
+    padding:20px clamp(14px,4vw,30px) 30px;
+    border-top:1px solid var(--kante);
 }
 
 .rechtsfuss a{
@@ -218,24 +509,21 @@ html, body{
     font-weight:600;
     letter-spacing:.15em;
     text-transform:uppercase;
-    color:rgba(255,255,255,.62);
+    color:var(--leise);
     text-decoration:none;
-    /* Ausdruecklich, weil diese Seite anders als der Rauchfrei-Bereich keine
-       Zeilenhoehe auf dem body setzt — ohne sie fehlen dem Antippfeld unten
-       ein paar Pixel an den geforderten 44. */
     line-height:1.6;
     transition:color .15s, background .15s;
 }
 .rechtsfuss a:hover{
-    color:#fff;
-    background:rgba(255,255,255,.09);
+    color:var(--text);
+    background:rgba(255,255,255,.06);
 }
 .rechtsfuss a:focus-visible{
-    outline:2px solid #fff;
+    outline:2px solid var(--text);
     outline-offset:2px;
 }
 .rechtsfuss .punkt{
-    color:rgba(255,255,255,.3);
+    color:var(--fern);
     font-size:11px;
 }
 
@@ -256,6 +544,62 @@ html, body{
     white-space:nowrap;
 }
 
+/* ---------- Bewegung im Panorama ----------
+   Alles laeuft ueber transform und opacity, damit der Browser nicht bei
+   jedem Bild neu rechnen muss. Solange die Szene nicht im Bild ist, haelt
+   das Skript sie an (.ruht) — auf dem Handy spart das spuerbar Strom. */
+.rad, .rauch, .welle, .weht{
+    transform-box:fill-box;
+    transform-origin:center;
+}
+.weht{ transform-origin:50% 100%; }
+
+.rad{   animation:dreh 14s linear infinite; }
+.rad-2{ animation-duration:11s; animation-direction:reverse; }
+
+.rauch{ animation:rauch 13s ease-out infinite; }
+.stern{ animation:funkeln 4.5s ease-in-out infinite alternate; }
+.flut{  animation:flut 6.5s ease-in-out infinite alternate; }
+.glanz{ animation:glanz 8s ease-in-out infinite alternate; }
+.blink{ animation:blink 3.2s step-end infinite; }
+.welle{ animation:welle 7s linear infinite; }
+.weht{  animation:weht 6.5s ease-in-out infinite alternate; }
+
+.panorama.ruht *{ animation-play-state:paused; }
+
+@keyframes dreh{ to{ transform:rotate(360deg); } }
+
+@keyframes rauch{
+    0%{   transform:translate(0,0) scale(.6);        opacity:0; }
+    16%{                                             opacity:.22; }
+    100%{ transform:translate(-46px,-210px) scale(2.2); opacity:0; }
+}
+
+@keyframes funkeln{ from{ opacity:.22; } to{ opacity:1; } }
+@keyframes flut{    from{ opacity:.55; } to{ opacity:.95; } }
+@keyframes glanz{   from{ opacity:.15; } to{ opacity:.42; } }
+@keyframes blink{ 0%,48%{ opacity:1; } 49%,100%{ opacity:.07; } }
+
+@keyframes welle{
+    from{ transform:translateX(-360px) skewX(-9deg); }
+    to{   transform:translateX(560px)  skewX(-9deg); }
+}
+
+@keyframes weht{ from{ transform:rotate(-1.1deg); } to{ transform:rotate(1.5deg); } }
+
+@keyframes tippen{
+    0%,100%{ transform:translateY(0);   opacity:.65; }
+    50%    { transform:translateY(5px); opacity:1; }
+}
+
+/* Wer Bewegung abgestellt hat, bekommt die Szene im Stand. Das Skript
+   setzt "pano" dann gar nicht erst, also greift oben schon die
+   Grundstellung — hier bleiben nur die Dauerschleifen im Bild. */
+@media (prefers-reduced-motion:reduce){
+    .panorama *, .hinweis svg{ animation:none !important; }
+    .karte{ transition:none; }
+}
+
 </style>
 </head>
 
@@ -269,35 +613,598 @@ html, body{
   <span class="mark">Menü</span>
   <div class="tabs">
     <a href="/" aria-current="page">Start</a>
-    <a href="/rauchfrei.html" id="zuRauchfrei">Rauchfrei</a>
+    <a href="/rauchfrei.html" data-rauchfrei>Rauchfrei</a>
   </div>
 </nav>
 
+<div class="hero">
+  <a class="hinweis" href="#revier">
+    <span>Weiter ins Revier</span>
+    <svg width="15" height="9" viewBox="0 0 15 9" fill="none" aria-hidden="true">
+      <path d="M1 1L7.5 7.5L14 1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+    </svg>
+  </a>
+</div>
+
+<!-- ============================ DAS REVIER ============================
+     Ein Panorama, 3200 auf 900 Einheiten, das von West nach Ost durch den
+     Tag laeuft: Morgengrauen ueber der Zeche, Tageslicht ueber Bochum,
+     Flutlicht in Dortmund, blaue Stunde auf der Halde. Der Boden macht
+     dieselbe Wanderung — links trockenes Braun, rechts Gruen. Alles
+     gezeichnet, nichts geladen: keine fremde Quelle, kein Foto, 0 Bytes
+     Nachschlag ausser diesem Markup.
+     =================================================================== -->
+<section class="revier" id="revier" aria-labelledby="revier-kopf">
+ <div class="buehne">
+  <div class="klebe">
+
+   <div class="band">
+    <svg class="panorama" viewBox="0 0 3200 900" preserveAspectRatio="xMidYMax meet"
+         aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+     <defs>
+      <!-- Der Himmel wandert waagerecht durch den Tag. Ein einziger Verlauf
+           ueber die volle Breite — deshalb braucht die Tageszeit kein Skript. -->
+      <linearGradient id="himmel" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="3200" y2="0">
+        <stop offset="0"    stop-color="#1D262B"/>
+        <stop offset=".16"  stop-color="#2C383D"/>
+        <stop offset=".34"  stop-color="#4C6069"/>
+        <stop offset=".50"  stop-color="#42545D"/>
+        <stop offset=".66"  stop-color="#26313A"/>
+        <stop offset=".82"  stop-color="#182029"/>
+        <stop offset="1"    stop-color="#0F1620"/>
+      </linearGradient>
+      <linearGradient id="hoehe" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="790">
+        <stop offset="0"   stop-color="#000" stop-opacity=".40"/>
+        <stop offset=".55" stop-color="#000" stop-opacity=".10"/>
+        <stop offset="1"   stop-color="#000" stop-opacity="0"/>
+      </linearGradient>
+      <radialGradient id="morgen" gradientUnits="userSpaceOnUse" cx="420" cy="800" r="600">
+        <stop offset="0" stop-color="#C2643A" stop-opacity=".40"/>
+        <stop offset="1" stop-color="#C2643A" stop-opacity="0"/>
+      </radialGradient>
+      <!-- Diese drei liegen im Koordinatensystem der Form selbst
+           (objectBoundingBox), nicht in dem der Zeichnung. Nur so endet der
+           Verlauf genau am Rand der Ellipse; sonst schneidet die Form den
+           Verlauf mittendrin ab und aus dem Schein wird eine Scheibe. -->
+      <radialGradient id="flutschein">
+        <stop offset="0" stop-color="#FFD400" stop-opacity=".18"/>
+        <stop offset="1" stop-color="#FFD400" stop-opacity="0"/>
+      </radialGradient>
+      <radialGradient id="lampenschein">
+        <stop offset="0"   stop-color="#FFE45C" stop-opacity=".8"/>
+        <stop offset=".5"  stop-color="#FFE45C" stop-opacity=".2"/>
+        <stop offset="1"   stop-color="#FFE45C" stop-opacity="0"/>
+      </radialGradient>
+      <radialGradient id="rauchfarbe">
+        <stop offset="0" stop-color="#8C959B" stop-opacity=".5"/>
+        <stop offset="1" stop-color="#8C959B" stop-opacity="0"/>
+      </radialGradient>
+      <radialGradient id="restlicht" gradientUnits="userSpaceOnUse" cx="3120" cy="810" r="460">
+        <stop offset="0" stop-color="#E2965A" stop-opacity=".26"/>
+        <stop offset="1" stop-color="#E2965A" stop-opacity="0"/>
+      </radialGradient>
+      <linearGradient id="boden" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="3200" y2="0">
+        <stop offset="0"   stop-color="#241C17"/>
+        <stop offset=".45" stop-color="#1D211C"/>
+        <stop offset="1"   stop-color="#15241A"/>
+      </linearGradient>
+      <linearGradient id="haldegruen" gradientUnits="userSpaceOnUse" x1="0" y1="322" x2="0" y2="790">
+        <stop offset="0"   stop-color="#335A38" stop-opacity=".9"/>
+        <stop offset=".55" stop-color="#20402A" stop-opacity=".5"/>
+        <stop offset="1"   stop-color="#132018" stop-opacity="0"/>
+      </linearGradient>
+      <linearGradient id="schienen" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="3200" y2="0">
+        <stop offset="0"  stop-color="#7A4A2E"/>
+        <stop offset=".5" stop-color="#454F52"/>
+        <stop offset="1"  stop-color="#3B5240"/>
+      </linearGradient>
+      <!-- Die Gelbe Wand: einzelne Plaetze als Kachel, nicht als 500 Elemente. -->
+      <pattern id="tribuene" width="26" height="21" patternUnits="userSpaceOnUse">
+        <rect width="26" height="21" fill="#8A6A05"/>
+        <rect x="2" y="2" width="22" height="17" fill="#FFD400"/>
+      </pattern>
+      <linearGradient id="wellenlicht" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="300" y2="0">
+        <stop offset="0"   stop-color="#FFF8D0" stop-opacity="0"/>
+        <stop offset=".5"  stop-color="#FFF8D0" stop-opacity=".5"/>
+        <stop offset="1"   stop-color="#FFF8D0" stop-opacity="0"/>
+      </linearGradient>
+      <clipPath id="wand-schnitt">
+        <polygon points="1974,732 2446,732 2382,470 2038,470"/>
+      </clipPath>
+
+      <!-- Ein Grasbueschel, einmal gezeichnet, zweiundzwanzigmal benutzt. -->
+      <g id="buschel">
+        <path d="M0 0 L-2 -15 L1 -2 Z M0 0 L-7 -12 L-1 -1 Z M0 0 L3 -17 L1 -1 Z M0 0 L8 -11 L2 -1 Z M0 0 L-4 -9 L0 -1 Z"/>
+      </g>
+      <!-- Birke: der Baum, der auf jeder Brache im Revier zuerst steht.
+           Die Krone sind vier Ballen, keine Kugel — ein einzelner Kreis auf
+           einem Stamm sieht aus wie ein Lutscher, nicht wie ein Baum. -->
+      <g id="birke">
+        <path d="M-3.6 0 L-2.4 -138 L2.4 -138 L3.6 0 Z" fill="#B4B1A7"/>
+        <g fill="#23231F">
+          <rect x="-3.6" y="-40" width="5" height="3.4"/>
+          <rect x="-.6"  y="-76" width="4.4" height="3.4"/>
+          <rect x="-3"   y="-107" width="3.8" height="2.8"/>
+        </g>
+        <g stroke="#B4B1A7" stroke-width="2.2" fill="none">
+          <path d="M0 -138 C-13 -150 -21 -163 -25 -176"/>
+          <path d="M0 -130 C13 -143 21 -155 27 -166"/>
+        </g>
+        <g fill="#37552F">
+          <ellipse cx="-21" cy="-182" rx="19" ry="14"/>
+          <ellipse cx="7"   cy="-194" rx="23" ry="17"/>
+          <ellipse cx="25"  cy="-171" rx="17" ry="12"/>
+          <ellipse cx="0"   cy="-163" rx="21" ry="13"/>
+        </g>
+      </g>
+     </defs>
+
+     <!-- ---------- Himmel ---------- -->
+     <rect width="3200" height="900" fill="url(#himmel)"/>
+     <rect width="3200" height="790" fill="url(#hoehe)"/>
+     <rect width="3200" height="900" fill="url(#morgen)"/>
+     <rect width="3200" height="900" fill="url(#restlicht)"/>
+
+     <!-- Sterne, nur ueber der Osthaelfte: dort ist es Abend. -->
+     <g fill="#DCE6EF">
+       <circle class="stern" cx="2360" cy="196" r="1.8" style="animation-delay:-.4s"/>
+       <circle class="stern" cx="2470" cy="120" r="2.2" style="animation-delay:-2.1s"/>
+       <circle class="stern" cx="2590" cy="240" r="1.6" style="animation-delay:-1.2s"/>
+       <circle class="stern" cx="2680" cy="96"  r="2"   style="animation-delay:-3.3s"/>
+       <circle class="stern" cx="2760" cy="210" r="1.5" style="animation-delay:-.9s"/>
+       <circle class="stern" cx="2860" cy="86"  r="2.4" style="animation-delay:-2.7s"/>
+       <circle class="stern" cx="2980" cy="176" r="1.7" style="animation-delay:-1.7s"/>
+       <circle class="stern" cx="3060" cy="70"  r="2"   style="animation-delay:-3.9s"/>
+       <circle class="stern" cx="3140" cy="200" r="1.6" style="animation-delay:-.2s"/>
+       <circle class="stern" cx="2920" cy="260" r="1.4" style="animation-delay:-2.4s"/>
+       <circle class="stern" cx="2540" cy="60"  r="1.5" style="animation-delay:-1.5s"/>
+       <circle class="stern" cx="3180" cy="120" r="1.8" style="animation-delay:-3.1s"/>
+     </g>
+
+     <!-- ---------- Ferne: das, was immer am Horizont steht ---------- -->
+     <g fill="#26343B" opacity=".55">
+       <rect x="40"   y="700" width="130" height="72"/>
+       <rect x="150"  y="666" width="22"  height="106"/>
+       <rect x="880"  y="694" width="180" height="78"/>
+       <rect x="960"  y="640" width="18"  height="132"/>
+       <rect x="1010" y="656" width="16"  height="116"/>
+       <rect x="1600" y="702" width="150" height="70"/>
+       <rect x="1660" y="654" width="20"  height="118"/>
+       <rect x="1840" y="716" width="120" height="56"/>
+       <rect x="2500" y="712" width="210" height="60"/>
+       <rect x="2560" y="672" width="16"  height="100"/>
+     </g>
+
+     <!-- ---------- Zeche: Stahl und Kohle, Morgenschicht ---------- -->
+     <g>
+       <!-- Schraegstreben -->
+       <path d="M196 772 L300 330 L320 330 L216 772 Z" fill="#8E4526"/>
+       <path d="M556 772 L452 330 L432 330 L536 772 Z" fill="#8E4526"/>
+       <!-- Turm -->
+       <rect x="300" y="292" width="152" height="480" fill="#9B4A28"/>
+       <g stroke="#6E3A20" stroke-width="5" fill="none" opacity=".9">
+         <path d="M300 292 L452 412 M452 292 L300 412 M300 412 L452 532 M452 412 L300 532
+                  M300 532 L452 652 M452 532 L300 652 M300 652 L452 772 M452 652 L300 772"/>
+         <path d="M300 412 H452 M300 532 H452 M300 652 H452"/>
+         <rect x="300" y="292" width="152" height="480"/>
+       </g>
+       <!-- Kopf und die zwei Seilscheiben -->
+       <rect x="284" y="250" width="184" height="44" fill="#C2643A"/>
+       <g fill="none" stroke="#D8763F" stroke-width="7">
+         <g class="rad">
+           <circle cx="336" cy="220" r="38"/>
+           <path d="M336 182 V258 M298 220 H374 M309 193 L363 247 M363 193 L309 247"/>
+         </g>
+         <g class="rad rad-2">
+           <circle cx="416" cy="220" r="38"/>
+           <path d="M416 182 V258 M378 220 H454 M389 193 L443 247 M443 193 L389 247"/>
+         </g>
+       </g>
+       <!-- Foerderband zur Halle -->
+       <path d="M452 468 L622 556 L622 590 L452 502 Z" fill="#1C262C"/>
+       <!-- Kokerei mit Sheddach -->
+       <g fill="#161F26">
+         <rect x="600" y="596" width="272" height="176"/>
+         <path d="M600 596 L634 560 L668 596 L702 560 L736 596 L770 560 L804 596 L838 560 L872 596 Z"/>
+         <rect x="660" y="360" width="24" height="240"/>
+         <rect x="726" y="424" width="20" height="176"/>
+       </g>
+       <rect x="655" y="356" width="34" height="13" fill="#8E4526"/>
+       <rect x="721" y="420" width="30" height="12" fill="#8E4526"/>
+     </g>
+
+     <!-- Rauch. Steigt, wird breit, verschwindet — so wie das Foerdern hier. -->
+     <g fill="url(#rauchfarbe)">
+       <ellipse class="rauch" cx="672" cy="344" rx="19" ry="13" style="animation-delay:0s"/>
+       <ellipse class="rauch" cx="681" cy="344" rx="24" ry="16" style="animation-delay:-4.4s"/>
+       <ellipse class="rauch" cx="664" cy="344" rx="16" ry="11" style="animation-delay:-8.6s"/>
+       <ellipse class="rauch" cx="736" cy="408" rx="16" ry="11" style="animation-delay:-2.2s"/>
+       <ellipse class="rauch" cx="745" cy="408" rx="20" ry="13" style="animation-delay:-6.8s"/>
+     </g>
+
+     <!-- ---------- Bochum: die Halle, in der heute die Buehne steht ---------- -->
+     <g>
+       <path d="M1040 772 V600 C1040 500 1140 452 1300 452 C1460 452 1560 500 1560 600 V772 Z" fill="#18222A"/>
+       <g fill="none" stroke="#31414B" stroke-width="4" opacity=".9">
+         <path d="M1072 772 V606 C1072 518 1162 478 1300 478 C1438 478 1528 518 1528 606 V772"/>
+         <path d="M1122 772 V614 C1122 538 1196 502 1300 502 C1404 502 1478 538 1478 614 V772"/>
+       </g>
+       <!-- Das grosse Bogenfenster, von innen beleuchtet -->
+       <path d="M1180 772 V620 C1180 556 1240 528 1300 528 C1360 528 1420 556 1420 620 V772 Z" fill="#245078"/>
+       <path class="glanz" d="M1180 772 V620 C1180 556 1240 528 1300 528 C1360 528 1420 556 1420 620 V772 Z" fill="#4B8CCB"/>
+       <g stroke="#101A20" stroke-width="5">
+         <path d="M1220 546 V772 M1260 532 V772 M1300 528 V772 M1340 532 V772 M1380 546 V772"/>
+         <path d="M1182 600 H1418 M1180 662 H1420 M1180 722 H1420"/>
+       </g>
+       <g fill="#4B8CCB" opacity=".38">
+         <rect x="1076" y="640" width="26" height="46"/>
+         <rect x="1116" y="640" width="26" height="46"/>
+         <rect x="1460" y="640" width="26" height="46"/>
+         <rect x="1500" y="640" width="26" height="46"/>
+       </g>
+     </g>
+
+     <!-- Gasometer. Jedes Wahrzeichen hier hat oben ein rotes Licht. -->
+     <g>
+       <rect x="1650" y="432" width="180" height="340" fill="#1B252B"/>
+       <ellipse cx="1740" cy="432" rx="90" ry="22" fill="#26333B"/>
+       <g stroke="#2E3D46" stroke-width="3" opacity=".8">
+         <path d="M1650 502 H1830 M1650 572 H1830 M1650 642 H1830 M1650 712 H1830"/>
+       </g>
+       <circle class="blink" cx="1740" cy="424" r="5" fill="#E2553E"/>
+     </g>
+
+     <!-- ---------- Dortmund: Flutlicht und die gelbe Wand ---------- -->
+     <g>
+       <ellipse cx="2190" cy="560" rx="520" ry="330" fill="url(#flutschein)"/>
+       <rect x="1900" y="620" width="640" height="152" fill="#131C21"/>
+       <!-- Die Tribuene. Das Muster sind die Plaetze, der Lichtstreifen die Welle. -->
+       <polygon points="1974,732 2446,732 2382,470 2038,470" fill="url(#tribuene)"/>
+       <g clip-path="url(#wand-schnitt)">
+         <rect class="welle" x="2020" y="460" width="300" height="282" fill="url(#wellenlicht)"/>
+       </g>
+       <!-- Dach -->
+       <path d="M1930 476 H2496 L2474 432 H1952 Z" fill="#0E161A"/>
+       <path d="M1930 476 H2496" stroke="#3A4750" stroke-width="4"/>
+       <!-- die zwei hinteren Masten, weiter weg und deshalb dunkler -->
+       <g fill="#8A7320">
+         <rect x="2058" y="292" width="13" height="184"/>
+         <rect x="2352" y="292" width="13" height="184"/>
+       </g>
+       <!-- die zwei vorderen -->
+       <g fill="#C9A227">
+         <rect x="1906" y="250" width="19" height="522"/>
+         <rect x="2500" y="250" width="19" height="522"/>
+       </g>
+       <g fill="#E8C63C">
+         <rect x="1884" y="230" width="63" height="20"/>
+         <rect x="2478" y="230" width="63" height="20"/>
+         <rect x="2040" y="274" width="49" height="16" opacity=".7"/>
+         <rect x="2334" y="274" width="49" height="16" opacity=".7"/>
+       </g>
+       <g fill="url(#lampenschein)">
+         <ellipse class="flut" cx="1915" cy="244" rx="96" ry="60"/>
+         <ellipse class="flut" cx="2509" cy="244" rx="96" ry="60" style="animation-delay:-2.6s"/>
+         <ellipse class="flut" cx="2064" cy="284" rx="66" ry="42" style="animation-delay:-4.1s"/>
+         <ellipse class="flut" cx="2358" cy="284" rx="66" ry="42" style="animation-delay:-1.3s"/>
+       </g>
+       <g fill="#FFE45C" opacity=".05">
+         <polygon points="1915,250 2340,706 2010,706"/>
+         <polygon points="2509,250 2110,706 2430,706"/>
+       </g>
+     </g>
+
+     <!-- ---------- Halde: oben Gras, unten das Revier ---------- -->
+     <g>
+       <path d="M2520 780 C2660 764 2740 660 2810 520 C2864 412 2900 330 2942 322
+                C2990 330 3046 430 3110 522 C3152 582 3184 640 3200 690 V780 Z" fill="#132018"/>
+       <path d="M2520 780 C2660 764 2740 660 2810 520 C2864 412 2900 330 2942 322
+                C2990 330 3046 430 3110 522 C3152 582 3184 640 3200 690 V780 Z"
+             fill="url(#haldegruen)"/>
+       <path d="M2520 780 C2660 764 2740 660 2810 520 C2864 412 2900 330 2942 322
+                C2990 330 3046 430 3110 522 C3152 582 3184 640 3200 690"
+             fill="none" stroke="#4E7F4B" stroke-width="5"/>
+       <!-- Serpentine hinauf -->
+       <path d="M2596 764 C2700 736 2756 700 2782 660 C2748 642 2740 620 2762 592
+                C2820 560 2866 486 2898 414 C2918 366 2930 332 2942 326"
+             fill="none" stroke="#4B5B4C" stroke-width="3" stroke-dasharray="11 11" opacity=".85"/>
+       <!-- Tetraeder auf der Kuppe -->
+       <g fill="none" stroke="#93A2A4" stroke-width="4">
+         <path d="M2942 152 L2866 308 L3018 308 Z"/>
+         <path d="M2942 152 L2942 252 M2942 252 L2866 308 M2942 252 L3018 308"/>
+       </g>
+       <g fill="#FFE9A8">
+         <circle class="stern" cx="2942" cy="152" r="4"   style="animation-delay:-1.1s"/>
+         <circle class="stern" cx="2866" cy="308" r="3.4" style="animation-delay:-2.8s"/>
+         <circle class="stern" cx="3018" cy="308" r="3.4" style="animation-delay:-.6s"/>
+       </g>
+     </g>
+
+     <!-- Die Stadt unter der Halde macht Licht an. -->
+     <g fill="#101A1E">
+       <rect x="2430" y="700" width="66" height="72"/>
+       <rect x="2504" y="716" width="54" height="56"/>
+       <rect x="2566" y="690" width="72" height="82"/>
+       <rect x="2646" y="722" width="58" height="50"/>
+     </g>
+     <g fill="#F2D9A0">
+       <rect class="stern" x="2442" y="714" width="8" height="10" style="animation-delay:-1.9s"/>
+       <rect x="2462" y="714" width="8" height="10" opacity=".8"/>
+       <rect x="2442" y="738" width="8" height="10" opacity=".55"/>
+       <rect class="stern" x="2472" y="738" width="8" height="10" style="animation-delay:-3.2s"/>
+       <rect x="2516" y="730" width="8" height="10" opacity=".7"/>
+       <rect class="stern" x="2536" y="730" width="8" height="10" style="animation-delay:-.7s"/>
+       <rect x="2580" y="706" width="9" height="11" opacity=".85"/>
+       <rect class="stern" x="2602" y="706" width="9" height="11" style="animation-delay:-2.3s"/>
+       <rect x="2580" y="734" width="9" height="11" opacity=".6"/>
+       <rect x="2616" y="734" width="9" height="11" opacity=".75"/>
+       <rect class="stern" x="2660" y="738" width="8" height="10" style="animation-delay:-1.4s"/>
+       <rect x="2680" y="738" width="8" height="10" opacity=".65"/>
+     </g>
+
+     <!-- ---------- Boden: derselbe Weg noch einmal, von Braun nach Gruen ---------- -->
+     <rect x="0" y="772" width="3200" height="128" fill="url(#boden)"/>
+     <line x1="0" y1="820" x2="3200" y2="820" stroke="#2A3033" stroke-width="18" stroke-dasharray="8 34"/>
+     <line x1="0" y1="812" x2="3200" y2="812" stroke="url(#schienen)" stroke-width="3"/>
+     <line x1="0" y1="828" x2="3200" y2="828" stroke="url(#schienen)" stroke-width="3"/>
+
+     <!-- Prellbock: hier faengt die Strecke an. -->
+     <g fill="#7A4A2E">
+       <rect x="52" y="790" width="9" height="34"/>
+       <rect x="76" y="790" width="9" height="34"/>
+       <rect x="44" y="782" width="50" height="10"/>
+     </g>
+
+     <!-- Gras. Links trocken, in der Mitte zaeh, rechts satt. -->
+     <g fill="#4A4030">
+       <g transform="translate(140,806) scale(1.3)"><use href="#buschel"/></g>
+       <g transform="translate(330,844) scale(1.8)"><use href="#buschel"/></g>
+       <g transform="translate(520,798) scale(1.1)"><use href="#buschel"/></g>
+       <g transform="translate(760,860) scale(2.1)"><use href="#buschel"/></g>
+       <g transform="translate(900,812) scale(1.4)"><use href="#buschel"/></g>
+       <g transform="translate(1080,878) scale(2.4)"><use href="#buschel"/></g>
+     </g>
+     <g fill="#4E6B45">
+       <g transform="translate(1260,802) scale(1.2)"><use href="#buschel"/></g>
+       <g transform="translate(1420,850) scale(1.9)"><use href="#buschel"/></g>
+       <g transform="translate(1600,880) scale(2.3)"><use href="#buschel"/></g>
+       <g transform="translate(1760,806) scale(1.3)"><use href="#buschel"/></g>
+       <g transform="translate(1930,862) scale(2)"  ><use href="#buschel"/></g>
+       <g transform="translate(2090,798) scale(1.1)"><use href="#buschel"/></g>
+       <g transform="translate(2240,884) scale(2.5)"><use href="#buschel"/></g>
+     </g>
+     <g fill="#6FA05C">
+       <g transform="translate(2400,808) scale(1.4)"><use href="#buschel"/></g>
+       <g transform="translate(2540,868) scale(2.2)"><use href="#buschel"/></g>
+       <g transform="translate(2700,800) scale(1.2)"><use href="#buschel"/></g>
+       <g transform="translate(2840,886) scale(2.6)"><use href="#buschel"/></g>
+       <g transform="translate(2960,832) scale(1.7)"><use href="#buschel"/></g>
+       <g transform="translate(3080,876) scale(2.4)"><use href="#buschel"/></g>
+       <g transform="translate(3170,812) scale(1.5)"><use href="#buschel"/></g>
+       <g transform="translate(2620,824) scale(1.6)"><use href="#buschel"/></g>
+       <g transform="translate(2900,806) scale(1.2)"><use href="#buschel"/></g>
+     </g>
+
+     <!-- Birken im Vordergrund, die sich im Wind bewegen. -->
+     <g transform="translate(2676,888) scale(.82)"><g class="weht" style="animation-delay:-1.7s"><use href="#birke"/></g></g>
+     <g transform="translate(2778,900) scale(.98)"><g class="weht" style="animation-delay:-4.2s"><use href="#birke"/></g></g>
+     <g transform="translate(3054,882) scale(.68)"><g class="weht" style="animation-delay:-2.9s"><use href="#birke"/></g></g>
+     <g transform="translate(2916,896) scale(.74)"><g class="weht" style="animation-delay:-5.6s"><use href="#birke"/></g></g>
+    </svg>
+   </div>
+
+   <div class="schilder">
+     <h2 class="revier-kopf" id="revier-kopf">Das Revier</h2>
+     <p class="revier-unter">Von West nach Ost. Von Stahlkultur bis grüne Fläche.</p>
+
+     <div class="tafeln">
+       <article class="schild schild--zeche" data-ort=".16">
+         <span class="schild-ort">Stahl &amp; Kohle</span>
+         <p class="schild-text">Der Doppelbock steht noch. Gefördert wird nichts mehr, geblieben ist die Form.</p>
+       </article>
+       <article class="schild schild--bochum" data-ort=".41">
+         <span class="schild-ort">Bochum · Jahrhunderthalle</span>
+         <p class="schild-text">Wo Gebläseluft für die Hochöfen gemacht wurde, steht heute die Bühne.</p>
+       </article>
+       <article class="schild schild--bvb" data-ort=".68">
+         <span class="schild-ort">Dortmund · Westfalenstadion</span>
+         <p class="schild-text">Achtzigtausend, eine gelbe Wand, ein Ton.</p>
+       </article>
+       <article class="schild schild--halde" data-ort=".92">
+         <span class="schild-ort">Halde · Blaue Stunde</span>
+         <p class="schild-text">Oben Gras, unten das Revier — und überall geht das Licht an.</p>
+       </article>
+     </div>
+   </div>
+
+   <div class="schiene" aria-hidden="true">
+     <svg class="lore" width="26" height="16" viewBox="0 0 26 16" fill="none">
+       <path d="M3 2h20l-2.5 8H5.5L3 2Z" fill="#8E4526" stroke="#C2643A" stroke-width="1.4" stroke-linejoin="round"/>
+       <circle cx="8"  cy="13" r="2.4" fill="#C2643A"/>
+       <circle cx="18" cy="13" r="2.4" fill="#C2643A"/>
+     </svg>
+   </div>
+
+  </div>
+ </div>
+</section>
+
+<section class="weiter">
+  <p class="augenbraue">Auf dieser Seite</p>
+  <a class="karte" href="/rauchfrei.html" data-rauchfrei>
+    <span>
+      <span class="karte-titel">Rauchfrei</span>
+      <span class="karte-zeile">Der Zähler seit dem ersten Tag. Mit Anmeldung.</span>
+    </span>
+    <span class="karte-pfeil" aria-hidden="true">→</span>
+  </a>
+</section>
+
+<!-- Pflichtangaben. Bewusst hier und nicht im Menü — siehe Kommentar im CSS. -->
+<footer class="rechtsfuss">
+  <a href="/impressum.html">Impressum</a>
+  <span class="punkt" aria-hidden="true">·</span>
+  <a href="/datenschutz.html">Datenschutz</a>
+</footer>
+
 <script>
-/* Die Unterseite wird immer frisch geholt, nie aus dem Zwischenspeicher.
+/* ---------------------------------------------------------------------
+   1. Die Unterseite wird immer frisch geholt, nie aus dem Zwischenspeicher.
 
    GitHub Pages liefert jede Datei mit zehn Minuten Haltbarkeit aus. Beim
    Klick auf den Reiter bekam ein Handy dadurch eine alte Fassung des HTML,
    die auf andere Skriptadressen verweist als die heutige — und dann passt
    das Markup nicht mehr zum Skript. Am 18.08.2026 genau so passiert.
 
-   Das HTML ist 13 KB gross, es jedes Mal neu zu holen kostet also nichts.
-   Die grossen Dateien, CSS und JS, behalten ihre lange Haltbarkeit ueber
-   die Fassungsnummer in ihrer Adresse. Ohne JavaScript bleibt der Verweis
-   im href stehen und funktioniert weiterhin. */
-document.getElementById("zuRauchfrei").href = "/rauchfrei.html?f=" + Date.now();
+   rauchfrei.html ist 17 KB gross, es jedes Mal neu zu holen kostet also
+   nichts. Die grossen Dateien, CSS und JS, behalten ihre lange Haltbarkeit
+   ueber die Fassungsnummer in ihrer Adresse. Ohne JavaScript bleibt der
+   Verweis im href stehen und funktioniert weiterhin.
+
+   Seit der neuen Startseite gibt es zwei Wege dorthin — den Reiter und die
+   Karte unten. Deshalb ueber ein Merkmal statt ueber eine Kennung.
+   --------------------------------------------------------------------- */
+(function(){
+  var stempel = Date.now();
+  var wege = document.querySelectorAll("a[data-rauchfrei]");
+  for(var i=0;i<wege.length;i++){ wege[i].href = "/rauchfrei.html?f=" + stempel; }
+})();
+
+/* ---------------------------------------------------------------------
+   2. Das Panorama faehrt mit dem Scrollen von West nach Ost.
+
+   Die Buehne ist hoch, der Ausschnitt darin klebt oben fest. Wie weit man
+   in der Buehne steht, ist der Fortschritt; daraus wird die Verschiebung
+   der Zeichnung, die Stellung der Lore und die sichtbare Tafel berechnet.
+
+   Die Klasse "pano" wird erst gesetzt, wenn das alles wirklich laeuft.
+   Faellt das Skript aus, bleibt die Grundstellung aus dem CSS stehen: ein
+   Streifen, den man seitwaerts schiebt. Wer "Bewegung reduzieren"
+   eingestellt hat, bekommt gar nicht erst den mitfahrenden Aufbau.
+   --------------------------------------------------------------------- */
+(function(){
+  var ruhig = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if(ruhig) return;
+
+  var wurzel   = document.documentElement,
+      buehne   = document.querySelector(".buehne"),
+      klebe    = document.querySelector(".klebe"),
+      band     = document.querySelector(".band"),
+      pano     = document.querySelector(".panorama"),
+      lore     = document.querySelector(".lore"),
+      schilder = document.querySelector(".schilder"),
+      tafeln   = [].slice.call(document.querySelectorAll(".schild"));
+
+  if(!buehne || !klebe || !band || !pano || !lore || !schilder || !tafeln.length) return;
+
+  var SEITEN = 3200 / 900,   /* Seitenverhaeltnis der Zeichnung */
+      weg    = 0,            /* wie viele Pixel die Zeichnung wandert */
+      hoch   = 0,            /* Hoehe der Buehne */
+      BLENDE = .05;          /* Fortschritt, den ein Tafelwechsel dauert */
+
+  function messen(){
+    var b = klebe.clientWidth, h = klebe.clientHeight;
+    if(!b || !h) return;
+
+    /* Wie hoch der Streifen wird, entscheidet alles: die Zeichnung wird
+       immer ganz gezeigt, also legt ihre Hoehe auch den Massstab und damit
+       ihre Breite fest. Zu hoch heisst zu nah dran, zu flach heisst, man
+       erkennt nichts mehr. Die vier Zeilen sind der Ausgleich:
+
+       1. Wunsch: knapp drei Viertel der Buehne, hoechstens 640 Pixel.
+       2. Die Fahrt soll gut drei Bildschirme lang sein, nicht fuenf — auf
+          einem schmalen Handy waere die Zeichnung sonst endlos weit.
+       3./4. Aber mindestens 1,25 Fensterbreiten und 190 Pixel, sonst gaebe
+          es auf einem breiten Bildschirm gar nichts zu fahren. */
+    var zh = Math.min(h * 0.72, 640);
+    zh = Math.min(zh, (b + h * 1.5) / SEITEN);
+    zh = Math.max(zh, (b * 1.25) / SEITEN);
+    zh = Math.max(zh, 190);
+
+    band.style.height = zh + "px";
+    var zb = zh * SEITEN;
+    weg  = Math.max(1, zb - b);
+    hoch = h + weg * 1.6;
+    buehne.style.height = hoch + "px";
+
+    /* Die Tafeln stehen ueber dem Streifen, solange dort Platz ist, und
+       zwar mittig im freien Raum zwischen Menue und Streifen. Ist die
+       Buehne dafuer zu flach, ruecken sie unter das Menue und liegen dann
+       ueber dem Himmel — dunkel genug ist er dort. */
+    var oberraum = h - (44 + zh) - 52;
+    if(oberraum >= schilder.offsetHeight + 24){
+      schilder.style.top = "auto";
+      schilder.style.bottom =
+        (44 + zh + Math.max(20, (oberraum - schilder.offsetHeight) / 2)) + "px";
+    }else{
+      schilder.style.bottom = "auto";
+      schilder.style.top = "";
+    }
+
+    /* Der Ort einer Tafel steht als Anteil der Zeichnung im Markup. Hier
+       wird daraus der Fortschritt, bei dem dieser Ort in der Mitte steht. */
+    var i;
+    for(i=0;i<tafeln.length;i++){
+      tafeln[i].anker = Math.min(1, Math.max(0,
+        (parseFloat(tafeln[i].dataset.ort) * zb - b/2) / weg));
+    }
+
+    /* Jede Tafel gilt bis zur Mitte zwischen ihrem Ort und dem naechsten.
+       Vorher stand jede fuer einen festen Fortschritt um ihren Ort herum —
+       dabei war zwischen zwei Orten keine ganz da und beide schimmerten
+       durcheinander. Die Mitte kennt diesen Zwischenraum nicht. */
+    for(i=0;i<tafeln.length;i++){
+      tafeln[i].von = i > 0 ? (tafeln[i-1].anker + tafeln[i].anker) / 2 : -1;
+      tafeln[i].bis = i < tafeln.length-1 ? (tafeln[i].anker + tafeln[i+1].anker) / 2 : 2;
+    }
+
+    zeichnen();
+  }
+
+  function zeichnen(){
+    /* Die Fahrt beginnt erst nach 5 Prozent der Buehne und ist nach 83
+       Prozent zu Ende. Der Rest ist Standzeit: sonst huscht die letzte
+       Tafel vorbei, weil die Buehne genau dort aufhoert, wo die Zeichnung
+       ankommt. */
+    var oben    = buehne.getBoundingClientRect().top,
+        strecke = hoch - klebe.clientHeight,
+        roh     = strecke > 0 ? -oben / strecke : 0,
+        p       = Math.min(1, Math.max(0, (roh - .05) / .78));
+
+    pano.style.transform = "translate3d(" + (-weg * p).toFixed(1) + "px,0,0)";
+    lore.style.left = (p * 100).toFixed(2) + "%";
+
+    for(var i=0;i<tafeln.length;i++){
+      var o = Math.min((p - tafeln[i].von) / BLENDE,
+                       (tafeln[i].bis - p) / BLENDE, 1);
+      tafeln[i].style.opacity = Math.max(0, o).toFixed(3);
+    }
+  }
+
+  var wartet = false;
+  function anstossen(){
+    if(wartet) return;
+    wartet = true;
+    requestAnimationFrame(function(){ wartet = false; zeichnen(); });
+  }
+
+  wurzel.className = "pano";
+  messen();
+  addEventListener("scroll", anstossen, {passive:true});
+  addEventListener("resize", messen);
+
+  /* Noch einmal messen, wenn Bild und Schrift da sind: bis dahin kann das
+     Fenster andere Masse haben, etwa weil erst dann ein Rollbalken auftaucht. */
+  addEventListener("load", messen);
+
+  /* Solange die Szene nicht im Bild ist, stehen ihre Animationen still. */
+  if("IntersectionObserver" in window){
+    new IntersectionObserver(function(e){
+      pano.classList.toggle("ruht", !e[0].isIntersecting);
+    }, {rootMargin:"150px"}).observe(klebe);
+  }
+})();
 </script>
-
-<div class="hero">
-
-  <!-- Pflichtangaben. Bewusst hier und nicht im Menü — siehe Kommentar im CSS. -->
-  <footer class="rechtsfuss">
-    <a href="/impressum.html">Impressum</a>
-    <span class="punkt" aria-hidden="true">·</span>
-    <a href="/datenschutz.html">Datenschutz</a>
-  </footer>
-
-</div>
 
 </body>
 </html>
