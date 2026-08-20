@@ -14,6 +14,36 @@
      Messing bleibt dem Geld vorbehalten, damit die Ersparnis eine eigene
      Stimme hat und nicht mit dem Atem-Akzent um Aufmerksamkeit kämpft.
      ==================================================================== */
+  /* ---------- Schriften ----------
+     Selbst gehostet, seit dem 20.08.2026. Keine Google Fonts: die Einbindung
+     von fonts.googleapis.com überträgt die IP des Besuchers an einen Dritten
+     und ist abmahnungsrelevant (LG München I, 2022). Von hier ausgeliefert
+     stellt sich die Frage nicht.
+
+     Alle drei Schriften liegen im Repo, benutzt wird eine. Das kostet den
+     Besucher nichts — einen @font-face-Block, auf den keine Regel zeigt, lädt
+     kein Browser. Umschalten heißt deshalb nur: --sans ändern. In index.html
+     muss der Preload mitgezogen werden, sonst wird die falsche vorgeladen.
+
+     Variabler Schnitt, lateinische Teilmenge. Die deckt äöü und ß ab;
+     latin-ext wäre für Deutsch unnötiger Ballast. Bezogen über Fontsource,
+     SIL Open Font License — die Lizenztexte liegen bei den Dateien. */
+  @font-face{
+    font-family:"Space Grotesk"; font-style:normal; font-weight:300 700;
+    font-display:swap;
+    src:url("../schriften/space-grotesk.woff2") format("woff2-variations");
+  }
+  @font-face{
+    font-family:"Inter"; font-style:normal; font-weight:100 900;
+    font-display:swap;
+    src:url("../schriften/inter.woff2") format("woff2-variations");
+  }
+  @font-face{
+    font-family:"Manrope"; font-style:normal; font-weight:200 800;
+    font-display:swap;
+    src:url("../schriften/manrope.woff2") format("woff2-variations");
+  }
+
   :root{
     --ground:    #0A1411;
     --surface:   #0F1E1A;
@@ -27,7 +57,7 @@
     --air-glow:  rgba(98,214,174,.13);
     --brass:     #D9A94F;
     --warn:      #D9775C;
-    --sans: ui-sans-serif, system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --sans: "Space Grotesk", ui-sans-serif, system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   }
 
   *{ box-sizing:border-box; }

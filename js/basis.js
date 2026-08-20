@@ -28,7 +28,7 @@
    Mit ?v= kann das nicht mehr vorkommen: neues HTML verweist auf neue
    Adressen, die im Zwischenspeicher gar nicht liegen. Als Netz prueft die
    Seite die Zahl zusaetzlich gegen. */
-const FASSUNG = 25;
+const FASSUNG = 26;
 
 /* Das Datum, an dem diese Fassung ausgeliefert wurde. Steht bewusst hier
    neben der Nummer und nicht irgendwo im Markup: wer die eine aendert,

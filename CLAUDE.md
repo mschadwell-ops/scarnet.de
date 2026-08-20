@@ -19,9 +19,13 @@ Ein **Bauschritt** ist davon nicht betroffen — er erzeugt ja gerade selbst
 gehostete Dateien. Was auf dem Entwicklungsrechner passiert, geht niemanden
 etwas an. Beides nicht verwechseln.
 
-Zurzeit deshalb Systemschriften (`ui-sans-serif, system-ui, …`). Eine eigene
-Schrift ist erlaubt, sobald sie als WOFF2 im Repo liegt und von hier
-ausgeliefert wird.
+Seit dem 20.08.2026 läuft die Seite auf **Space Grotesk**, selbst gehostet aus
+`schriften/`. Zwei weitere liegen daneben, unbenutzt und deshalb ohne Kosten für
+den Besucher. Details und der Weg zum Umschalten stehen im README — dabei immer
+den **Preload in `index.html`** mitziehen und `FASSUNG` hochzählen.
+
+Wer die Schrift wechselt, muss den Absatz „Keine Einbindung Dritter" in
+`datenschutz.html` mitändern: dort steht der Name der Schrift.
 
 ## 2. Die Fassungsnummer ist die zentrale Regel
 

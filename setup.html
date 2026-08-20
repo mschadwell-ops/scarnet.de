@@ -10,11 +10,41 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230A1411'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='%2362D6AE' stroke-width='2.5'/%3E%3C/svg%3E">
 
 <style>
+  /* ---------- Schriften ----------
+     Selbst gehostet, seit dem 20.08.2026. Keine Google Fonts: die Einbindung
+     von fonts.googleapis.com überträgt die IP des Besuchers an einen Dritten
+     und ist abmahnungsrelevant (LG München I, 2022). Von hier ausgeliefert
+     stellt sich die Frage nicht.
+
+     Alle drei Schriften liegen im Repo, benutzt wird eine. Das kostet den
+     Besucher nichts — einen @font-face-Block, auf den keine Regel zeigt, lädt
+     kein Browser. Umschalten heißt deshalb nur: --sans ändern. In index.html
+     muss der Preload mitgezogen werden, sonst wird die falsche vorgeladen.
+
+     Variabler Schnitt, lateinische Teilmenge. Die deckt äöü und ß ab;
+     latin-ext wäre für Deutsch unnötiger Ballast. Bezogen über Fontsource,
+     SIL Open Font License — die Lizenztexte liegen bei den Dateien. */
+  @font-face{
+    font-family:"Space Grotesk"; font-style:normal; font-weight:300 700;
+    font-display:swap;
+    src:url("schriften/space-grotesk.woff2") format("woff2-variations");
+  }
+  @font-face{
+    font-family:"Inter"; font-style:normal; font-weight:100 900;
+    font-display:swap;
+    src:url("schriften/inter.woff2") format("woff2-variations");
+  }
+  @font-face{
+    font-family:"Manrope"; font-style:normal; font-weight:200 800;
+    font-display:swap;
+    src:url("schriften/manrope.woff2") format("woff2-variations");
+  }
+
   :root{
     --ground:#0A1411; --surface:#0F1E1A; --surface-2:#162923; --line:#1F3730;
     --text:#E9F2EE; --muted:#8CA8A0; --faint:#5D7771;
     --air:#62D6AE; --brass:#D9A94F;
-    --sans: ui-sans-serif, system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --sans: "Space Grotesk", ui-sans-serif, system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
   }
   *{ box-sizing:border-box; }
@@ -115,7 +145,7 @@
      nur auf einer Seite geaendert, haette dieses Werkzeug Pruefsummen
      erzeugt, mit denen sich niemand mehr anmelden kann — und der Fehler
      haette wie ein vergessenes Passwort ausgesehen. -->
-<script src="js/basis.js?v=25"></script>
+<script src="js/basis.js?v=26"></script>
 <script>
 "use strict";
 

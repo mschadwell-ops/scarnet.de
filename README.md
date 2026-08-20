@@ -18,9 +18,33 @@ vom Branch `main`. Kein Build, kein Generator — was hier liegt, ist die Seite.
 | `robots.txt` | hält den persönlichen Bereich aus Suchmaschinen |
 
 Jede Seite ist für sich vollständig — kein gemeinsames Stylesheet, kein
-Skript von außen, keine Schrift von einem fremden Server. Das ist Absicht:
+Skript von außen, nichts von einem fremden Server. Das ist Absicht:
 So läuft jede Datei auch per Doppelklick lokal, und es geht nichts an Dritte
 raus, was datenschutzrechtlich relevant wäre.
+
+## Schriften
+
+In `schriften/` liegen drei variable WOFF2 mit ihren Lizenztexten (alle SIL
+Open Font License, bezogen über Fontsource). **Benutzt wird eine:
+Space Grotesk.** Die anderen beiden liegen bereit, kosten den Besucher aber
+nichts — einen `@font-face`-Block, auf den keine Regel zeigt, lädt kein
+Browser. Nachgemessen: beim Abruf der Startseite geht genau eine
+Schriftanfrage raus.
+
+| Datei | Größe | Gewichte |
+|---|---|---|
+| `space-grotesk.woff2` | 21 KB | 300–700, **aktiv** |
+| `manrope.woff2` | 24 KB | 200–800 |
+| `inter.woff2` | 47 KB | 100–900 |
+
+Umschalten heißt: `--sans` in `css/rauchfrei.css`, `impressum.html`,
+`datenschutz.html` und `setup.html` ändern, die `font-family` auf `html, body`
+in `index.html`, **und den Preload in `index.html` mitziehen** — sonst wird die
+falsche Schrift vorgeladen. Danach `FASSUNG` hochzählen.
+
+Geladen wird nur die lateinische Teilmenge; die deckt äöü und ß ab, `latin-ext`
+wäre für Deutsch unnötiger Ballast. Npm wurde nur zum Beschaffen gebraucht —
+die Seite bleibt buildfrei, die Dateien liegen im Repo.
 
 ## Ein neuer Menüpunkt
 

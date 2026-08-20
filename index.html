@@ -21,6 +21,11 @@
      /favicon.ico anfragt und eine 404 einsammelt. -->
 <link rel="icon" type="image/png" sizes="64x64" href="favicon.png">
 
+<!-- Die Schrift steckt im CSS und wird sonst erst nach dem Parsen entdeckt. Ohne
+     Preload springt die Seite sichtbar von der Systemschrift auf Space Grotesk.
+     Beim Wechsel der Schrift diese Zeile mitziehen. -->
+<link rel="preload" as="font" type="font/woff2" href="schriften/space-grotesk.woff2" crossorigin>
+
 <!-- Das Hero-Bild steckt im CSS und wird vom Browser erst nach dem Stylesheet entdeckt.
      Der Preload holt es sofort; media sorgt dafür, dass weiterhin nur eines der beiden lädt. -->
 <link rel="preload" as="image" href="Welcome.jpg" media="(min-width:769px)">
@@ -33,6 +38,36 @@
 <meta property="og:image" content="https://scarnet.de/Welcome.jpg">
 
 <style>
+
+/* ---------- Schriften ----------
+   Selbst gehostet, seit dem 20.08.2026. Keine Google Fonts: die Einbindung
+   von fonts.googleapis.com überträgt die IP des Besuchers an einen Dritten
+   und ist abmahnungsrelevant (LG München I, 2022). Von hier ausgeliefert
+   stellt sich die Frage nicht.
+
+   Alle drei Schriften liegen im Repo, benutzt wird eine. Das kostet den
+   Besucher nichts — einen @font-face-Block, auf den keine Regel zeigt, lädt
+   kein Browser. Umschalten heißt deshalb nur: die font-family auf html, body ändern. In index.html
+   muss der Preload mitgezogen werden, sonst wird die falsche vorgeladen.
+
+   Variabler Schnitt, lateinische Teilmenge. Die deckt äöü und ß ab;
+   latin-ext wäre für Deutsch unnötiger Ballast. Bezogen über Fontsource,
+   SIL Open Font License — die Lizenztexte liegen bei den Dateien. */
+@font-face{
+  font-family:"Space Grotesk"; font-style:normal; font-weight:300 700;
+  font-display:swap;
+  src:url("schriften/space-grotesk.woff2") format("woff2-variations");
+}
+@font-face{
+  font-family:"Inter"; font-style:normal; font-weight:100 900;
+  font-display:swap;
+  src:url("schriften/inter.woff2") format("woff2-variations");
+}
+@font-face{
+  font-family:"Manrope"; font-style:normal; font-weight:200 800;
+  font-display:swap;
+  src:url("schriften/manrope.woff2") format("woff2-variations");
+}
 
 *{
     margin:0;
@@ -49,7 +84,7 @@ html, body{
     /* Muss hier stehen, seit das Menü Text enthält: ohne Angabe erbt die
        Seite die Voreinstellung des Browsers, und die ist eine Serifenschrift.
        Systemschriften statt Google Fonts — es soll nichts nachgeladen werden. */
-    font-family:ui-sans-serif, system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-family:"Space Grotesk", ui-sans-serif, system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     -webkit-font-smoothing:antialiased;
 }
 
