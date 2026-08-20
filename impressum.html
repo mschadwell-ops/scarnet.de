@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Impressum — scaRnet</title>
+<meta name="description" content="Anbieterkennzeichnung nach § 5 DDG für scarnet.de.">
+<link rel="canonical" href="https://scarnet.de/impressum.html">
+
+<!-- Gleiches Favicon wie die Startseite: Impressum und Datenschutz sind
+     öffentliche Seiten der Website, nicht Teil des Rauchfrei-Bereichs.
+     Der behält seinen eingebetteten Ring. -->
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png">
+
+<style>
+  /* Farbwelt wie setup.html und der Rauchfrei-Bereich — die Seite soll zum
+     Rest gehören. Nüchtern gesetzt: ein Impressum wird gelesen, nicht bestaunt.
+     Systemschriften, nichts von fremden Servern. */
+  :root{
+    --ground:#0A1411; --surface:#0F1E1A; --line:#1F3730;
+    --text:#E9F2EE; --muted:#8CA8A0; --faint:#5D7771;
+    --air:#62D6AE; --brass:#D9A94F;
+    --sans: ui-sans-serif, system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0; background:var(--ground); color:var(--text);
+    font-family:var(--sans); font-size:15.5px; line-height:1.7;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ---------- Menü (gleich wie auf den anderen Seiten) ---------- */
+  .nav{
+    position:sticky; top:0; z-index:10; height:52px;
+    display:flex; align-items:center; gap:clamp(16px,4vw,40px);
+    padding:0 clamp(14px,4vw,30px);
+    background:rgba(0,0,0,.46);
+    backdrop-filter:blur(12px) saturate(140%);
+    -webkit-backdrop-filter:blur(12px) saturate(140%);
+    border-bottom:1px solid rgba(255,255,255,.09);
+  }
+  .mark{
+    flex:none; font-size:11px; font-weight:600; letter-spacing:.18em;
+    text-transform:uppercase; color:rgba(255,255,255,.38);
+    white-space:nowrap; -webkit-user-select:none; user-select:none;
+  }
+  .tabs{ display:flex; gap:4px; margin-left:auto; overflow-x:auto; scrollbar-width:none; }
+  .tabs::-webkit-scrollbar{ display:none; }
+  .tabs a{
+    flex:none; padding:7px 12px; border-radius:6px;
+    font-size:11px; font-weight:600; letter-spacing:.15em; text-transform:uppercase;
+    color:rgba(255,255,255,.62); text-decoration:none; white-space:nowrap;
+    transition:color .15s, background .15s;
+  }
+  .tabs a:hover{ color:#fff; background:rgba(255,255,255,.09); }
+  .tabs a[aria-current="page"]{ color:#fff; background:rgba(255,255,255,.14); }
+  .tabs a:focus-visible{ outline:2px solid #fff; outline-offset:2px; }
+  @media (max-width:768px){ .tabs a{ padding:14px 12px; } }
+
+  /* ---------- Text ---------- */
+  .wrap{ max-width:660px; margin:0 auto; padding:44px 20px 80px; }
+  h1{ font-size:27px; font-weight:600; letter-spacing:-.02em; margin:0 0 8px; }
+  .lede{ margin:0 0 36px; color:var(--muted); font-size:14.5px; }
+  h2{
+    font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:var(--muted);
+    font-weight:600; margin:40px 0 14px; padding-bottom:9px;
+    border-bottom:1px solid var(--line);
+  }
+  p{ margin:0 0 14px; }
+  address{ font-style:normal; margin:0 0 14px; }
+  a{ color:var(--air); text-underline-offset:3px; }
+  a:focus-visible{ outline:2px solid var(--air); outline-offset:3px; border-radius:3px; }
+
+  /* Die E-Mail-Adresse. Etwas hervorgehoben, weil sie der einzige Weg hierher
+     ist — aber ohne anklickbaren Verweis und ohne At-Zeichen im Quelltext,
+     siehe den
+     Kommentar am Markup. Bleibt normaler Text: markierbar, kopierbar, und für
+     einen Screenreader in der richtigen Reihenfolge. */
+  .mail{
+    display:inline-block; margin:0 0 10px;
+    background:var(--surface); border:1px solid var(--line); border-radius:8px;
+    padding:9px 14px; font-size:16px; letter-spacing:.01em;
+  }
+  .mail .at{ color:var(--brass); }
+  .hinweis{ font-size:13px; color:var(--faint); }
+  .hinweis code{
+    background:var(--surface); border:1px solid var(--line);
+    border-radius:4px; padding:1px 5px; font-size:.92em;
+  }
+  .stand{ margin-top:44px; font-size:12.5px; color:var(--faint); }
+  .stand a{ white-space:nowrap; }
+</style>
+</head>
+
+<body>
+
+<nav class="nav">
+  <span class="mark">Menü</span>
+  <div class="tabs">
+    <a href="/">Start</a>
+    <a href="/rauchfrei.html">Rauchfrei</a>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <h1>Impressum</h1>
+  <p class="lede">Wer diese Seite betreibt und wie er zu erreichen ist.</p>
+
+  <h2>Anbieter</h2>
+  <address>
+    Maik Schadwell<br>
+    Deutschland
+  </address>
+  <p>Die vollständige Anschrift gibt es auf Anfrage per E-Mail.</p>
+
+  <h2>Kontakt</h2>
+  <!-- Kein anklickbarer Verweis und kein At-Zeichen im Quelltext. Sammler suchen
+       nach genau diesen beiden Mustern; was hier steht, passt auf keines von
+       beiden. Für einen Menschen bleibt es lesbar, für einen Screenreader in
+       der richtigen Reihenfolge, und markieren lässt es sich auch. -->
+  <p class="mail">scar<span class="at">(at)</span>scarnet.de</p>
+  <p class="hinweis">
+    Beim Schreiben das <code>(at)</code> durch das At-Zeichen ersetzen. Die
+    Adresse steht absichtlich nicht als anklickbarer Verweis — das hält
+    Sammelprogramme ab, die den Quelltext nach Mustern durchsuchen.
+  </p>
+  <p>
+    Ein Kontaktformular und eine Telefonnummer gibt es nicht. Der Weg über die
+    E-Mail-Adresse ist der einzige.
+  </p>
+
+  <h2>Verantwortlich für den Inhalt</h2>
+  <p>Maik Schadwell, Kontakt wie oben.</p>
+
+  <h2>Art des Angebots</h2>
+  <p>
+    Diese Seite ist privat. Es werden keine Waren oder Leistungen angeboten,
+    es wird nichts verkauft, keine Werbung geschaltet und nichts eingenommen.
+    Sie ist damit kein geschäftsmäßiger digitaler Dienst im Sinne von § 5 DDG,
+    für den eine Anbieterkennzeichnung mit vollständiger Anschrift
+    vorgeschrieben wäre. Was hier steht, steht freiwillig.
+  </p>
+
+  <h2>Haftung für Inhalte</h2>
+  <p>
+    Die Inhalte dieser Seiten wurden mit Sorgfalt erstellt. Für ihre
+    Richtigkeit, Vollständigkeit und Aktualität wird keine Gewähr übernommen.
+    Die im Bereich <em>Rauchfrei</em> zusammengetragenen gesundheitsbezogenen
+    Angaben sind allgemeine Informationen. Sie ersetzen keine ärztliche
+    Beratung und sind nicht auf den Einzelfall gemünzt.
+  </p>
+
+  <h2>Haftung für Links</h2>
+  <p>
+    Diese Seite verweist nicht auf fremde Inhalte. Sollten künftig Links
+    gesetzt werden, gilt: Für deren Inhalte ist der jeweilige Anbieter
+    verantwortlich. Zum Zeitpunkt der Verlinkung wären sie auf erkennbare
+    Rechtsverstöße geprüft; ohne konkreten Anhaltspunkt ist eine ständige
+    Kontrolle nicht zumutbar.
+  </p>
+
+  <h2>Urheberrecht</h2>
+  <p>
+    Die Fotos und Texte dieser Seite stammen vom Anbieter. Eine Nutzung
+    außerhalb der Grenzen des Urheberrechts bedarf seiner Zustimmung.
+  </p>
+
+  <h2>Streitbeilegung</h2>
+  <p>
+    Zur Teilnahme an einem Streitbeilegungsverfahren vor einer
+    Verbraucherschlichtungsstelle ist der Anbieter weder verpflichtet noch
+    bereit.
+  </p>
+
+  <p class="stand">
+    Stand: August 2026 · <a href="/datenschutz.html">Datenschutzerklärung</a>
+    · <a href="/">Zurück zur Startseite</a>
+  </p>
+
+</div>
+
+</body>
+</html>

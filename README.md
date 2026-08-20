@@ -10,6 +10,8 @@ vom Branch `main`. Kein Build, kein Generator — was hier liegt, ist die Seite.
 | `index.html` | Startseite: Hero-Bild und Menü |
 | `rauchfrei.html` | Reiter „Rauchfrei“ — Anmeldung und Zähler, alles in einer Datei |
 | `setup.html` | Werkzeug, um Zugänge zu erzeugen. Nicht im Menü verlinkt |
+| `impressum.html` | Anbieterkennzeichnung nach § 5 DDG |
+| `datenschutz.html` | Datenschutzerklärung |
 | `Welcome.jpg` | Hero-Bild quer (1672 × 941), ab Viewport ≥ 769 px |
 | `Welcome-mobile.jpg` | Hero-Bild hoch (941 × 1672), bis Viewport ≤ 768 px |
 | `CNAME` | bindet die Domain `scarnet.de` an GitHub Pages |
@@ -79,19 +81,46 @@ neu Dokumentiertes, und erfundene Medizin für Tag 243 wäre schlechter als eine
 wahre Zahl. Geprüft über 10 Jahre: kein Tag ohne Eintrag, kein Tag gleich wie
 der Vortag, 3.608 verschiedene Texte.
 
-## Impressum
+## Impressum und Datenschutz
 
-Bewusst noch nicht enthalten. Eine fertige Seite mit Impressum nach § 5 DDG
-und Datenschutzerklärung liegt im Verlauf dieses Branches und lässt sich
-jederzeit zurückholen:
+`impressum.html` und `datenschutz.html` sind zwei getrennte Seiten. Getrennt,
+weil die Datenschutzerklärung nach Art. 13 DSGVO für sich erreichbar sein muss
+und nicht unter dem Impressum versteckt gehört.
+
+Verlinkt sind sie **nicht im Menü, sondern in einer Fußzeile** (`.rechtsfuss`)
+auf der Startseite und im Rauchfrei-Bereich. Mit vier Reitern scrollt die
+Menüleiste auf einem 375 Pixel breiten Display seitwärts, und der letzte
+Eintrag fällt aus dem Bild — ausgerechnet der, der leicht erreichbar sein muss.
+Unten sucht ihn ohnehin jeder zuerst.
+
+Auf der Startseite liegt die Fußzeile `absolute` im Hero und nicht `fixed`: der
+Hero ist `100svh` hoch und endet damit über der Adressleiste des
+Handybrowsers, die ein `fixed`-Element auf `bottom:0` verdecken würde. Im
+Rauchfrei-Bereich steht sie als Letztes im `.wrap`, also innerhalb der 88 Pixel
+Bodenabstand, die den Krisenknopf freihalten.
+
+Beide Rechtsseiten sind für sich vollständig, mit eigenem `<style>` im Kopf —
+wie `setup.html`. Wer am Menü oder an der Farbwelt etwas ändert, muss es in
+beiden Dateien tun.
+
+**So wenig personenbezogene Angaben wie möglich.** Auf beiden Seiten stehen
+nur Name und E-Mail-Adresse, keine Anschrift — die gibt es laut Text auf
+Anfrage. Deshalb beruft sich `impressum.html` auch nicht auf § 5 DDG: eine
+Anbieterkennzeichnung ohne Anschrift wäre unvollständig, und für eine private
+Seite ohne Werbung und Einnahmen greift die Vorschrift nicht. Wird die Seite
+jemals gewerblich, muss die Anschrift rein und der Bezug auf § 5 DDG zurück.
+
+**Die E-Mail-Adresse steht ohne At-Zeichen und ohne anklickbaren Verweis**
+(`scar(at)scarnet.de`), weil Adress-Sammler genau nach diesen beiden Mustern
+suchen. Sie bleibt dabei normaler Text: markierbar, kopierbar und für einen
+Screenreader in der richtigen Reihenfolge. Wer daran etwas ändert, sollte
+danach gegenprüfen, dass keine Seite mehr auf ein Adressmuster passt:
 
 ```bash
-git show 71628cd:impressum.html > impressum.html
+grep -rEil '[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}|mailto' --include='*.html' .
 ```
 
-Danach in `index.html` und `rauchfrei.html` je eine Zeile im `<nav>` ergänzen.
-Die persönlichen Angaben darin sind Platzhalter und müssen vor dem
-Veröffentlichen gefüllt werden.
+Die Ausgabe muss leer bleiben.
 
 ## Ändern
 

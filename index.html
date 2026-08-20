@@ -55,6 +55,7 @@ html, body{
 
 /* Desktop */
 .hero{
+    position:relative;   /* Bezugsrahmen fuer die Fusszeile weiter unten */
     width:100%;
     height:100vh;
     height:100svh;   /* mobil: rechnet die Adressleiste raus, sonst wird unten abgeschnitten */
@@ -153,6 +154,61 @@ html, body{
     }
 }
 
+/* ---------- Fußzeile ----------
+   Impressum und Datenschutz stehen unten und nicht als Reiter im Menü. Mit
+   vier Reitern scrollt die Leiste auf einem 375 Pixel breiten Display seitwärts
+   und der letzte Eintrag fällt aus dem Bild — ausgerechnet der, der leicht
+   erreichbar sein muss. Unten sucht ihn ohnehin jeder zuerst.
+
+   Absolut im Hero, nicht fixed: der Hero ist 100svh hoch und endet damit über
+   der Adressleiste des Handybrowsers. Ein fixed-Element auf bottom:0 läge
+   darunter. */
+.rechtsfuss{
+    position:absolute;
+    left:0;
+    right:0;
+    bottom:0;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:2px;
+    padding:6px clamp(14px,4vw,30px) 8px;
+    background:linear-gradient(to top, rgba(0,0,0,.5), rgba(0,0,0,0));
+}
+
+.rechtsfuss a{
+    padding:7px 10px;
+    border-radius:6px;
+    font-size:10.5px;
+    font-weight:600;
+    letter-spacing:.15em;
+    text-transform:uppercase;
+    color:rgba(255,255,255,.62);
+    text-decoration:none;
+    /* Ausdruecklich, weil diese Seite anders als der Rauchfrei-Bereich keine
+       Zeilenhoehe auf dem body setzt — ohne sie fehlen dem Antippfeld unten
+       ein paar Pixel an den geforderten 44. */
+    line-height:1.6;
+    transition:color .15s, background .15s;
+}
+.rechtsfuss a:hover{
+    color:#fff;
+    background:rgba(255,255,255,.09);
+}
+.rechtsfuss a:focus-visible{
+    outline:2px solid #fff;
+    outline-offset:2px;
+}
+.rechtsfuss .punkt{
+    color:rgba(255,255,255,.3);
+    font-size:11px;
+}
+
+/* Handy: gleiche 44 Pixel Antippfläche wie im Menü. */
+@media (max-width:768px){
+    .rechtsfuss a{ padding:14px 12px; }
+}
+
 /* Der Schriftzug steckt als Pixel im Bild. Diese Überschrift bleibt unsichtbar,
    existiert aber für Screenreader und Suchmaschinen. */
 .sr-only{
@@ -197,7 +253,16 @@ html, body{
 document.getElementById("zuRauchfrei").href = "/rauchfrei.html?f=" + Date.now();
 </script>
 
-<div class="hero"></div>
+<div class="hero">
+
+  <!-- Pflichtangaben. Bewusst hier und nicht im Menü — siehe Kommentar im CSS. -->
+  <footer class="rechtsfuss">
+    <a href="/impressum.html">Impressum</a>
+    <span class="punkt" aria-hidden="true">·</span>
+    <a href="/datenschutz.html">Datenschutz</a>
+  </footer>
+
+</div>
 
 </body>
 </html>
