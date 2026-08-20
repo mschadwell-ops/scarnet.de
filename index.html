@@ -23,13 +23,12 @@
 
 <!-- Die Schrift steckt im CSS und wird sonst erst nach dem Parsen entdeckt. Ohne
      Preload springt die Seite sichtbar von der Systemschrift auf Space Grotesk.
-     Beim Wechsel der Schrift diese Zeile mitziehen. -->
+     Michroma steht bewusst nicht hier: die Anzeigeschrift kommt erst unter dem
+     Hero vor und soll dem Foto die Leitung nicht streitig machen. -->
 <link rel="preload" as="font" type="font/woff2" href="schriften/space-grotesk.woff2" crossorigin>
 
-<!-- Das Hero-Bild ist jetzt ein <picture> im Markup und wird damit frueh genug
-     entdeckt; die Preloads bleiben trotzdem stehen, weil sie noch vor dem
-     Parser laufen. media sorgt dafuer, dass nur eines der beiden laedt — und
-     zwar genau das, das <picture> dann auch nimmt. -->
+<!-- Das Hero-Bild steckt im CSS und wird vom Browser erst nach dem Stylesheet entdeckt.
+     Der Preload holt es sofort; media sorgt dafür, dass weiterhin nur eines der beiden lädt. -->
 <link rel="preload" as="image" href="Welcome.jpg" media="(min-width:769px)" fetchpriority="high">
 <link rel="preload" as="image" href="Welcome-mobile.jpg" media="(max-width:768px)" fetchpriority="high">
 
@@ -42,23 +41,30 @@
 <style>
 
 /* ---------- Schriften ----------
-   Selbst gehostet, seit dem 20.08.2026. Keine Google Fonts: die Einbindung
-   von fonts.googleapis.com überträgt die IP des Besuchers an einen Dritten
-   und ist abmahnungsrelevant (LG München I, 2022). Von hier ausgeliefert
-   stellt sich die Frage nicht.
+   Selbst gehostet. Keine Google Fonts: die Einbindung von fonts.googleapis.com
+   überträgt die IP des Besuchers an einen Dritten und ist abmahnungsrelevant
+   (LG München I, 2022). Von hier ausgeliefert stellt sich die Frage nicht.
 
-   Alle drei Schriften liegen im Repo, benutzt wird eine. Das kostet den
-   Besucher nichts — einen @font-face-Block, auf den keine Regel zeigt, lädt
-   kein Browser. Umschalten heißt deshalb nur: --sans ändern. In index.html
-   muss der Preload mitgezogen werden, sonst wird die falsche vorgeladen.
+   Vier Dateien liegen im Repo, benutzt werden zwei: Space Grotesk für den
+   Fließtext, Michroma für die Anzeige. Michroma ist eine breite, kantige
+   Groteske in der Linie von Eurostile — dieselbe Familie von Formen wie der
+   Schriftzug im Hero-Foto, und die Schrift, die die Achtziger auf jedem
+   Vorspann und jeder Plattenhülle benutzt haben.
 
-   Variabler Schnitt, lateinische Teilmenge. Die deckt äöü und ß ab;
-   latin-ext wäre für Deutsch unnötiger Ballast. Bezogen über Fontsource,
+   Inter und Manrope liegen unbenutzt daneben. Das kostet den Besucher nichts —
+   einen @font-face-Block, auf den keine Regel zeigt, lädt kein Browser.
+
+   Lateinische Teilmenge, deckt äöü und ß ab. Bezogen über Google Fonts,
    SIL Open Font License — die Lizenztexte liegen bei den Dateien. */
 @font-face{
   font-family:"Space Grotesk"; font-style:normal; font-weight:300 700;
   font-display:swap;
   src:url("schriften/space-grotesk.woff2") format("woff2-variations");
+}
+@font-face{
+  font-family:"Michroma"; font-style:normal; font-weight:400;
+  font-display:swap;
+  src:url("schriften/michroma.woff2") format("woff2");
 }
 @font-face{
   font-family:"Inter"; font-style:normal; font-weight:100 900;
@@ -72,24 +78,25 @@
 }
 
 /* ---------- Farbwelt ----------
-   Zurueckhaltend, weil die Farbe jetzt aus den Fotos kommt. Der Grund ist
-   fast schwarz, damit die Bilder wie beleuchtete Fenster darin stehen. Die
-   vier Akzente markieren nur die Orte: Rost fuer die Zeche, Blau fuer
-   Bochum, Gelb fuer Dortmund, Gruen fuer die Halde. Minze gehoert dem
-   Rauchfrei-Bereich und steht nur auf der Karte, die dorthin fuehrt. */
+   Aus dem Foto heraus entwickelt, nicht danebengestellt: der Gang leuchtet
+   cyan, die Kabel links leuchten bernstein. Beides sind Neonfarben, man muss
+   sie nur ernst nehmen. Magenta kommt dazu, weil ein Horizont in den
+   Achtzigern magenta war. Drei Farben, mehr nicht — Disco heisst nicht bunt,
+   Disco heisst wenige Farben, die brennen. */
 :root{
-    --nacht:  #08090A;
-    --stahl:  #101315;
-    --stahl-2:#171B1E;
-    --kante:  #262C30;
-    --text:   #ECEDEB;
-    --leise:  #9AA2A4;
-    --fern:   #6C7578;
-    --rost:   #C2643A;
-    --blau:   #5A9AD4;
-    --gelb:   #FFD400;
-    --halde:  #7BA860;
-    --luft:   #62D6AE;
+    --nacht:   #06050E;
+    --tief:    #120726;
+    --violett: #2A0F52;
+    --magenta: #FF2E8B;
+    --cyan:    #22E4FF;
+    --gold:    #FFC24A;
+    --flieder: #A85CFF;
+    --gruen:   #4BFFA5;
+    --text:    #F4EEFF;
+    --leise:   #B7A9DA;
+    --fern:    #7B6DA0;
+
+    --anzeige: "Michroma", "Eurostile", "Bank Gothic", ui-sans-serif, system-ui, sans-serif;
     --sans: "Space Grotesk", ui-sans-serif, system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
@@ -112,8 +119,10 @@ body{
 }
 
 /* ---------- Menü ----------
-   Liegt als schmale Leiste über allem. Neue Reiter kommen unten im <nav>
-   dazu; die Liste scrollt auf schmalen Geräten seitwärts, statt umzubrechen. */
+   Bleibt bewusst so nüchtern wie auf den anderen Seiten. Die Leiste ist das
+   einzige Bauteil, das über alle fünf Seiten läuft — färbt man sie hier ein,
+   wechselt sie beim ersten Klick die Farbe und wirkt kaputt. Neon gibt es
+   unten, wo es hingehört. */
 .nav{
     position:fixed;
     top:0;
@@ -131,13 +140,12 @@ body{
     border-bottom:1px solid rgba(255,255,255,.09);
 }
 
-/* Beschriftung der Leiste, absichtlich kein Link — die Ziele stehen rechts. */
+/* Der Name der Seite. Absichtlich kein Link — die Ziele stehen rechts. */
 .mark{
     flex:none;
     font-size:15.5px;
     font-weight:600;
     letter-spacing:-.015em;
-    
     color:rgba(255,255,255,.92);
     white-space:nowrap;
     -webkit-user-select:none;
@@ -176,62 +184,35 @@ body{
     .tabs a{ padding:14px 12px; line-height:1.6; }
 }
 
-/* ---------- Szene: Foto, Leinwand, Rueckfallebene ----------
-   Jede Szene ist ein Foto mit einer Leinwand davor. Das <img> ist nicht
-   Beiwerk, sondern die Rueckfallebene: ohne JavaScript und ohne WebGL bleibt
-   es sichtbar und die Seite sieht aus wie eine gewoehnliche Bildseite. Laeuft
-   WebGL, dient genau dieses <img> als Textur — es wird kein zweites Mal
-   geladen — und blendet sich weg, sobald die Leinwand zeichnet. */
-.szene{
-    position:relative;
-    overflow:hidden;
-    background:#0A0C0D;
-}
-
-.szene-bild{
-    position:absolute;
-    inset:0;
-    width:100%;
-    height:100%;
-    object-fit:cover;
-    display:block;
-    transition:opacity .5s ease;
-}
-.szene-glas{
-    position:absolute;
-    inset:0;
-    width:100%;
-    height:100%;
-    display:block;
-    opacity:0;
-    transition:opacity .5s ease;
-}
-.szene.laeuft .szene-bild{ opacity:0; }
-.szene.laeuft .szene-glas{ opacity:1; }
-
 /* ---------- Hero ----------
-   Der Hero klebt oben fest, die Buehne darum ist eine halbe Bildschirmhoehe
-   hoeher — das ist die Strecke der Kamerafahrt. Vorher waren es knapp zwei
-   Bildschirme: beim ersten Besuch ein Erlebnis, beim fuenften eine Mautstelle.
-   Eine halbe Umdrehung am Rad reicht fuer die Fahrt, danach kommt Inhalt. */
-.hero-buehne{ position:relative; height:150vh; }
-
+   Ein Bildschirm Foto, sonst nichts. Kein <img>, keine Leinwand, kein Skript:
+   das Bild steht still, so wie es sich gehört. Der einzige Zusatz ist der
+   Verlauf am unteren Rand, der es in die Nacht darunter übergehen lässt. */
 .hero{
-    position:sticky;
-    top:0;
+    position:relative;
+    width:100%;
     height:100vh;
-    height:100svh;
+    height:100svh;   /* mobil: rechnet die Adressleiste raus, sonst wird unten abgeschnitten */
     min-height:420px;
+
+    background-image:url('Welcome.jpg');
+    background-size:cover;
+    background-position:center;
+    background-repeat:no-repeat;
+}
+
+/* Mobile — nur die Bildquelle wechselt, der Rest von oben gilt weiter */
+@media (max-width:768px){
+    .hero{ background-image:url('Welcome-mobile.jpg'); }
 }
 
 .hero::after{
     content:"";
     position:absolute;
     left:0; right:0; bottom:0;
-    height:180px;
-    background:linear-gradient(to top, var(--nacht), rgba(8,9,10,0));
+    height:34%;
+    background:linear-gradient(to top, var(--nacht) 6%, rgba(6,5,14,.55) 46%, rgba(6,5,14,0));
     pointer-events:none;
-    z-index:2;
 }
 
 .hinweis{
@@ -252,181 +233,323 @@ body{
     font-weight:600;
     letter-spacing:.2em;
     text-transform:uppercase;
-    transition:color .15s, background .15s, opacity .3s;
+    transition:color .15s, background .15s, text-shadow .2s;
 }
-.hinweis:hover{ color:#fff; background:rgba(255,255,255,.08); }
-.hinweis:focus-visible{ outline:2px solid #fff; outline-offset:2px; }
+.hinweis:hover{
+    color:#fff;
+    background:rgba(34,228,255,.09);
+    text-shadow:0 0 12px rgba(34,228,255,.8);
+}
+.hinweis:focus-visible{ outline:2px solid var(--cyan); outline-offset:2px; }
 .hinweis svg{ animation:tippen 2.6s ease-in-out infinite; }
 
-/* ---------- Das Revier ---------- */
-.revier{ position:relative; }
+/* ====================================================================
+   DER CLUB
+   Wo der Gang im Foto seinen Fluchtpunkt hat, geht die Seite weiter: ein
+   Horizont, eine geschnittene Sonne, eine beleuchtete Tanzflaeche, die auf
+   einen zulaeuft — und der Hund aus dem Foto darauf, freigestellt.
 
-.revier-kopf{
-    max-width:1080px;
-    margin:0 auto;
-    padding:clamp(70px,13vh,130px) clamp(18px,5vw,30px) clamp(34px,6vh,60px);
+   Alles gerechnet: Kugel, Strahlen, Kacheln und Sonne sind CSS und ein
+   kleines SVG. Das einzige zusaetzliche Byte ist der Hund selbst.
+   ==================================================================== */
+.club{
+    position:relative;
+    min-height:100vh;
+    min-height:100svh;
+    overflow:hidden;
+    background:
+        radial-gradient(140% 68% at 50% 54%, rgba(255,46,139,.30), transparent 60%),
+        radial-gradient(90% 50% at 50% 100%, rgba(34,228,255,.16), transparent 70%),
+        linear-gradient(to bottom, #05040C 0%, var(--tief) 30%, var(--violett) 51%, #14082C 52%, #07050F 100%);
 }
+
+/* Sterne. Ein Element, die Punkte stecken im Hintergrund. */
+.sterne{
+    position:absolute;
+    left:0; right:0; top:0;
+    height:54%;
+    pointer-events:none;
+    background-image:
+        radial-gradient(1.4px 1.4px at 12% 24%, #fff, transparent),
+        radial-gradient(1.2px 1.2px at 26% 12%, #E7D8FF, transparent),
+        radial-gradient(1.6px 1.6px at 38% 34%, #fff, transparent),
+        radial-gradient(1.1px 1.1px at 52% 8%,  #CFE8FF, transparent),
+        radial-gradient(1.5px 1.5px at 64% 28%, #fff, transparent),
+        radial-gradient(1.2px 1.2px at 76% 16%, #FFE7F6, transparent),
+        radial-gradient(1.7px 1.7px at 88% 32%, #fff, transparent),
+        radial-gradient(1.1px 1.1px at 8%  44%, #D8CCFF, transparent),
+        radial-gradient(1.3px 1.3px at 33% 50%, #fff, transparent),
+        radial-gradient(1.2px 1.2px at 58% 46%, #CFE8FF, transparent),
+        radial-gradient(1.4px 1.4px at 82% 48%, #fff, transparent),
+        radial-gradient(1.1px 1.1px at 94% 20%, #FFD9EF, transparent),
+        radial-gradient(1.3px 1.3px at 46% 20%, #fff, transparent),
+        radial-gradient(1.2px 1.2px at 18% 36%, #fff, transparent);
+    animation:blinzeln 7s ease-in-out infinite alternate;
+}
+
+/* Lichtkegel von oben. Ein Kegelverlauf, der langsam schwenkt — mehr
+   braucht es nicht, damit ein Raum nach Scheinwerfern aussieht. */
+.strahlen{
+    position:absolute;
+    left:50%; top:-4%;
+    width:min(150vw,1500px);
+    height:74%;
+    transform:translateX(-50%);
+    transform-origin:50% 0;
+    pointer-events:none;
+    opacity:.62;
+    filter:blur(14px);
+    background:conic-gradient(from 208deg at 50% 0%,
+        transparent 0 7deg,
+        rgba(255,46,139,.30) 7deg 11deg,
+        transparent 11deg 17deg,
+        rgba(34,228,255,.26) 17deg 21deg,
+        transparent 21deg 29deg,
+        rgba(255,194,74,.22) 29deg 32deg,
+        transparent 32deg 39deg,
+        rgba(168,92,255,.26) 39deg 43deg,
+        transparent 43deg 120deg);
+    animation:schwenken 11s ease-in-out infinite alternate;
+}
+
+/* Die Discokugel. Facetten aus einem sich drehenden Kegelverlauf,
+   Rundung aus einem Radialverlauf, Aufhaengung aus einer Linie. */
+.kugel{
+    position:absolute;
+    /* Haengt unter der Menueleiste, nicht dahinter — sonst ist die Kugel
+       genau dort angeschnitten, wo man auf dem Abschnitt landet. */
+    top:44px; left:50%;
+    width:clamp(46px,7.5vw,78px);
+    transform:translateX(-50%);
+    pointer-events:none;
+}
+.kugel::before{
+    content:"";
+    display:block;
+    width:2px; height:clamp(16px,4vh,34px);
+    margin:0 auto;
+    background:linear-gradient(to bottom, rgba(255,255,255,.05), rgba(255,255,255,.4));
+}
+.kugel::after{
+    content:"";
+    display:block;
+    width:100%; aspect-ratio:1;
+    border-radius:50%;
+    background:
+        repeating-conic-gradient(from 0deg, rgba(255,255,255,.26) 0 5deg, rgba(120,160,220,.06) 5deg 10deg),
+        repeating-linear-gradient(0deg, rgba(0,0,0,.34) 0 4px, transparent 4px 9px),
+        radial-gradient(circle at 32% 26%, #F2FAFF 0%, #93A8D8 34%, #3A4270 66%, #12162E 100%);
+    box-shadow:0 0 30px rgba(180,220,255,.4), 0 0 90px rgba(168,92,255,.3);
+    animation:drehen 14s linear infinite;
+}
+
+/* Die Sonne. Die Schnitte werden nach unten breiter — genau das macht sie. */
+.sonne{
+    position:absolute;
+    top:calc(52% - min(21vw,164px));
+    left:50%;
+    transform:translateX(-50%);
+    width:min(42vw,328px);
+    height:min(42vw,328px);
+    pointer-events:none;
+    filter:drop-shadow(0 0 54px rgba(255,46,139,.5));
+}
+
+/* Der Horizont: die Linie, an der der Boden anfaengt. */
+.horizont{
+    position:absolute;
+    left:0; right:0;
+    top:52%;
+    height:2px;
+    pointer-events:none;
+    background:linear-gradient(90deg, transparent, rgba(34,228,255,.9) 20%, #fff 50%, rgba(34,228,255,.9) 80%, transparent);
+    box-shadow:0 0 30px 7px rgba(34,228,255,.42);
+}
+
+/* ---------- Die Tanzflaeche ----------
+   Eine echte perspektivische Ebene: das Kachelraster liegt flach und wird
+   gekippt. Deshalb laufen die Fugen richtig auf den Fluchtpunkt zu und die
+   Kacheln werden nach hinten kleiner. Jede Kachel pulst fuer sich; die
+   Verteilung kommt aus elf Gruppen, die sich mit den zwoelf Spalten nicht
+   decken — sonst stuenden die Farben in Streifen statt im Muster. */
+.flaeche{
+    position:absolute;
+    left:0; right:0;
+    top:52%;
+    bottom:0;
+    overflow:hidden;
+    pointer-events:none;
+    perspective:340px;
+    perspective-origin:50% 0%;
+    -webkit-mask-image:linear-gradient(to bottom, transparent 0, #000 15%);
+    mask-image:linear-gradient(to bottom, transparent 0, #000 15%);
+}
+.kacheln{
+    position:absolute;
+    left:-32%; right:-32%;
+    top:0;
+    transform-origin:50% 0%;
+    transform:rotateX(72deg);
+    display:grid;
+    grid-template-columns:repeat(24,1fr);
+    gap:2px;
+}
+/* aspect-ratio statt fester Zeilenhoehe: so bleiben die Kacheln quadratisch,
+   egal wie breit das Fenster ist. Mit fester Hoehe wurden daraus auf dem
+   Bildschirm Farbfelder statt einer Flaeche. */
+.kacheln i{
+    aspect-ratio:1;
+    background:var(--k);
+    opacity:.16;
+    animation:leuchten 2.6s ease-in-out infinite;
+}
+.kacheln i:nth-child(11n)   { --k:var(--magenta); animation-delay:0s;    }
+.kacheln i:nth-child(11n+1) { --k:var(--cyan);    animation-delay:-.9s;  }
+.kacheln i:nth-child(11n+2) { --k:var(--gold);    animation-delay:-1.7s; }
+.kacheln i:nth-child(11n+3) { --k:var(--flieder); animation-delay:-.4s;  }
+.kacheln i:nth-child(11n+4) { --k:var(--magenta); animation-delay:-2.2s; }
+.kacheln i:nth-child(11n+5) { --k:var(--cyan);    animation-delay:-1.3s; }
+.kacheln i:nth-child(11n+6) { --k:var(--gruen);   animation-delay:-.6s;  }
+.kacheln i:nth-child(11n+7) { --k:var(--gold);    animation-delay:-2s;   }
+.kacheln i:nth-child(11n+8) { --k:var(--flieder); animation-delay:-1.1s; }
+.kacheln i:nth-child(11n+9) { --k:var(--magenta); animation-delay:-.2s;  }
+.kacheln i:nth-child(11n+10){ --k:var(--cyan);    animation-delay:-2.5s; }
+
+/* ---------- Der Hund ----------
+   Freigestellt aus demselben Foto, das oben im Hero steht — er laeuft also
+   dieselbe Gangart, nur eben nicht mehr durchs Rechenzentrum. Unten laeuft
+   er weich aus: an den Laeufen ist die Freistellung ausgefranst, und auf
+   einer beleuchteten Flaeche steht ohnehin alles im Lichtnebel. Der Rand
+   links magenta, rechts cyan — so leuchtet ihn der Raum an. */
+.hund{
+    position:absolute;
+    left:50%;
+    bottom:6%;
+    z-index:5;
+    height:min(38svh,296px);
+    width:auto;
+    transform:translateX(-50%);
+    -webkit-mask-image:linear-gradient(to top, transparent 0, #000 20%);
+    mask-image:linear-gradient(to top, transparent 0, #000 20%);
+    /* Eng gehaltene Schlagschatten: so lesen sie als Randlicht von links
+       und rechts. Weit und weich ueberlagern sie sich hinter dem Hund zu
+       einem hellen Kasten — das sah aus wie ein Ausschnittfehler. */
+    filter:
+        saturate(1.22) contrast(1.08)
+        drop-shadow(-5px 0 3px rgba(255,46,139,.8))
+        drop-shadow(5px 0 3px rgba(34,228,255,.8))
+        drop-shadow(0 12px 18px rgba(0,0,0,.55));
+    animation:tappen 3.6s ease-in-out infinite;
+}
+/* Der Lichtnebel an den Pfoten. Er hat eine Aufgabe: der Hund laeuft unten
+   weich aus, weil die Freistellung an den Laeufen ausfranst — dieser Schein
+   macht daraus Licht statt eines Schnitts. Deshalb sitzt er genau auf
+   Pfotenhoehe und nicht am unteren Rand. */
+.hundlicht{
+    position:absolute;
+    left:50%;
+    bottom:4%;
+    z-index:4;
+    width:min(58vw,420px);
+    height:min(16vh,120px);
+    transform:translateX(-50%);
+    pointer-events:none;
+    border-radius:50%;
+    background:radial-gradient(ellipse at center,
+        rgba(255,255,255,.78) 0%, rgba(180,240,255,.55) 22%,
+        rgba(34,228,255,.34) 44%, rgba(255,46,139,.20) 66%, transparent 78%);
+    filter:blur(16px);
+    animation:atmen 3.6s ease-in-out infinite;
+}
+
+/* ---------- Was auf der Flaeche steht ---------- */
+.club-inhalt{
+    position:absolute;
+    left:50%;
+    top:clamp(88px,13%,150px);
+    z-index:6;
+    width:min(92vw,620px);
+    transform:translateX(-50%);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:clamp(14px,2.6vh,24px);
+    text-align:center;
+}
+
 .augenbraue{
     font-size:10px;
     font-weight:600;
-    letter-spacing:.22em;
+    letter-spacing:.34em;
     text-transform:uppercase;
-    color:var(--fern);
-    margin-bottom:14px;
-}
-.revier-kopf h2{
-    font-size:clamp(28px,5vw,52px);
-    font-weight:700;
-    letter-spacing:-.035em;
-    line-height:1.04;
-    margin-bottom:10px;
-}
-.revier-kopf p{
-    font-size:15px;
-    color:var(--leise);
-    max-width:46ch;
+    color:var(--gold);
+    text-shadow:0 0 16px rgba(255,194,74,.85);
 }
 
-/* Eine Tafel ist ein grosses Foto mit Text darauf.
-
-   Ab Tablet bekommt jede Tafel das Seitenverhaeltnis ihres eigenen Fotos —
-   dann ist das Bild vollstaendig zu sehen. Vorher lief hier eine feste
-   Hoehe ueber die volle Breite, und der Ausschnitt hat dem Doppelbock den
-   Kopf abgeschnitten: ein hohes Motiv ueberlebt keinen breiten Ausschnitt.
-
-   Auf dem Handy geht das nicht — die volle Breite waere dort nur 250 Pixel
-   hoch. Da bleibt es beim Ausschnitt, und der Fokuspunkt im Skript
-   entscheidet, welcher Teil des Bildes stehen bleibt. */
-.tafel{
-    height:62svh;
-    min-height:340px;
-    margin-bottom:clamp(18px,3vh,34px);
-}
-.tafel:last-of-type{ margin-bottom:0; }
-
-@media (min-width:769px){
-    .tafel{
-        width:min(100%, 1180px);
-        margin-left:auto;
-        margin-right:auto;
-        height:auto;
-        aspect-ratio:var(--seiten);
-        max-height:88svh;
-        border-radius:3px;
-    }
-}
-
-/* Verlauf, damit die Schrift auf jedem Foto lesbar bleibt — ohne ihn haengt
-   sie mal auf Himmel, mal auf Rasen. */
-.tafel::after{
-    content:"";
-    position:absolute;
-    left:0; right:0; bottom:0;
-    height:62%;
-    background:linear-gradient(to top, rgba(6,8,9,.88) 0%, rgba(6,8,9,.55) 38%, rgba(6,8,9,0) 100%);
-    pointer-events:none;
-    z-index:2;
-}
-
-.tafel-text{
-    position:absolute;
-    z-index:3;
-    left:clamp(18px,5vw,58px);
-    right:clamp(18px,5vw,58px);
-    bottom:clamp(46px,7vh,72px);
-    max-width:34ch;
-}
-.tafel-ort{
-    display:flex;
-    align-items:center;
-    gap:9px;
-    font-size:10.5px;
-    font-weight:600;
-    letter-spacing:.22em;
-    text-transform:uppercase;
-    color:var(--akzent);
-    margin-bottom:12px;
-}
-.tafel-ort::before{
-    content:"";
-    width:9px; height:9px;
-    background:var(--akzent);
-    flex:none;
-}
-.tafel-satz{
-    font-size:clamp(21px,3vw,34px);
-    font-weight:500;
-    letter-spacing:-.025em;
-    line-height:1.22;
-    text-wrap:balance;
-    text-shadow:0 2px 22px rgba(0,0,0,.6);
-}
-
-.tafel--zeche{   --akzent:var(--rost);   --seiten:1600 / 1066; }
-.tafel--bochum{  --akzent:var(--blau);   --seiten:1600 / 1066; }
-.tafel--dortmund{--akzent:var(--gelb);   --seiten:1600 / 958; }
-.tafel--halde{   --akzent:var(--halde);  --seiten:1600 / 1066; }
-
-/* Bildnachweis. Klein, aber vorhanden — bei CC-Lizenzen ist die Nennung
-   Bedingung, nicht Hoeflichkeit. */
-.nachweis{
-    position:absolute;
-    z-index:3;
-    right:clamp(14px,4vw,26px);
-    bottom:clamp(12px,2vh,20px);
-    font-size:10px;
-    letter-spacing:.05em;
-    color:rgba(255,255,255,.42);
-}
-.nachweis a{
-    color:rgba(255,255,255,.62);
-    text-decoration:none;
-    border-bottom:1px solid rgba(255,255,255,.2);
-}
-.nachweis a:hover{ color:#fff; border-bottom-color:rgba(255,255,255,.6); }
-.nachweis a:focus-visible{ outline:2px solid #fff; outline-offset:2px; }
-
-.bildhinweis{
-    max-width:1080px;
-    margin:0 auto;
-    padding:clamp(26px,4vh,44px) clamp(18px,5vw,30px) 0;
-    font-size:12px;
-    color:var(--fern);
-}
-
-/* ---------- Weiter auf der Seite ---------- */
-.weiter{
-    max-width:840px;
-    margin:0 auto;
-    padding:clamp(56px,11vh,110px) clamp(18px,5vw,28px) clamp(44px,9vh,84px);
-}
-
-.karte{
-    display:grid;
-    grid-template-columns:1fr auto;
-    align-items:center;
-    gap:18px;
-    padding:24px clamp(18px,4vw,28px);
-    background:var(--stahl);
-    border:1px solid var(--kante);
-    border-left:3px solid var(--luft);
-    border-radius:4px;
-    color:inherit;
-    text-decoration:none;
-    transition:background .18s, transform .18s;
-}
-.karte:hover{ background:var(--stahl-2); transform:translateY(-2px); }
-.karte:focus-visible{ outline:2px solid var(--luft); outline-offset:3px; }
-.karte-titel{
+/* Das Leuchtschild. Der einzige Weg, den diese Seite anbietet — also
+   bekommt er die Roehre und nicht eine Karte mit Pfeil. */
+.schild{
+    position:relative;
     display:block;
-    font-size:20px;
-    font-weight:600;
-    letter-spacing:-.02em;
-    margin-bottom:3px;
+    padding:clamp(16px,3vw,28px) clamp(24px,5.5vw,54px);
+    border:2px solid rgba(34,228,255,.55);
+    border-radius:7px;
+    background:rgba(12,5,30,.42);
+    backdrop-filter:blur(7px);
+    -webkit-backdrop-filter:blur(7px);
+    box-shadow:
+        0 0 22px rgba(34,228,255,.32),
+        inset 0 0 24px rgba(34,228,255,.16);
+    text-decoration:none;
+    color:inherit;
+    transition:border-color .25s, box-shadow .25s, transform .25s;
 }
-.karte-zeile{ display:block; font-size:13.5px; color:var(--leise); }
-.karte-pfeil{ font-size:20px; color:var(--luft); transition:transform .18s; }
-.karte:hover .karte-pfeil{ transform:translateX(4px); }
+.schild:hover{
+    border-color:rgba(34,228,255,.95);
+    box-shadow:0 0 38px rgba(34,228,255,.55), inset 0 0 28px rgba(34,228,255,.24);
+    transform:translateY(-2px);
+}
+.schild:focus-visible{ outline:2px solid var(--cyan); outline-offset:5px; }
+
+.schild-wort{
+    display:block;
+    font-family:var(--anzeige);
+    font-size:clamp(23px,5.8vw,54px);
+    line-height:1.06;
+    letter-spacing:.045em;
+    text-transform:uppercase;
+    color:#FFF4FA;
+    text-shadow:
+        0 0 5px #fff,
+        0 0 15px var(--magenta),
+        0 0 36px var(--magenta),
+        0 0 72px rgba(255,46,139,.66);
+    animation:anspringen 2.8s ease-out both;
+}
+.schild:hover .schild-wort{
+    text-shadow:0 0 6px #fff, 0 0 20px var(--magenta), 0 0 48px var(--magenta), 0 0 92px rgba(255,46,139,.8);
+}
+.schild-zeile{
+    display:block;
+    margin-top:12px;
+    font-size:13px;
+    letter-spacing:.06em;
+    color:var(--leise);
+}
+
+/* Bildroehren-Zeilen. Sehr schwach — man soll sie nicht sehen, man soll
+   merken, dass das Bild von 1986 kommt. Nur hier unten, nicht ueber dem
+   Foto: ein Raster auf einem Foto sieht nach Filter aus. */
+.club::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    z-index:7;
+    pointer-events:none;
+    background:repeating-linear-gradient(to bottom, rgba(0,0,0,.30) 0 1px, transparent 1px 4px);
+    opacity:.32;
+    mix-blend-mode:multiply;
+}
 
 /* ---------- Fußzeile ----------
    Impressum und Datenschutz stehen unten und nicht als Reiter im Menü. Mit
@@ -434,12 +557,14 @@ body{
    und der letzte Eintrag fällt aus dem Bild — ausgerechnet der, der leicht
    erreichbar sein muss. Unten sucht ihn ohnehin jeder zuerst. */
 .rechtsfuss{
+    position:relative;
     display:flex;
     justify-content:center;
     align-items:center;
     gap:2px;
-    padding:20px clamp(14px,4vw,30px) 30px;
-    border-top:1px solid var(--kante);
+    padding:22px clamp(14px,4vw,30px) 30px;
+    background:var(--nacht);
+    border-top:1px solid rgba(34,228,255,.22);
 }
 .rechtsfuss a{
     padding:7px 10px;
@@ -451,10 +576,10 @@ body{
     color:var(--leise);
     text-decoration:none;
     line-height:1.6;
-    transition:color .15s, background .15s;
+    transition:color .15s, text-shadow .2s;
 }
-.rechtsfuss a:hover{ color:var(--text); background:rgba(255,255,255,.06); }
-.rechtsfuss a:focus-visible{ outline:2px solid var(--text); outline-offset:2px; }
+.rechtsfuss a:hover{ color:#fff; text-shadow:0 0 12px rgba(34,228,255,.8); }
+.rechtsfuss a:focus-visible{ outline:2px solid var(--cyan); outline-offset:2px; }
 .rechtsfuss .punkt{ color:var(--fern); font-size:11px; }
 
 @media (max-width:768px){
@@ -473,18 +598,40 @@ body{
     white-space:nowrap;
 }
 
+/* ---------- Bewegung ---------- */
+@keyframes leuchten{ 0%,100%{ opacity:.12; } 50%{ opacity:.92; } }
+@keyframes drehen{   from{ transform:rotate(0deg); } to{ transform:rotate(360deg); } }
+@keyframes schwenken{ from{ transform:translateX(-50%) rotate(-7deg); } to{ transform:translateX(-50%) rotate(7deg); } }
+@keyframes tappen{ 0%,100%{ transform:translateX(-50%) translateY(0) rotate(0deg); } 50%{ transform:translateX(-50%) translateY(-9px) rotate(-1.1deg); } }
+@keyframes atmen{  0%,100%{ opacity:.75; transform:translateX(-50%) scale(1); } 50%{ opacity:1; transform:translateX(-50%) scale(1.06); } }
+@keyframes blinzeln{
+    from{ opacity:.55; }
+    to  { opacity:1; }
+}
 @keyframes tippen{
     0%,100%{ transform:translateY(0);   opacity:.65; }
     50%    { transform:translateY(5px); opacity:1; }
 }
+/* Die Röhre springt an wie eine echte: dreimal zucken, dann steht sie.
+   Bewusst über fast drei Sekunden gestreckt — schnelleres Flackern ist
+   nicht nur unruhig, es ist bei Anfälligkeit für Anfälle ein Risiko. */
+@keyframes anspringen{
+    0%  { opacity:.10; }
+    12% { opacity:1; }
+    20% { opacity:.16; }
+    38% { opacity:1; }
+    50% { opacity:.38; }
+    66% { opacity:1; }
+    100%{ opacity:1; }
+}
 
-/* Ohne Bewegung: die Kamerafahrt entfaellt, die Buehne schrumpft auf einen
-   Bildschirm, die Fotos stehen still. Das Skript startet dann gar nicht erst. */
+/* Wer Bewegung abgestellt hat, bekommt dasselbe Bild im Stand: die Röhre
+   brennt, das Gitter steht, die Sterne stehen. */
 @media (prefers-reduced-motion:reduce){
-    .hero-buehne{ height:auto; }
-    .hero{ position:relative; }
-    .hinweis svg{ animation:none; }
-    .karte{ transition:none; }
+    .kacheln i, .sterne, .kugel::after, .strahlen,
+    .hund, .hundlicht, .schild-wort, .hinweis svg{ animation:none !important; }
+    .kacheln i{ opacity:.5; }
+    .schild{ transition:none; }
 }
 
 </style>
@@ -504,119 +651,62 @@ body{
   </div>
 </nav>
 
-<div class="hero-buehne">
-  <header class="hero szene" data-szene="hero">
-    <picture>
-      <source media="(max-width:768px)" srcset="Welcome-mobile.jpg">
-      <img class="szene-bild" src="Welcome.jpg" width="1672" height="941"
-           fetchpriority="high" decoding="async"
-           alt="Ein Hund läuft durch den Gang eines Rechenzentrums, über ihm der Schriftzug scaRnet.">
-    </picture>
-    <canvas class="szene-glas" aria-hidden="true"></canvas>
-
-    <a class="hinweis" href="#weiter">
-      <span>Weiter</span>
-      <svg width="15" height="9" viewBox="0 0 15 9" fill="none" aria-hidden="true">
-        <path d="M1 1L7.5 7.5L14 1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-      </svg>
-    </a>
-  </header>
-</div>
-
-<!-- Das Einzige, was diese Seite tatsaechlich kann, steht jetzt direkt
-     unter dem Hero und nicht mehr hinter vier bildschirmfuellenden Fotos. -->
-<section class="weiter" id="weiter">
-  <p class="augenbraue">Auf dieser Seite</p>
-  <a class="karte" href="/rauchfrei.html" data-rauchfrei>
-    <span>
-      <span class="karte-titel">Rauchfrei</span>
-      <span class="karte-zeile">Der Zähler seit dem ersten Tag. Mit Anmeldung.</span>
-    </span>
-    <span class="karte-pfeil" aria-hidden="true">→</span>
+<header class="hero">
+  <a class="hinweis" href="#weiter">
+    <span>Weiter</span>
+    <svg width="15" height="9" viewBox="0 0 15 9" fill="none" aria-hidden="true">
+      <path d="M1 1L7.5 7.5L14 1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+    </svg>
   </a>
-</section>
+</header>
 
-<!-- ============================ DAS REVIER ============================
-     Vier Fotos, jedes mit Tiefe: der Shader verschiebt die Bildpunkte je
-     nachdem, wie nah sie sind — vorne mehr als hinten. Beim Scrollen und
-     beim Bewegen der Maus verschieben sich die Ebenen deshalb gegeneinander,
-     wie in einer echten Szene. Kein Modell, keine Bibliothek, kein zweites
-     Bild mit Tiefenkarte: die Tiefe steht als Formel im Shader.
-     =================================================================== -->
-<section class="revier" id="revier" aria-labelledby="revier-titel">
+<section class="club" id="weiter">
 
-  <div class="revier-kopf">
-    <p class="augenbraue">Das Revier</p>
-    <h2 id="revier-titel">Wo das hier herkommt</h2>
-    <p>Vier Orte zwischen Stahlkultur und grüner Fläche.</p>
+  <div class="sterne" aria-hidden="true"></div>
+  <div class="strahlen" aria-hidden="true"></div>
+  <div class="kugel" aria-hidden="true"></div>
+
+  <svg class="sonne" viewBox="0 0 200 200" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="sonnenlauf" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0"   stop-color="#FFE9A3"/>
+        <stop offset=".38" stop-color="#FF9AC8"/>
+        <stop offset="1"   stop-color="#FF2E8B"/>
+      </linearGradient>
+      <!-- Die Schnitte werden nach unten breiter. Genau das macht die Sonne. -->
+      <mask id="schnitte">
+        <rect width="200" height="200" fill="#fff"/>
+        <g fill="#000">
+          <rect y="112" width="200" height="4"/>
+          <rect y="126" width="200" height="6"/>
+          <rect y="143" width="200" height="8"/>
+          <rect y="162" width="200" height="11"/>
+          <rect y="184" width="200" height="16"/>
+        </g>
+      </mask>
+    </defs>
+    <circle cx="100" cy="100" r="88" fill="url(#sonnenlauf)" mask="url(#schnitte)"/>
+  </svg>
+
+  <div class="horizont" aria-hidden="true"></div>
+
+  <!-- Die Tanzflaeche. 432 Kacheln, jede pulst fuer sich. -->
+  <div class="flaeche" aria-hidden="true">
+    <div class="kacheln"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
   </div>
 
-  <figure class="szene tafel tafel--zeche" data-szene="zeche">
-    <img class="szene-bild" src="bilder/zeche.jpg"
-         srcset="bilder/zeche-klein.jpg 900w, bilder/zeche.jpg 1600w" sizes="100vw"
-         width="1600" height="1066" loading="lazy" decoding="async"
-         alt="Das rostrote Doppelbock-Fördergerüst über Schacht XII der Zeche Zollverein in Essen.">
-    <canvas class="szene-glas" aria-hidden="true"></canvas>
-    <figcaption class="tafel-text">
-      <p class="tafel-ort">Essen · Zeche Zollverein</p>
-      <p class="tafel-satz">Der Doppelbock steht noch. Gefördert wird nichts mehr, geblieben ist die Form.</p>
-    </figcaption>
-    <p class="nachweis">Foto:
-      <a href="https://commons.wikimedia.org/wiki/File:Essen_(DE),_Zeche_Zollverein,_Schacht_XII_--_2022_--_0001.jpg" rel="noopener">Anil Öztas</a> ·
-      <a href="https://creativecommons.org/licenses/by-sa/4.0" rel="license noopener">CC BY-SA 4.0</a>
-    </p>
-  </figure>
+  <div class="hundlicht" aria-hidden="true"></div>
+  <img class="hund" src="bilder/hund.png" width="152" height="330" decoding="async"
+       alt="Derselbe Hund wie im Bild oben, freigestellt und auf einer beleuchteten Tanzfläche.">
 
-  <figure class="szene tafel tafel--bochum" data-szene="bochum">
-    <img class="szene-bild" src="bilder/bochum.jpg"
-         srcset="bilder/bochum-klein.jpg 900w, bilder/bochum.jpg 1600w" sizes="100vw"
-         width="1600" height="1066" loading="lazy" decoding="async"
-         alt="Der Bochumer Westpark in der Dämmerung: warm beleuchtete Hallenfenster über einem Parkplatz, dahinter der Horizont.">
-    <canvas class="szene-glas" aria-hidden="true"></canvas>
-    <figcaption class="tafel-text">
-      <p class="tafel-ort">Bochum · Jahrhunderthalle</p>
-      <p class="tafel-satz">Wo Gebläseluft für die Hochöfen gemacht wurde, steht heute die Bühne.</p>
-    </figcaption>
-    <p class="nachweis">Foto:
-      <a href="https://commons.wikimedia.org/wiki/File:Bochum_-_Alleestra%C3%9Fe_-_Westpark_-_Jahrhunderthalle_30_ies.jpg" rel="noopener">Frank Vincentz</a> ·
-      <a href="https://creativecommons.org/licenses/by-sa/3.0" rel="license noopener">CC BY-SA 3.0</a>
-    </p>
-  </figure>
+  <div class="club-inhalt">
+    <p class="augenbraue">Auf dieser Seite</p>
+    <a class="schild" href="/rauchfrei.html" data-rauchfrei>
+      <span class="schild-wort">Rauchfrei</span>
+      <span class="schild-zeile">Der Zähler seit dem ersten Tag. Mit Anmeldung.</span>
+    </a>
+  </div>
 
-  <figure class="szene tafel tafel--dortmund" data-szene="dortmund">
-    <img class="szene-bild" src="bilder/stadion.jpg"
-         srcset="bilder/stadion-klein.jpg 900w, bilder/stadion.jpg 1600w" sizes="100vw"
-         width="1600" height="958" loading="lazy" decoding="async"
-         alt="Die volle Südtribüne des Dortmunder Westfalenstadions bei Flutlicht, Fahnen über den Rängen.">
-    <canvas class="szene-glas" aria-hidden="true"></canvas>
-    <figcaption class="tafel-text">
-      <p class="tafel-ort">Dortmund · Südtribüne</p>
-      <p class="tafel-satz">Achtzigtausend, eine gelbe Wand, ein Ton.</p>
-    </figcaption>
-    <p class="nachweis">Foto:
-      <a href="https://commons.wikimedia.org/wiki/File:GER_Dortmund_Stadion_002_2011_-_S%C3%BCdtrib%C3%BCne.jpg" rel="noopener">Der-wuppertaler</a> ·
-      <a href="https://creativecommons.org/licenses/by-sa/3.0" rel="license noopener">CC BY-SA 3.0</a>
-    </p>
-  </figure>
-
-  <figure class="szene tafel tafel--halde" data-szene="halde">
-    <img class="szene-bild" src="bilder/halde.jpg"
-         srcset="bilder/halde-klein.jpg 900w, bilder/halde.jpg 1600w" sizes="100vw"
-         width="1600" height="1066" loading="lazy" decoding="async"
-         alt="Die Stahlbögen des Horizontobservatoriums auf der Halde Hoheward über einer Wiese im Abendlicht.">
-    <canvas class="szene-glas" aria-hidden="true"></canvas>
-    <figcaption class="tafel-text">
-      <p class="tafel-ort">Herten · Halde Hoheward</p>
-      <p class="tafel-satz">Oben Gras, unten das Revier — und überall geht das Licht an.</p>
-    </figcaption>
-    <p class="nachweis">Foto:
-      <a href="https://commons.wikimedia.org/wiki/File:Halde_Hoheward_Horizontobservatorium_05.jpg" rel="noopener">Unukorno</a> ·
-      <a href="https://creativecommons.org/licenses/by/4.0" rel="license noopener">CC BY 4.0</a>
-    </p>
-  </figure>
-
-  <p class="bildhinweis">Alle vier Fotos stammen von Wikimedia Commons und sind
-     im Ausschnitt und in der Farbe angepasst.</p>
 </section>
 
 <!-- Pflichtangaben. Bewusst hier und nicht im Menü — siehe Kommentar im CSS. -->
@@ -627,8 +717,7 @@ body{
 </footer>
 
 <script>
-/* ---------------------------------------------------------------------
-   1. Die Unterseite wird immer frisch geholt, nie aus dem Zwischenspeicher.
+/* Die Unterseite wird immer frisch geholt, nie aus dem Zwischenspeicher.
 
    GitHub Pages liefert jede Datei mit zehn Minuten Haltbarkeit aus. Beim
    Klick auf den Reiter bekam ein Handy dadurch eine alte Fassung des HTML,
@@ -639,317 +728,13 @@ body{
    nichts. Die grossen Dateien, CSS und JS, behalten ihre lange Haltbarkeit
    ueber die Fassungsnummer in ihrer Adresse. Ohne JavaScript bleibt der
    Verweis im href stehen und funktioniert weiterhin.
-   --------------------------------------------------------------------- */
+
+   Es gibt zwei Wege dorthin — den Reiter und das Leuchtschild. Deshalb
+   ueber ein Merkmal statt ueber eine Kennung. Mehr Skript hat diese Seite
+   nicht: der Club ist gerechnetes CSS, kein Programm. */
 (function(){
   var stempel = Date.now(), wege = document.querySelectorAll("a[data-rauchfrei]");
   for(var i=0;i<wege.length;i++){ wege[i].href = "/rauchfrei.html?f=" + stempel; }
-})();
-
-/* ---------------------------------------------------------------------
-   2. Tiefe in den Fotos.
-
-   Jedes Foto ist flach. Raeumlich wird es dadurch, dass der Shader fuer
-   jeden Bildpunkt ausrechnet, wie nah er ist, und ihn dann unterschiedlich
-   stark verschiebt: Vordergrund viel, Hintergrund kaum. Genau das macht das
-   Auge beim Bewegen des Kopfes, und genau daran erkennt es Raum.
-
-   Die Naehe steht als Formel im Shader, nicht als zweites Bild:
-
-   - waagerecht liegende Fotos werden nach unten hin naeher (tiefeY),
-   - Bilder mit Fluchtpunkt werden zum Rand hin naeher (tiefeR).
-
-   Das kostet null zusaetzliche Bytes und passt fuer diese vier Motive. Fuer
-   ein Foto ohne klare Ordnung — Nahaufnahmen, Menschenmengen von vorn —
-   braeuchte man eine echte Tiefenkarte als zweites Bild.
-
-   Ohne WebGL und bei "Bewegung reduzieren" laeuft hier gar nichts: dann
-   bleibt das <img> stehen, und die Seite ist eine gewoehnliche Bildseite.
-   --------------------------------------------------------------------- */
-(function(){
-
-  if(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
-  /* ---- die Regler je Motiv ----
-     flucht  Fluchtpunkt in Bildkoordinaten (0,0 ist unten links)
-     tiefeY  wie stark die Naehe nach unten zunimmt
-     tiefeR  wie stark die Naehe zum Rand hin zunimmt (Fluchtpunkt-Motive)
-     fokus   welcher Teil des Bildes im Ausschnitt bleibt
-     fahrt   wie weit die Kamera insgesamt hineinfaehrt
-     schub   wie weit sich die Ebenen beim Scrollen gegeneinander schieben
-     grade   dunkel, kontrast, waerme, vignette                            */
-  var REGLER = {
-    hero:     { flucht:[.50,.58], tiefeY:.10, tiefeR:1.00, fokus:[.50,.50], fahrt:.21, schub:.010, grade:[1.00,1.05,.02,.20] },
-    zeche:    { flucht:[.50,.62], tiefeY:.85, tiefeR:.15,  fokus:[.50,.54], fahrt:.14, schub:.048, grade:[ .74,1.16,.06,.36] },
-    bochum:   { flucht:[.46,.60], tiefeY:.95, tiefeR:.06,  fokus:[.50,.46], fahrt:.14, schub:.055, grade:[1.02,1.05,.03,.28] },
-    dortmund: { flucht:[.45,.66], tiefeY:.80, tiefeR:.25,  fokus:[.50,.46], fahrt:.15, schub:.052, grade:[ .96,1.10,.02,.32] },
-    halde:    { flucht:[.50,.55], tiefeY:.92, tiefeR:.08,  fokus:[.50,.41], fahrt:.13, schub:.050, grade:[ .88,1.08,.04,.34] }
-  };
-
-  var ECKPUNKTE = "attribute vec2 platz; varying vec2 vUv;" +
-    "void main(){ vUv = platz * 0.5 + 0.5; gl_Position = vec4(platz, 0.0, 1.0); }";
-
-  var PUNKTE = [
-    "precision highp float;",
-    "varying vec2 vUv;",
-    "uniform sampler2D bild;",
-    "uniform vec2  zuschnitt;",   /* wie viel vom Bild der Ausschnitt zeigt */
-    "uniform vec2  fokus;",
-    "uniform vec2  flucht;",
-    "uniform vec2  versatz;",     /* Scrollen und Maus */
-    "uniform float tiefeY;",
-    "uniform float tiefeR;",
-    "uniform float fahrt;",
-    "uniform vec4  grade;",
-    "uniform vec4  hund;",        /* Mitte und Halbachsen der Hundezone */
-    "uniform float hundNaehe;",   /* wie viel naeher der Hund ist als sein Umfeld */
-    "uniform float wisch;",       /* radiales Verwischen, aus der Scrollgeschwindigkeit */
-    "void main(){",
-    "  vec2 uv = fokus + (vUv - 0.5) * zuschnitt;",
-    "  vec2 p  = uv - flucht;",
-    /* Naehe: unten naeher, am Rand naeher — je nach Motiv gewichtet */
-    "  float rand = clamp(length(p * vec2(0.62, 1.0)) / 0.52, 0.0, 1.0);",
-    "  float nah  = clamp(tiefeY * (1.0 - uv.y) + tiefeR * rand, 0.0, 1.0);",
-    "  nah = nah * nah * (3.0 - 2.0 * nah);",
-    /* Der Hund ist eine eigene Ebene. Ohne diese Glocke ist er fuer den
-       Shader nur Bildmitte und damit weit weg — mit ihr ist er das
-       naechste im Bild und waechst schneller als der Gang. Weich
-       auslaufend, damit keine Kante entsteht: eine harte Maske wuerde
-       einen Blasenrand um ihn herum sichtbar machen. */
-    "  vec2  dh   = (uv - hund.xy) / max(hund.zw, vec2(0.001));",
-    "  float weit = dot(dh, dh);",
-    "  float ganz = exp(-weit * 1.7) * hundNaehe;",
-    "  nah = clamp(nah + ganz, 0.0, 1.0);",
-    /* Zweite, breitere und flachere Glocke — nur fuer die Schaerfe. Mit
-       derselben wie oben blieb nur die Nasenspitze scharf und der Rest
-       des Hundes verwischte mit dem Gang. */
-    "  float schutz = clamp(exp(-weit * 0.85) * 1.9, 0.0, 1.0);",
-    /* Kamerafahrt: was nah ist, waechst schneller aus dem Bild heraus */
-    "  vec2 q = flucht + p * (1.0 - fahrt * nah) + versatz * nah;",
-    /* Radiales Verwischen: die Schraenke streifen vorbei, der Hund bleibt
-       scharf. Die Staerke kommt aus der Scrollgeschwindigkeit, also steht
-       das Bild still, sobald man aufhoert zu scrollen. */
-    "  float streif = wisch * rand * (1.0 - schutz);",
-    "  vec3 farbe;",
-    "  if(streif > 0.0015){",
-    "    vec3 summe = vec3(0.0);",
-    "    for(int i = 0; i < 6; i++){",
-    "      float t = float(i) / 5.0 - 0.5;",
-    "      vec2 qq = flucht + (q - flucht) * (1.0 + t * streif);",
-    "      summe += texture2D(bild, clamp(qq, 0.0015, 0.9985)).rgb;",
-    "    }",
-    "    farbe = summe / 6.0;",
-    "  }else{",
-    "    farbe = texture2D(bild, clamp(q, 0.0015, 0.9985)).rgb;",
-    "  }",
-    "  farbe = (farbe - 0.5) * grade.y + 0.5;",
-    "  farbe *= grade.x;",
-    "  farbe *= vec3(1.0 + grade.z, 1.0, 1.0 - grade.z * 0.8);",
-    "  farbe *= 1.0 - grade.w * smoothstep(0.34, 0.96, distance(vUv, vec2(0.5)));",
-    "  gl_FragColor = vec4(max(farbe, 0.0), 1.0);",
-    "}"
-  ].join("\n");
-
-  function uebersetzen(gl, art, quelle){
-    var s = gl.createShader(art);
-    gl.shaderSource(s, quelle); gl.compileShader(s);
-    if(!gl.getShaderParameter(s, gl.COMPILE_STATUS)) return null;
-    return s;
-  }
-
-  function Szene(wurzel){
-    this.wurzel   = wurzel;
-    this.regler   = REGLER[wurzel.dataset.szene];
-    this.bild     = wurzel.querySelector(".szene-bild");
-    this.leinwand = wurzel.querySelector(".szene-glas");
-    this.imBild   = false;
-    this.bereit   = false;
-    this.istHero  = wurzel.dataset.szene === "hero";
-    this.hinweis  = wurzel.querySelector(".hinweis");
-  }
-
-  Szene.prototype.starten = function(){
-    if(this.bereit || this.gescheitert) return;
-    var gl = this.leinwand.getContext("webgl", {
-      alpha:false, antialias:false, depth:false, stencil:false,
-      powerPreference:"low-power", preserveDrawingBuffer:false
-    }) || this.leinwand.getContext("experimental-webgl");
-    if(!gl){ this.gescheitert = true; return; }
-
-    var v = uebersetzen(gl, gl.VERTEX_SHADER, ECKPUNKTE),
-        f = uebersetzen(gl, gl.FRAGMENT_SHADER, PUNKTE);
-    if(!v || !f){ this.gescheitert = true; return; }
-
-    var pr = gl.createProgram();
-    gl.attachShader(pr, v); gl.attachShader(pr, f); gl.linkProgram(pr);
-    if(!gl.getProgramParameter(pr, gl.LINK_STATUS)){ this.gescheitert = true; return; }
-    gl.useProgram(pr);
-
-    /* Ein Dreieck, das ueber den ganzen Bildschirm hinausragt — billiger als
-       zwei Dreiecke fuer ein Rechteck und ohne Naht in der Mitte. */
-    var puffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, puffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 3,-1, -1,3]), gl.STATIC_DRAW);
-    var platz = gl.getAttribLocation(pr, "platz");
-    gl.enableVertexAttribArray(platz);
-    gl.vertexAttribPointer(platz, 2, gl.FLOAT, false, 0, 0);
-
-    var tex = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, tex);
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, this.bild);
-
-    this.gl = gl;
-    this.ort = {
-      zuschnitt: gl.getUniformLocation(pr,"zuschnitt"),
-      fokus:     gl.getUniformLocation(pr,"fokus"),
-      flucht:    gl.getUniformLocation(pr,"flucht"),
-      versatz:   gl.getUniformLocation(pr,"versatz"),
-      tiefeY:    gl.getUniformLocation(pr,"tiefeY"),
-      tiefeR:    gl.getUniformLocation(pr,"tiefeR"),
-      fahrt:     gl.getUniformLocation(pr,"fahrt"),
-      grade:     gl.getUniformLocation(pr,"grade"),
-      hund:      gl.getUniformLocation(pr,"hund"),
-      hundNaehe: gl.getUniformLocation(pr,"hundNaehe"),
-      wisch:     gl.getUniformLocation(pr,"wisch")
-    };
-    var g = this.regler.grade;
-    gl.uniform1f(this.ort.tiefeY, this.regler.tiefeY);
-    gl.uniform1f(this.ort.tiefeR, this.regler.tiefeR);
-    gl.uniform4f(this.ort.grade, g[0], g[1], g[2], g[3]);
-    gl.uniform2f(this.ort.flucht, this.regler.flucht[0], this.regler.flucht[1]);
-
-    /* Wo der Hund steht, haengt davon ab, welches der beiden Hero-Bilder
-       geladen wurde — quer und hoch zeigen ihn an verschiedenen Stellen.
-       Auf allen anderen Szenen ist die Zone aus, dort gibt es keinen Hund. */
-    var h = [0, 0, 1, 1], staerke = 0;
-    if(this.istHero){
-      var hoch = /mobile/.test(this.bild.currentSrc || this.bild.src);
-      h = hoch ? [.49, .33, .15, .18] : [.47, .25, .10, .22];
-      staerke = .55;
-    }
-    gl.uniform4f(this.ort.hund, h[0], h[1], h[2], h[3]);
-    gl.uniform1f(this.ort.hundNaehe, staerke);
-    gl.uniform1f(this.ort.wisch, 0);
-
-    this.bereit = true;
-    this.messen();
-    this.wurzel.classList.add("laeuft");
-  };
-
-  Szene.prototype.messen = function(){
-    if(!this.bereit) return;
-    var dpr = Math.min(window.devicePixelRatio || 1, 1.8),
-        b = this.wurzel.clientWidth, h = this.wurzel.clientHeight;
-    this.leinwand.width  = Math.round(b * dpr);
-    this.leinwand.height = Math.round(h * dpr);
-    this.gl.viewport(0, 0, this.leinwand.width, this.leinwand.height);
-
-    /* Ausschnitt wie background-size:cover — nur eben in Bildkoordinaten,
-       damit der Shader weiss, welchen Teil des Bildes er ueberhaupt zeigt. */
-    var bs = (this.bild.naturalWidth || 16) / (this.bild.naturalHeight || 9),
-        fs = b / h, zx = 1, zy = 1;
-    if(fs > bs){ zy = bs / fs; } else { zx = fs / bs; }
-    var fx = Math.min(Math.max(this.regler.fokus[0], zx/2), 1 - zx/2),
-        fy = Math.min(Math.max(this.regler.fokus[1], zy/2), 1 - zy/2);
-    this.gl.uniform2f(this.ort.zuschnitt, zx, zy);
-    this.gl.uniform2f(this.ort.fokus, fx, fy);
-  };
-
-  Szene.prototype.zeichnen = function(zeit, maus){
-    if(!this.bereit) return;
-    var kasten = this.wurzel.getBoundingClientRect(),
-        fh = window.innerHeight || 1,
-        r = this.regler, fahrt, vx, vy;
-
-    if(this.istHero){
-      /* Die Buehne ueber dem Hero ist die Strecke der Kamerafahrt. */
-      var buehne = this.wurzel.parentNode,
-          bk = buehne.getBoundingClientRect(),
-          strecke = bk.height - kasten.height,
-          p = strecke > 0 ? Math.min(1, Math.max(0, -bk.top / strecke)) : 0;
-      fahrt = .045 + p * r.fahrt + Math.sin(zeit * .00021) * .012;
-      vx = maus.x * r.schub;
-      vy = maus.y * r.schub;
-      if(this.hinweis) this.hinweis.style.opacity = Math.max(0, 1 - p * 2.6);
-
-      /* Verwischen nach Tempo, nicht nach Strecke: wer scrollt, sieht die
-         Schraenke streifen; wer stehenbleibt, sieht ein scharfes Bild.
-         Nachlaufend geglaettet, sonst flackert es bei jedem Rad-Klick. */
-      var tempo = Math.abs(p - (this.letztesP === undefined ? p : this.letztesP));
-      this.letztesP = p;
-      this.wisch = (this.wisch || 0) + (Math.min(tempo * 24, .20) - (this.wisch || 0)) * .18;
-      this.gl.uniform1f(this.ort.wisch, this.wisch < .004 ? 0 : this.wisch);
-    }else{
-      /* Wie weit die Tafel durch das Bild gewandert ist: -1 unten, 0 mittig. */
-      var q = ((kasten.top + kasten.height / 2) - fh / 2) / fh;
-      q = Math.min(1, Math.max(-1, q));
-      fahrt = r.fahrt * (1 - Math.abs(q) * .7);
-      vx = maus.x * r.schub * .45;
-      vy = -q * r.schub + maus.y * r.schub * .45;
-    }
-
-    var gl = this.gl;
-    gl.uniform1f(this.ort.fahrt, fahrt);
-    gl.uniform2f(this.ort.versatz, vx, vy);
-    gl.drawArrays(gl.TRIANGLES, 0, 3);
-  };
-
-  /* ---- Aufbau ---- */
-  var szenen = [];
-  var knoten = document.querySelectorAll(".szene[data-szene]");
-  for(var i=0;i<knoten.length;i++){
-    if(REGLER[knoten[i].dataset.szene]) szenen.push(new Szene(knoten[i]));
-  }
-  if(!szenen.length) return;
-
-  /* Erst starten, wenn das Bild wirklich da ist — vorher gaebe die Textur
-     ein schwarzes Rechteck. */
-  szenen.forEach(function(s){
-    function los(){ if(s.imBild) s.starten(); }
-    if(s.bild.complete && s.bild.naturalWidth){ s.fertig = true; los(); }
-    else s.bild.addEventListener("load", function(){ s.fertig = true; los(); }, {once:true});
-    s.losWennFertig = function(){ if(this.fertig) this.starten(); };
-  });
-
-  if("IntersectionObserver" in window){
-    var wache = new IntersectionObserver(function(eintraege){
-      eintraege.forEach(function(e){
-        var s = szenen[+e.target.dataset.nr];
-        s.imBild = e.isIntersecting;
-        if(s.imBild) s.losWennFertig();
-      });
-    }, {rootMargin:"200px"});
-    szenen.forEach(function(s,n){ s.wurzel.dataset.nr = n; wache.observe(s.wurzel); });
-  }else{
-    szenen.forEach(function(s){ s.imBild = true; s.losWennFertig(); });
-  }
-
-  /* ---- Maus: ein sanft nachlaufender Blick ---- */
-  var zielX = 0, zielY = 0, mausX = 0, mausY = 0;
-  addEventListener("pointermove", function(e){
-    if(e.pointerType === "touch") return;
-    zielX = (e.clientX / (window.innerWidth  || 1) - .5) * 2;
-    zielY = (e.clientY / (window.innerHeight || 1) - .5) * 2;
-  }, {passive:true});
-
-  addEventListener("resize", function(){
-    szenen.forEach(function(s){ s.messen(); });
-  });
-
-  var maus = {x:0, y:0};
-  (function schleife(zeit){
-    requestAnimationFrame(schleife);
-    mausX += (zielX - mausX) * .06;
-    mausY += (zielY - mausY) * .06;
-    maus.x = mausX; maus.y = -mausY;
-    for(var i=0;i<szenen.length;i++){
-      if(szenen[i].imBild) szenen[i].zeichnen(zeit || 0, maus);
-    }
-  })(0);
 })();
 </script>
 

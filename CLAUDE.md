@@ -77,79 +77,46 @@ org.webmproject.webp`, geprüft am 20.08.2026) — deshalb bleibt es bei JPEG.
   braucht die Menüleiste 417 px bei 288 px Platz auf einem 375-px-Display, und
   „Datenschutz" fällt aus dem Bild. Nicht zurückbauen.
 
-## 5. Die Startseite: fremde Fotos, eigene Tiefe
+## 5. Die Startseite: statischer Hero, Club darunter
 
-Seit dem 20.08.2026 ist die Startseite eine Bildseite. Vier Fotos aus dem
-Revier und das Hero-Bild bekommen im Browser **Tiefe**: ein WebGL-Shader
-verschiebt jeden Bildpunkt danach, wie nah er ist — vorne viel, hinten
-wenig. Beim Scrollen und bei Mausbewegung schieben sich die Ebenen deshalb
-gegeneinander. Keine Bibliothek, rund 130 Zeilen im `<script>`.
+Seit dem 20.08.2026 ist die Startseite eine 80er-Disco. Was daran Entscheidung
+ist und nicht Zufall:
 
-**Die Fotos sind fremdes Eigentum. Das ist der teure Teil.**
+- **Der Hero ist statisch und bleibt es.** Hintergrundbild per CSS, kein
+  `<img>`, keine Leinwand, kein Skript. Es gab zwischendurch eine Kamerafahrt
+  per WebGL; der Nutzer wollte das Bild ausdrücklich wieder still haben.
+  **Nicht erneut animieren.**
+- **Das Serverraum-Foto bleibt.** Zweimal ausdrücklich bestätigt.
+- **Der Hund läuft unten durch den Club.** `bilder/hund.png` ist aus genau
+  diesem Foto freigestellt — es ist derselbe Hund, dieselbe Gangart, nur nicht
+  mehr im Rechenzentrum. Neu erzeugen mit `werkzeug/hund-freistellen.mjs`
+  (Weg und Fallen stehen im README).
+- **Es gibt keine Fremdfotos mehr.** Die vier Revier-Bilder von Wikimedia
+  Commons sind raus, samt Lizenznachweisen — der Nutzer mochte sie nicht. Wer
+  wieder fremde Bilder einbaut, holt sich die Nennungspflichten zurück; der
+  Stand mit den Fotos liegt als Marke `startseite-v2-revier`.
+- **Michroma ist dazugekommen** und steht namentlich in `datenschutz.html`.
+  Wer Schriften ändert, ändert diesen Absatz mit (siehe Punkt 1).
 
-- Alle vier stammen von Wikimedia Commons unter **CC BY-SA 3.0/4.0 bzw.
-  CC BY 4.0**. Die Nennung von Urheber und Lizenz unter jedem Bild ist
-  **Lizenzbedingung, keine Höflichkeit** — wer sie entfernt, verliert das
-  Nutzungsrecht rückwirkend und ist Abmahnungen ausgesetzt.
-- Beide Verweise pro Bild müssen stehen bleiben: der Name zeigt auf die
-  Commons-Seite, die Lizenz auf den Lizenztext. Das sind `<a href>`, keine
-  Einbindung — es wird nichts von dort geladen, Punkt 1 bleibt gewahrt.
-- Die Bilder sind zugeschnitten und farblich angepasst. Der Satz darüber
-  unter den Tafeln ist Teil der Pflicht („indicate changes"), er ist keine
-  Fußnote zum Kürzen. Bei den BY-SA-Bildern gilt zusätzlich Share-Alike:
-  die bearbeitete Fassung steht unter derselben Lizenz.
-- **Neue Bilder nur mit freier Lizenz.** Fotos vom Stadion oder von Zechen
-  aus einer Bildersuche sind geschützt; selbst gehostet auf scarnet.de wäre
-  das genau das Risiko, das die Seite sonst überall vermeidet.
+**Was in dieser Fläche leicht kaputtgeht:**
 
-**Drei Dinge in der Technik, die man dem Quelltext nicht ansieht:**
+- Die Tanzfläche ist eine echte perspektivische Ebene. Ihre Kacheln brauchen
+  `aspect-ratio:1` — mit fester Zeilenhöhe werden daraus Farbfelder. Und die
+  Perspektive darf nicht zu stark sein (340px, nicht 165px), sonst bläst sie
+  die vorderen Kacheln auf Bildschirmgröße auf. Beides ist genau so passiert.
+- Die farbigen Schlagschatten am Hund müssen **eng** bleiben. Weit und weich
+  überlagern sich Magenta und Cyan hinter ihm zu einem hellen Kasten, der wie
+  ein Freistellungsfehler aussieht.
+- Der Lichtnebel sitzt auf **Pfotenhöhe**, nicht am unteren Rand: er trägt den
+  weichen Auslauf des Hundes. Verschiebt man ihn, sieht der Hund abgeschnitten
+  aus.
+- Das Röhren-Flackern des Leuchtschilds ist bewusst über 2,8 Sekunden
+  gestreckt. Schnelleres Flackern ist nicht nur unruhig, es ist bei
+  Anfälligkeit für Anfälle ein Risiko. **Nicht beschleunigen.**
 
-- **Das `<img>` ist Rückfallebene und Texturquelle zugleich.** Ohne
-  JavaScript oder WebGL bleibt es sichtbar und die Seite ist eine
-  gewöhnliche Bildseite; läuft WebGL, dient genau dieses Element als Textur
-  und blendet sich weg. Wer daraus ein CSS-`background-image` macht, lädt
-  jedes Foto zweimal.
-- **Die Tiefe ist eine Formel, keine Tiefenkarte.** Waagerechte Fotos
-  werden nach unten hin näher (`tiefeY`), Motive mit Fluchtpunkt zum Rand
-  hin (`tiefeR`). Das kostet null zusätzliche Bytes und trägt genau diese
-  fünf Motive. Ein Foto ohne klare Ordnung — Nahaufnahme, Menschenmenge von
-  vorn — bräuchte ein zweites Bild als echte Tiefenkarte.
-- **Jedes Motiv hat eigene Regler** in `REGLER` (Fluchtpunkt, Fokus, Fahrt,
-  Schub, Farbanpassung). Sie sind nach Augenmaß gesetzt. Wird ein Foto
-  ausgetauscht, müssen sie neu gesetzt werden, sonst kippt die Fahrt in die
-  falsche Richtung.
-- **Der Hund im Hero hat eine eigene Zone**, sonst wäre er für den Shader
-  nur Bildmitte und damit weit weg. Zwei Glocken über derselben Stelle, und
-  sie machen verschiedene Dinge — nicht zu einer zusammenfassen:
-
-  | Glocke | Wofür | Warum so |
-  |---|---|---|
-  | `ganz`, eng (`exp(-weit*1.7)`) | Nähe: er wächst schneller als der Gang | eng, sonst wölbt sich der halbe Gang mit |
-  | `schutz`, breit und flach (`exp(-weit*0.85)*1.9`) | Schärfe: er bleibt scharf, während die Schränke streifen | mit der engen blieb nur die Nasenspitze scharf |
-
-  Die Koordinaten der Zone hängen davon ab, **welches der beiden Hero-Bilder
-  geladen wurde** — quer und hoch zeigen den Hund an verschiedenen Stellen.
-  Das Skript liest dafür `currentSrc`. Wer ein Hero-Bild austauscht, muss
-  beide Wertepaare neu messen.
-- **Das radiale Verwischen kommt aus der Scroll­geschwindigkeit, nicht aus
-  der Strecke.** Wer stehenbleibt, sieht ein scharfes Bild; wer scrollt,
-  sieht die Schränke streifen. Nach Strecke gerechnet bliebe das Bild dauerhaft
-  unscharf stehen, sobald man einmal unten war.
-
-Ab Tablet bekommt jede Tafel das **Seitenverhältnis ihres eigenen Fotos**,
-damit nichts abgeschnitten wird — ein hohes Motiv wie der Doppelbock
-überlebt keinen breiten Ausschnitt. Auf dem Handy geht das nicht, dort
-entscheidet der Fokuspunkt.
-
-**Der Stand davor liegt als Marke `startseite-v1`** — die alte Startseite, ein
-Bildschirm Foto und sonst nichts. Zurückholen:
-
-```bash
-git checkout main && git checkout startseite-v1 -- index.html
-```
-
-Danach müssen `bilder/` und die Abschnitte in README und hier von Hand mit
-raus, sonst stehen Lizenzhinweise für Fotos da, die niemand mehr sieht.
+Bei „Bewegung reduzieren" steht alles still — Kacheln, Kugel, Strahlen, Hund,
+Röhre — und die Kacheln bekommen eine feste Deckkraft, damit die Fläche nicht
+verschwindet.
 
 ## 6. Der Rauchfrei-Bereich ist absichtlich zurückhaltend
 

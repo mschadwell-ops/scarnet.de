@@ -14,7 +14,7 @@ vom Branch `main`. Kein Build, kein Generator — was hier liegt, ist die Seite.
 | `datenschutz.html` | Datenschutzerklärung |
 | `Welcome.jpg` | Hero-Bild quer (1672 × 941), ab Viewport ≥ 769 px |
 | `Welcome-mobile.jpg` | Hero-Bild hoch (941 × 1672), bis Viewport ≤ 768 px |
-| `bilder/` | vier Fotos aus dem Revier, je groß (1600 px) und klein (900 px) |
+| `bilder/hund.png` | der Hund, freigestellt aus `Welcome.jpg` |
 | `CNAME` | bindet die Domain `scarnet.de` an GitHub Pages |
 | `robots.txt` | hält den persönlichen Bereich aus Suchmaschinen |
 
@@ -25,73 +25,56 @@ raus, was datenschutzrechtlich relevant wäre.
 
 ## Die Startseite
 
-Ein Hero über anderthalb Bildschirme, darunter die Karte zum
-Rauchfrei-Bereich, darunter vier Fotos und die Rechtsfußzeile.
+Zwei Bildschirme. Oben das Foto, unten der Club.
 
-Die Reihenfolge ist eine Entscheidung: **das Einzige, was die Seite
-tatsächlich kann, steht direkt unter dem Hero** und nicht hinter vier
-bildschirmfüllenden Fotos. Und die Kamerafahrt ist bewusst kurz — beim ersten
-Besuch ist sie ein Erlebnis, beim fünften eine Mautstelle.
+**Der Hero ist ein Bild und sonst nichts** — Hintergrundbild per CSS, kein
+`<img>`, keine Leinwand, kein Skript. Das war zwischenzeitlich anders (eine
+Kamerafahrt per WebGL) und ist bewusst zurückgebaut: das Foto steht still.
 
-### Tiefe in flachen Fotos
+**Darunter der Club.** Ein Horizont mit geschnittener Sonne, eine Discokugel,
+Lichtkegel, eine beleuchtete Tanzfläche in echter Perspektive — und der Hund
+aus dem Hero-Foto, freigestellt, mitten drauf. Der einzige Weg, den die Seite
+anbietet, steht als Leuchtschild darüber: Rauchfrei.
 
-Jedes Foto liegt hinter einer WebGL-Leinwand. Ein Shader rechnet für jeden
-Bildpunkt aus, wie nah er ist, und verschiebt ihn entsprechend: Vordergrund
-viel, Hintergrund kaum. Genau daran erkennt das Auge Raum. Beim Hero liegt der
-Fluchtpunkt im Gang — dort wird aus der Verschiebung eine Kamerafahrt, und man
-scrollt den Serverraum hinunter.
+Alles davon ist gerechnet — Kugel, Strahlen, Sonne und 432 Kacheln sind CSS
+und ein kleines SVG. Das einzige zusätzliche Bild ist der freigestellte Hund
+(107 KB). Skript hat die Seite genau eines, und das hängt nur den
+Frisch-Parameter an die Rauchfrei-Verweise.
 
-Die Tiefe steht als **Formel** im Shader, nicht als zweites Bild:
+### Der freigestellte Hund
 
-| Regler | Wofür |
-|---|---|
-| `tiefeY` | waagerechte Fotos werden nach unten hin näher |
-| `tiefeR` | Motive mit Fluchtpunkt werden zum Rand hin näher |
-| `flucht` | wo der Fluchtpunkt liegt |
-| `fokus` | welcher Teil im Ausschnitt bleibt, wenn beschnitten wird |
-| `fahrt` | wie weit die Kamera hineinfährt |
-| `schub` | wie weit sich die Ebenen beim Scrollen gegeneinander schieben |
-| `grade` | dunkel, Kontrast, Wärme, Vignette — bindet vier fremde Fotos zu einer Serie |
-| `hund` | eigene Tiefenzone im Hero: der Hund wächst schneller als der Gang und bleibt beim Verwischen scharf |
+`bilder/hund.png` ist aus `Welcome.jpg` geschnitten, mit
+`werkzeug/hund-freistellen.mjs` (Node, `jpeg-js` + `pngjs`). Der Trick ist die
+Farbtemperatur: der Hund ist warm, der Serverraum ist kalt. Das Skript nimmt
+alles Warme und Helle im Ausschnitt, schließt Löcher, behält die größte
+zusammenhängende Fläche, wirft kalte dunkle Reste raus (Gitterrost zwischen
+den Läufen) und macht die Kante weich.
 
-Beim Hero kommt dazu ein **radiales Verwischen**, dessen Stärke aus der
-Scrollgeschwindigkeit kommt: die Serverschränke streifen vorbei, während der
-Hund scharf bleibt — er hat dafür eine eigene, breitere Schutzzone. Hört man
-auf zu scrollen, steht das Bild wieder still.
+```bash
+node werkzeug/hund-freistellen.mjs warm=6 hell=20 weich=2 out=bilder/hund.png
+```
 
-Das kostet **keine Bibliothek und keine zusätzliche Datei**: rund 150 Zeilen
-im `<script>`, 12 KB über die Leitung für das ganze HTML. Three.js wäre für
-einen bildschirmfüllenden Shader Ballast.
+An den Läufen franst es trotzdem aus — deshalb läuft der Hund auf der Seite
+unten weich aus und steht in einem Lichtnebel. Das ist keine Notlösung,
+sondern der Grund, warum der Lichtnebel genau auf Pfotenhöhe sitzt.
 
-Das `<img>` im Markup ist dabei **Rückfallebene und Texturquelle zugleich**:
-ohne JavaScript oder WebGL bleibt es stehen, mit WebGL wird genau dieses
-Element zur Textur und blendet sich weg. Deshalb lädt kein Foto zweimal. Bei
-„Bewegung reduzieren" startet das Skript gar nicht erst.
+### Drei Fallen in der Tanzfläche
 
-### Die Fotos und ihre Lizenzen
-
-Alle vier stammen von Wikimedia Commons. **Die Nennung unter jedem Bild ist
-Lizenzbedingung** — nicht entfernen, nicht ins Impressum verschieben.
-
-| Motiv | Urheber | Lizenz |
+| Falle | Was passiert | Richtig |
 |---|---|---|
-| Zeche Zollverein, Schacht XII | Anil Öztas | CC BY-SA 4.0 |
-| Bochum, Jahrhunderthalle im Westpark | Frank Vincentz | CC BY-SA 3.0 |
-| Dortmund, Südtribüne | Der-wuppertaler | CC BY-SA 3.0 |
-| Halde Hoheward, Horizontobservatorium | Unukorno | CC BY 4.0 |
+| Feste Zeilenhöhe (`grid-auto-rows:1fr`) | Aus Kacheln werden Farbfelder | `aspect-ratio:1` auf der Kachel |
+| Perspektive zu stark (165px) | Die vorderen Kacheln werden riesig | 340px, `rotateX(72deg)` |
+| Weiche farbige Schlagschatten am Hund | Überlagern sich hinter ihm zu einem hellen Kasten | Eng halten (5px Versatz, 3px Unschärfe) |
 
-Zugeschnitten und farblich angepasst; der Hinweis darauf steht unter den
-Tafeln und gehört zur Pflicht. Bei den BY-SA-Bildern gilt Share-Alike.
-
-Jedes Foto liegt zweimal da: 1600 px für den Bildschirm, 900 px fürs Handy,
-ausgewählt über `srcset`. Groß 1,2 MB zusammen, klein 0,4 MB — geladen wird
-erst, wenn man in die Nähe scrollt (`loading="lazy"`).
+Die Farbverteilung kommt aus elf Gruppen (`:nth-child(11n+k)`), die sich mit
+den 24 Spalten nicht decken — sonst stünden die Farben in Streifen.
 
 ## Schriften
 
-In `schriften/` liegen drei variable WOFF2 mit ihren Lizenztexten (alle SIL
-Open Font License, bezogen über Fontsource). **Benutzt wird eine:
-Space Grotesk.** Die anderen beiden liegen bereit, kosten den Besucher aber
+In `schriften/` liegen vier WOFF2 mit ihren Lizenztexten (alle SIL Open Font
+License). **Benutzt werden zwei: Space Grotesk für den Fließtext, Michroma
+für die Anzeige** — eine breite, kantige Groteske in der Linie von Eurostile,
+also dieselbe Formenfamilie wie der Schriftzug im Hero-Foto. Die anderen beiden liegen bereit, kosten den Besucher aber
 nichts — einen `@font-face`-Block, auf den keine Regel zeigt, lädt kein
 Browser. Nachgemessen: beim Abruf der Startseite geht genau eine
 Schriftanfrage raus.
@@ -100,6 +83,7 @@ Schriftanfrage raus.
 |---|---|---|
 | `space-grotesk.woff2` | 21 KB | 300–700, **aktiv** |
 | `manrope.woff2` | 24 KB | 200–800 |
+| `michroma.woff2` | 11 KB | 400, **aktiv** |
 | `inter.woff2` | 47 KB | 100–900 |
 
 Umschalten heißt: `--sans` in `css/rauchfrei.css`, `impressum.html`,
