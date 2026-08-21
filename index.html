@@ -407,26 +407,46 @@ body{
             var(--cyan) 0 25%, var(--gruen) 25% 50%,
             var(--flieder) 50% 75%, var(--gold) 75% 100%);
     background-position:0 0, 0 0, 76px 76px;
-    opacity:0;
-    animation:wechsel 4.4s ease-in-out infinite;
+    /* Die zweite Farbfolge liegt dauerhaft da und wird von einem wandernden
+       Streifen freigegeben. Vorher schaltete sie ueberall gleichzeitig um —
+       gemessen von 0 auf 100 Prozent in einer Viertelsekunde, und damit
+       blinkte die ganze Flaeche samt allem, was darauf steht.
+
+       Als wandernder Streifen ist jede Stelle immer ganz die eine oder ganz
+       die andere Farbe: nichts mischt sich zu Pastell, und nichts blinkt.
+       Der Streifen laeuft in der Ebene von hinten nach vorn, also vom
+       Horizont auf den Betrachter zu. */
+    opacity:1;
+    -webkit-mask-image:linear-gradient(to bottom, transparent 0 14%, #000 30% 70%, transparent 86% 100%);
+            mask-image:linear-gradient(to bottom, transparent 0 14%, #000 30% 70%, transparent 86% 100%);
+    -webkit-mask-size:100% 150%;
+            mask-size:100% 150%;
+    -webkit-mask-repeat:no-repeat;
+            mask-repeat:no-repeat;
+    animation:welle 9s linear infinite;
 }
 
 /* ---------- Der Hund ----------
-   Freigestellt aus demselben Foto, das oben im Hero steht — er laeuft also
-   dieselbe Gangart, nur eben nicht mehr durchs Rechenzentrum. Unten laeuft
-   er weich aus: an den Laeufen ist die Freistellung ausgefranst, und auf
-   einer beleuchteten Flaeche steht ohnehin alles im Lichtnebel. Der Rand
+   Freigestellt aus einem Wiesenfoto: er liegt, schaut her, Zunge raus. Der
+   erste Versuch kam aus dem Hero-Foto, aber dort ist er von der Seite
+   angeleuchtet, und jede Trennung nach Helligkeit hat ihm die beschattete
+   Gesichtshaelfte weggenommen. Auf Gras geht es ueber den Gruenueberschuss,
+   und der trennt sauber — Fell hat keinen.
+
+   Unten laeuft er weich aus: dort haengen noch Grashalme an der Kante, und
+   auf einer beleuchteten Flaeche steht ohnehin alles im Lichtnebel. Der Rand
    links magenta, rechts cyan — so leuchtet ihn der Raum an. */
 .hund{
     position:absolute;
-    left:50%;
-    bottom:6%;
+    left:47%;
+    bottom:2.5%;
     z-index:5;
-    height:min(38svh,296px);
-    width:auto;
+    width:min(70vw,472px);
+    height:auto;
     transform:translateX(-50%);
-    -webkit-mask-image:linear-gradient(to top, transparent 0, #000 12%);
-    mask-image:linear-gradient(to top, transparent 0, #000 12%);
+    transform-origin:50% 100%;
+    -webkit-mask-image:linear-gradient(to top, transparent 0, #000 7%);
+    mask-image:linear-gradient(to top, transparent 0, #000 7%);
     /* Eng gehaltene Schlagschatten: so lesen sie als Randlicht von links
        und rechts. Weit und weich ueberlagern sie sich hinter dem Hund zu
        einem hellen Kasten — das sah aus wie ein Ausschnittfehler. */
@@ -437,7 +457,8 @@ body{
         drop-shadow(0 10px 14px rgba(0,0,0,.62))
         drop-shadow(-3px 0 2px rgba(255,46,139,.6))
         drop-shadow(3px 0 2px rgba(34,228,255,.6));
-    animation:tappen 3.6s ease-in-out infinite;
+    /* Er liegt — also kein Gangwerk, sondern Atmen. */
+    animation:atmet 5.4s ease-in-out infinite;
 }
 /* Der Lichtnebel an den Pfoten. Er hat eine Aufgabe: der Hund laeuft unten
    weich aus, weil die Freistellung an den Laeufen ausfranst — dieser Schein
@@ -445,10 +466,10 @@ body{
    Pfotenhoehe und nicht am unteren Rand. */
 .hundschatten{
     position:absolute;
-    left:50%;
-    bottom:5.5%;
+    left:47%;
+    bottom:2%;
     z-index:4;
-    width:min(28vw,196px);
+    width:min(54vw,368px);
     height:min(4.4vh,30px);
     transform:translateX(-50%);
     pointer-events:none;
@@ -458,11 +479,11 @@ body{
 }
 .hundlicht{
     position:absolute;
-    left:50%;
-    bottom:4%;
-    z-index:4;
-    width:min(58vw,420px);
-    height:min(16vh,120px);
+    left:47%;
+    bottom:0.5%;
+    z-index:3;
+    width:min(80vw,570px);
+    height:min(14vh,104px);
     transform:translateX(-50%);
     pointer-events:none;
     border-radius:50%;
@@ -603,10 +624,13 @@ body{
 }
 
 /* ---------- Bewegung ---------- */
-@keyframes wechsel{ 0%,44%{ opacity:0; } 50%,94%{ opacity:1; } 100%{ opacity:0; } }
+@keyframes welle{
+    from{ -webkit-mask-position:0 -150%; mask-position:0 -150%; }
+    to  { -webkit-mask-position:0  100%; mask-position:0  100%; }
+}
 @keyframes drehen{   from{ transform:rotate(0deg); } to{ transform:rotate(360deg); } }
 @keyframes schwenken{ from{ transform:translateX(-50%) rotate(-7deg); } to{ transform:translateX(-50%) rotate(7deg); } }
-@keyframes tappen{ 0%,100%{ transform:translateX(-50%) translateY(0); } 50%{ transform:translateX(-50%) translateY(-5px); } }
+@keyframes atmet{  0%,100%{ transform:translateX(-50%) scaleY(1); } 50%{ transform:translateX(-50%) scaleY(1.014); } }
 @keyframes atmen{  0%,100%{ opacity:.75; transform:translateX(-50%) scale(1); } 50%{ opacity:1; transform:translateX(-50%) scale(1.06); } }
 @keyframes blinzeln{
     from{ opacity:.55; }
@@ -634,7 +658,9 @@ body{
 @media (prefers-reduced-motion:reduce){
     .kacheln .b, .sterne, .kugel::after,
     .hund, .hundlicht, .schild-wort, .hinweis svg{ animation:none !important; }
-    .kacheln .b{ opacity:.4; }
+    /* Ohne Bewegung steht der Streifen sonst irgendwo mittendrin. Dann
+       lieber die zweite Farbfolge ganz weglassen: eine ruhige Flaeche. */
+    .kacheln .b{ display:none; }
     .schild{ transition:none; }
 }
 
@@ -702,7 +728,7 @@ body{
   <div class="hundschatten" aria-hidden="true"></div>
   <!-- Schmueckend: das Bild darueber ist ein CSS-Hintergrund und hat gar
        keine Textalternative, ein Verweis darauf ginge also ins Leere. -->
-  <img class="hund" src="bilder/hund.png" width="152" height="330" decoding="async" alt="">
+  <img class="hund" src="bilder/hund-wiese.png" width="540" height="381" decoding="async" alt="">
 
   <div class="club-inhalt">
     <a class="schild" href="/rauchfrei.html" data-rauchfrei>
