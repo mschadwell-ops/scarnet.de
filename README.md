@@ -127,12 +127,15 @@ Beide Rechtsseiten sind für sich vollständig, mit eigenem `<style>` im Kopf �
 wie `setup.html`. Wer am Menü oder an der Farbwelt etwas ändert, muss es in
 beiden Dateien tun.
 
-**So wenig personenbezogene Angaben wie möglich.** Auf beiden Seiten stehen
-nur Name und E-Mail-Adresse, keine Anschrift — die gibt es laut Text auf
-Anfrage. Deshalb beruft sich `impressum.html` auch nicht auf § 5 DDG: eine
-Anbieterkennzeichnung ohne Anschrift wäre unvollständig, und für eine private
-Seite ohne Werbung und Einnahmen greift die Vorschrift nicht. Wird die Seite
-jemals gewerblich, muss die Anschrift rein und der Bezug auf § 5 DDG zurück.
+**Name und ladungsfähige Anschrift stehen auf beiden Seiten** (seit November
+2026). § 5 DDG greift für eine private Seite ohne Werbung und Einnahmen nicht,
+wohl aber § 18 Abs. 1 MStV: Er gilt für jedes Angebot, das nicht
+*ausschließlich* persönlichen oder familiären Zwecken dient. Das wird eng
+ausgelegt, und eine öffentliche Seite mit Rauchfrei-Bereich für Besucher fällt
+nicht darunter. „Anschrift auf Anfrage“ genügt nicht, ein Postfach auch nicht.
+Eine c/o-Adresse eines Impressum-Service ist zulässig. Wird die Seite jemals
+gewerblich, kommen die Angaben nach § 5 DDG dazu (E-Mail als Kontakt steht
+schon da).
 
 **Die E-Mail-Adresse steht ohne At-Zeichen und ohne anklickbaren Verweis**
 (`scar(at)scarnet.de`), weil Adress-Sammler genau nach diesen beiden Mustern

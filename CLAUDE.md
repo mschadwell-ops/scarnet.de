@@ -57,10 +57,12 @@ Auf dem Mac konvertiert `sips` (auch nach WebP), auf dem Windows-PC geht es nur
 
 ## 4. Impressum und Datenschutz — bewusste Entscheidungen
 
-- **Keine Anschrift auf der Seite.** Nur „Maik Schadwell, Deutschland" und die
-  E-Mail. Die Seite ist privat, ohne Werbung und Einnahmen, also greift § 5 DDG
-  nicht — `impressum.html` beruft sich ausdrücklich **nicht** darauf. Wird die
-  Seite je gewerblich, muss die Anschrift rein und der Bezug zurück.
+- **Anschrift muss auf beiden Seiten stehen** (geändert im November 2026).
+  § 5 DDG greift für die private Seite nicht, § 18 Abs. 1 MStV aber schon:
+  Die Seite ist öffentlich und dient nicht *ausschließlich* persönlichen Zwecken.
+  Pflicht sind Name und ladungsfähige Anschrift; „auf Anfrage“ und Postfach
+  genügen nicht. Nicht wieder entfernen. Wird die Seite je gewerblich, kommen
+  die Angaben nach § 5 DDG dazu.
 - **Die E-Mail steht als `scar(at)scarnet.de`**, ohne At-Zeichen und ohne
   anklickbaren Verweis, auch nicht in Kommentaren. Gegen Adress-Sammler.
   Sie bleibt normaler Text: markierbar und für Screenreader in der richtigen
