@@ -16,6 +16,24 @@ vom Branch `main`. Kein Build, kein Generator — was hier liegt, ist die Seite.
 | `Welcome-mobile.jpg` | Hero-Bild hoch (941 × 1672), bis Viewport ≤ 768 px |
 | `CNAME` | bindet die Domain `scarnet.de` an GitHub Pages |
 | `robots.txt` | hält den persönlichen Bereich aus Suchmaschinen |
+| `feuerwehr/` | Landingpage „Wasser marsch!“ mit Lösch-Animation — **gebaute Ausgabe**, nicht von Hand bearbeiten (siehe unten) |
+
+## Unterseite /feuerwehr
+
+`feuerwehr/` ist die Ausgabe eines Astro-Projekts (Astro, Tailwind, GSAP, Lenis).
+Die Quelle liegt auf dem Windows-PC unter
+`C:\Users\Admin\Documents\Websites\scarnet-feuerwehr`. Ändern heißt: dort
+bearbeiten, `npm.cmd run build`, den Inhalt von `dist/` nach `feuerwehr/`
+kopieren (vorher den alten Inhalt löschen, die Dateinamen tragen Prüfsummen).
+
+- Die Assets liegen in `feuerwehr/assets/`, **nicht** in `_astro/`: GitHub Pages
+  (Jekyll) veröffentlicht keine Ordner, die mit `_` beginnen.
+- Alles kommt von scarnet.de — Schriften (Archivo, Big Shoulders Display) und
+  Skripte sind mitgebaut, Lizenztexte in `feuerwehr/LIZENZEN/`.
+- Impressum und Datenschutz verlinkt die Seite auf die zentralen Dateien im
+  Hauptverzeichnis. Die Schriften sind in `datenschutz.html` genannt.
+- Ist im Betriebssystem „Animationen reduzieren“ an, zeigt die Seite ein
+  Standbild mit Startknopf. Zum Testen `?animation` an die Adresse hängen.
 
 Jede Seite ist für sich vollständig — kein gemeinsames Stylesheet, kein
 Skript von außen, nichts von einem fremden Server. Das ist Absicht:
