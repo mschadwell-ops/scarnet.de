@@ -184,3 +184,6 @@ Beide Hero-Bilder sind JPEG in Qualitätsstufe 90. Wer sie ersetzt, sollte
 Der Schriftzug „scaRnet" steckt als Pixel im Bild. Damit er auch für Screenreader
 und Suchmaschinen existiert, steht er zusätzlich als unsichtbare `<h1>` im Markup —
 beim Bildwechsel also mit anpassen, falls sich der Name ändert.
+- Im Menü steht „Feuerwehr“ als dritter Reiter auf allen Seiten (Start,
+  Rauchfrei, Feuerwehr). Nachgemessen bei 375 px: die Leiste braucht 269 px
+  und passt ohne seitliches Scrollen; erst unter ca. 360 px scrollt sie.
